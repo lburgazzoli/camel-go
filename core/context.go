@@ -1,14 +1,14 @@
 package core
 
 import (
-    "plugin"
+	"fmt"
 	"github.com/lburgazzoli/camel-go/camel"
 	"path"
-	"fmt"
+	"plugin"
 )
 
 const (
-	ComponentsDir = "components"
+	ComponentsDir       = "components"
 	ComponentSymbolName = "CreateComponent"
 )
 
@@ -49,7 +49,7 @@ func (context *DefaultCamelContext) GetComponent(name string) (camel.Component, 
 		return nil, err
 	}
 
-    component := symbol.(func(camel.Context) camel.Component)(context)
+	component := symbol.(func(camel.Context) camel.Component)(context)
 
 	return component, nil
 }
