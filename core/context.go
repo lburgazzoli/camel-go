@@ -3,14 +3,13 @@ package core
 import (
     "plugin"
 	"github.com/lburgazzoli/camel-go/camel"
-	"os"
 	"path"
 	"fmt"
 )
 
 const (
 	ComponentsDir = "components"
-	ComponentSymbolName = "Component"
+	ComponentSymbolName = "CreateComponent"
 )
 
 type DefaultCamelContext struct {
@@ -50,16 +49,7 @@ func (context *DefaultCamelContext) GetComponent(name string) (camel.Component, 
 		return nil, err
 	}
 
-	component, ok := symbol.(camel.Component)
-	if !ok {
-		fmt.Printf("Symbol from %s does not implement Component interface\n", name)
-		return nil, nil
-	}
-
-	if err := component.Init(context); err != nil {
-		fmt.Printf("%s initialization failed: %v\n", name, err)
-		return nil, err
-	}
+    component := symbol.(func(camel.Context) camel.Component)(context)
 
 	return component, nil
 }

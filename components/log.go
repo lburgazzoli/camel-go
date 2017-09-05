@@ -6,11 +6,7 @@ import (
 )
 
 type LogComponent struct {
-}
-
-func (component *LogComponent) Init(context camel.Context) error {
-	fmt.Println("Initialize")
-    return nil
+    context camel.Context
 }
 
 func (component *LogComponent) Start() {
@@ -23,6 +19,12 @@ func (component *LogComponent) Process(message string) {
     fmt.Printf("%s\n", message)
 }
 
-func Component() (camel.Component, error) {
-	return &LogComponent{}, nil
+// ========================================
+// plugin entry-pooint
+// ========================================
+
+func CreateComponent(context camel.Context) (camel.Component) {
+	return &LogComponent{
+        context: context,
+    }
 }
