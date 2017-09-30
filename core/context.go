@@ -1,55 +1,98 @@
 package core
 
 import (
-	"fmt"
 	"github.com/lburgazzoli/camel-go/camel"
-	"path"
-	"plugin"
 )
 
-const (
-	ComponentsDir       = "components"
-	ComponentSymbolName = "CreateComponent"
-)
-
-type DefaultCamelContext struct {
+type defaultCamelContext struct {
 	name string
+	registryLoaders []camel.RegistryLoader
+	components map[string]camel.Component
 }
 
+// *****************************************************************************
+//
+// 
+//
+// *****************************************************************************
+
+// NewCamelContext -- 
 func NewCamelContext() camel.Context {
-	return &DefaultCamelContext{
+	return &defaultCamelContext{
 		name: "camel",
+		registryLoaders: []camel.RegistryLoader{},
+		components: make(map[string]camel.Component),
 	}
 }
 
+// NewCamelContextWithName --
 func NewCamelContextWithName(name string) camel.Context {
-	return &DefaultCamelContext{
+	return &defaultCamelContext{
 		name: name,
+		registryLoaders: []camel.RegistryLoader{},
+		components: make(map[string]camel.Component),
 	}
 }
 
-func (context *DefaultCamelContext) Start() {
+// *****************************************************************************
+//
+//
+//
+// *****************************************************************************
+
+func (context *defaultCamelContext) AddRegistryLoader(loader camel.RegistryLoader) {
+    context.registryLoaders = append(context.registryLoaders, loader)
 }
 
-func (context *DefaultCamelContext) Stop() {
+func (context *defaultCamelContext) AddComponent(name string, component camel.Component) {
+	context.components[name] = component
 }
 
-func (context *DefaultCamelContext) GetComponent(name string) (camel.Component, error) {
-	pluginPath := path.Join(ComponentsDir, fmt.Sprintf("%s.so", name))
+func (context *defaultCamelContext) GetComponent(name string) (camel.Component, error) {
+	component, found := context.components[name]
 
-	plug, err := plugin.Open(pluginPath)
-	if err != nil {
-		fmt.Printf("failed to open plugin %s: %v\n", name, err)
-		return nil, err
+	// check if the component has already been created or added to the context
+	// component list
+	if !found {
+		for _, loader := range context.registryLoaders {
+			component, err := loader.Load(name)
+			
+			if err != nil {
+				return nil, err
+			}
+			
+			if component == nil {
+				continue
+			}
+			
+			if _, ok := component.(camel.Component); !ok {
+				// not a component
+				continue
+			}
+
+			if component != nil {
+				break
+			}
+		}
 	}
 
-	symbol, err := plug.Lookup(ComponentSymbolName)
-	if err != nil {
-		fmt.Printf("plugin %s does not export symbol \"%s\"\n", name, ComponentSymbolName)
-		return nil, err
+	if component != nil {
+		context.components[name] = component
 	}
-
-	component := symbol.(func(camel.Context) camel.Component)(context)
 
 	return component, nil
+}
+
+// *****************************************************************************
+//
+// Lyfecycle
+//
+// *****************************************************************************
+
+// Start --
+func (context *defaultCamelContext) Start() {
+}
+
+// Stop --
+func (context *defaultCamelContext) Stop() {
 }

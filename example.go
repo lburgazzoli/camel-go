@@ -7,6 +7,7 @@ import (
 
 func main() {
 	context := core.NewCamelContext()
+	context.SetComponentSearchPath("components")
 	context.Start()
 
 	comp, err := context.GetComponent("log")
