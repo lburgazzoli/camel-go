@@ -8,5 +8,11 @@ type Context interface {
 
 	AddComponent(name string, component Component)
 
-	GetComponent(name string) (Component, error)
+	Component(name string) (Component, error)
+}
+
+// ContextAware --
+type ContextAware interface {
+	SetContext(context Context)
+	Context() Context
 }

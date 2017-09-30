@@ -12,7 +12,7 @@ type defaultCamelContext struct {
 
 // *****************************************************************************
 //
-// 
+// Initialize a camel context
 //
 // *****************************************************************************
 
@@ -46,9 +46,10 @@ func (context *defaultCamelContext) AddRegistryLoader(loader camel.RegistryLoade
 
 func (context *defaultCamelContext) AddComponent(name string, component camel.Component) {
 	context.components[name] = component
+	context.components[name].SetContext(context)
 }
 
-func (context *defaultCamelContext) GetComponent(name string) (camel.Component, error) {
+func (context *defaultCamelContext) Component(name string) (camel.Component, error) {
 	component, found := context.components[name]
 
 	// check if the component has already been created or added to the context
@@ -74,10 +75,10 @@ func (context *defaultCamelContext) GetComponent(name string) (camel.Component, 
 				break
 			}
 		}
-	}
-
-	if component != nil {
-		context.components[name] = component
+		
+		if component != nil {
+			context.AddComponent(name, component)
+		}
 	}
 
 	return component, nil
