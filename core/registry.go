@@ -2,33 +2,59 @@ package core
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"plugin"
-	"os"
+
 	"github.com/lburgazzoli/camel-go/camel"
 )
 
-// *****************************************************************************
+// ==========================
+//
+// DefaultRegistryLoader
+//
+// ==========================
+
+// DefaultRegistryLoader --
+type DefaultRegistryLoader struct {
+	DefaultService
+}
+
+// Order --
+func (loader *DefaultRegistryLoader) Order() int {
+	return loader.order
+}
+
+// ==========================
 //
 // PluginRegistryLoader
 //
 //     Use Go's plugins to load objects
-// 
-// *****************************************************************************
+//
+// ==========================
 
-// NewPluginRegistryLoader -- 
+// NewPluginRegistryLoader --
 func NewPluginRegistryLoader(searchPath string) camel.RegistryLoader {
-	return &pluginRegistryLoader {
+	return &pluginRegistryLoader{
+		DefaultRegistryLoader: DefaultRegistryLoader{
+			DefaultService: DefaultService{
+				order:  0,
+				status: camel.ServiceStatusSTOPPED,
+			},
+		},
 		searchPath: searchPath,
 	}
 }
 
 type pluginRegistryLoader struct {
+	DefaultRegistryLoader
+
 	searchPath string
 }
 
 // Start --
 func (loader *pluginRegistryLoader) Start() {
+	// maybe here we should scan the search path to pre instantiate objects
 }
 
 // Stop --
@@ -41,7 +67,7 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 	_, err := os.Stat(pluginPath)
 
 	if os.IsNotExist(err) {
-	  return nil, nil
+		return nil, nil
 	}
 
 	if err != nil {

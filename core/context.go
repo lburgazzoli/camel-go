@@ -5,43 +5,51 @@ import (
 )
 
 type defaultCamelContext struct {
-	name string
+	DefaultService
+
+	name            string
 	registryLoaders []camel.RegistryLoader
-	components map[string]camel.Component
+	components      map[string]camel.Component
 }
 
-// *****************************************************************************
+// ==========================
 //
 // Initialize a camel context
 //
-// *****************************************************************************
+// ==========================
 
-// NewCamelContext -- 
+// NewCamelContext --
 func NewCamelContext() camel.Context {
 	return &defaultCamelContext{
-		name: "camel",
+		DefaultService: DefaultService{
+			order: 0,
+		},
+		name:            "camel",
 		registryLoaders: []camel.RegistryLoader{},
-		components: make(map[string]camel.Component),
+		components:      make(map[string]camel.Component),
 	}
 }
 
 // NewCamelContextWithName --
 func NewCamelContextWithName(name string) camel.Context {
 	return &defaultCamelContext{
-		name: name,
+		DefaultService: DefaultService{
+			order: 0,
+		},
+		name:            name,
 		registryLoaders: []camel.RegistryLoader{},
-		components: make(map[string]camel.Component),
+		components:      make(map[string]camel.Component),
 	}
 }
 
-// *****************************************************************************
+// ==========================
 //
 //
 //
-// *****************************************************************************
+// ==========================
 
 func (context *defaultCamelContext) AddRegistryLoader(loader camel.RegistryLoader) {
-    context.registryLoaders = append(context.registryLoaders, loader)
+	context.registryLoaders = append(context.registryLoaders, loader)
 }
 
 func (context *defaultCamelContext) AddComponent(name string, component camel.Component) {
@@ -57,15 +65,15 @@ func (context *defaultCamelContext) Component(name string) (camel.Component, err
 	if !found {
 		for _, loader := range context.registryLoaders {
 			component, err := loader.Load(name)
-			
+
 			if err != nil {
 				return nil, err
 			}
-			
+
 			if component == nil {
 				continue
 			}
-			
+
 			if _, ok := component.(camel.Component); !ok {
 				// not a component
 				continue
@@ -75,7 +83,7 @@ func (context *defaultCamelContext) Component(name string) (camel.Component, err
 				break
 			}
 		}
-		
+
 		if component != nil {
 			context.AddComponent(name, component)
 		}
@@ -84,11 +92,11 @@ func (context *defaultCamelContext) Component(name string) (camel.Component, err
 	return component, nil
 }
 
-// *****************************************************************************
+// ==========================
 //
 // Lyfecycle
 //
-// *****************************************************************************
+// ==========================
 
 // Start --
 func (context *defaultCamelContext) Start() {
