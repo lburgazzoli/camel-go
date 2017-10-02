@@ -23,7 +23,7 @@ func NewCamelContext() camel.Context {
 	return &defaultCamelContext{
 		Service:         NewService(),
 		name:            "camel",
-		registryLoaders: []camel.RegistryLoader{},
+		registryLoaders: make([]camel.RegistryLoader, 0),
 		components:      make(map[string]camel.Component),
 	}
 }
@@ -33,7 +33,7 @@ func NewCamelContextWithName(name string) camel.Context {
 	return &defaultCamelContext{
 		Service:         NewService(),
 		name:            name,
-		registryLoaders: []camel.RegistryLoader{},
+		registryLoaders: make([]camel.RegistryLoader, 0),
 		components:      make(map[string]camel.Component),
 	}
 }
