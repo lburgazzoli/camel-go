@@ -17,12 +17,7 @@ import (
 
 // DefaultRegistryLoader --
 type DefaultRegistryLoader struct {
-	DefaultService
-}
-
-// Order --
-func (loader *DefaultRegistryLoader) Order() int {
-	return loader.order
+	camel.Service
 }
 
 // ==========================
@@ -37,10 +32,7 @@ func (loader *DefaultRegistryLoader) Order() int {
 func NewPluginRegistryLoader(searchPath string) camel.RegistryLoader {
 	return &pluginRegistryLoader{
 		DefaultRegistryLoader: DefaultRegistryLoader{
-			DefaultService: DefaultService{
-				order:  0,
-				status: camel.ServiceStatusSTOPPED,
-			},
+			Service: NewService(),
 		},
 		searchPath: searchPath,
 	}

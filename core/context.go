@@ -5,7 +5,7 @@ import (
 )
 
 type defaultCamelContext struct {
-	DefaultService
+	camel.Service
 
 	name            string
 	registryLoaders []camel.RegistryLoader
@@ -21,9 +21,7 @@ type defaultCamelContext struct {
 // NewCamelContext --
 func NewCamelContext() camel.Context {
 	return &defaultCamelContext{
-		DefaultService: DefaultService{
-			order: 0,
-		},
+		Service:         NewService(),
 		name:            "camel",
 		registryLoaders: []camel.RegistryLoader{},
 		components:      make(map[string]camel.Component),
@@ -33,9 +31,7 @@ func NewCamelContext() camel.Context {
 // NewCamelContextWithName --
 func NewCamelContextWithName(name string) camel.Context {
 	return &defaultCamelContext{
-		DefaultService: DefaultService{
-			order: 0,
-		},
+		Service:         NewService(),
 		name:            name,
 		registryLoaders: []camel.RegistryLoader{},
 		components:      make(map[string]camel.Component),

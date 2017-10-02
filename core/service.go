@@ -2,26 +2,42 @@ package core
 
 import "github.com/lburgazzoli/camel-go/camel"
 
+// NewService --
+func NewService() camel.Service {
+	return &defaultService{
+		order:  0,
+		status: camel.ServiceStatusSTOPPED,
+	}
+}
+
+// NewServiceWithOrder --
+func NewServiceWithOrder(order int) camel.Service {
+	return &defaultService{
+		order:  order,
+		status: camel.ServiceStatusSTOPPED,
+	}
+}
+
 // DefaultService --
-type DefaultService struct {
+type defaultService struct {
 	order  int
 	status camel.ServiceStatus
 }
 
 // Order --
-func (service *DefaultService) Order() int {
+func (service *defaultService) Order() int {
 	return service.order
 }
 
 // Start --
-func (service *DefaultService) Start() {
+func (service *defaultService) Start() {
 }
 
 // Stop --
-func (service *DefaultService) Stop() {
+func (service *defaultService) Stop() {
 }
 
 // Status --
-func (service *DefaultService) Status() camel.ServiceStatus {
+func (service *defaultService) Status() camel.ServiceStatus {
 	return service.status
 }

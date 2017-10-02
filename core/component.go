@@ -2,9 +2,16 @@ package core
 
 import "github.com/lburgazzoli/camel-go/camel"
 
+// NewComponent --
+func NewComponent(order int) camel.Component {
+	return &DefaultComponent{
+		Service: NewServiceWithOrder(order),
+	}
+}
+
 // DefaultComponent --
 type DefaultComponent struct {
-	DefaultService
+	camel.Service
 
 	context camel.Context
 }
