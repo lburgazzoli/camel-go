@@ -25,8 +25,6 @@ const (
 
 // Service --
 type Service interface {
-	Ordered
-
 	Start()
 	Stop()
 	Status() ServiceStatus

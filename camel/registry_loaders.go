@@ -1,24 +1,11 @@
-package core
+package camel
 
 import (
 	"fmt"
 	"os"
 	"path"
 	"plugin"
-
-	"github.com/lburgazzoli/camel-go/camel"
 )
-
-// ==========================
-//
-// DefaultRegistryLoader
-//
-// ==========================
-
-// DefaultRegistryLoader --
-type DefaultRegistryLoader struct {
-	camel.Service
-}
 
 // ==========================
 //
@@ -29,19 +16,19 @@ type DefaultRegistryLoader struct {
 // ==========================
 
 // NewPluginRegistryLoader --
-func NewPluginRegistryLoader(searchPath string) camel.RegistryLoader {
+func NewPluginRegistryLoader(searchPath string) RegistryLoader {
 	return &pluginRegistryLoader{
-		DefaultRegistryLoader: DefaultRegistryLoader{
-			Service: NewService(),
-		},
 		searchPath: searchPath,
 	}
 }
 
 type pluginRegistryLoader struct {
-	DefaultRegistryLoader
-
 	searchPath string
+}
+
+// Start --
+func (loader *pluginRegistryLoader) Status() ServiceStatus {
+	return ServiceStatusSTARTED
 }
 
 // Start --

@@ -1,13 +1,47 @@
 package camel
 
 // Exchange --
-type Exchange interface {
+type Exchange struct {
+	body    interface{}
+	headers map[string]interface{}
+}
 
-	Body() interface{}
+// ==========================
+//
+// Initialize an exchnage
+//
+// ==========================
 
-	SetBody(body interface{})
+// NewExchange --
+func NewExchange() *Exchange {
+	return &Exchange{
+		body:    nil,
+		headers: make(map[string]interface{}),
+	}
+}
 
-	Header(name string) interface{}
+// ==========================
+//
+//
+//
+// ==========================
 
-	SetHeader(name string, value interface{})
+// Body --
+func (exchange *Exchange) Body() interface{} {
+	return exchange.body
+}
+
+// SetBody --
+func (exchange *Exchange) SetBody(body interface{}) {
+	exchange.body = body
+}
+
+// Header --
+func (exchange *Exchange) Header(name string) interface{} {
+	return exchange.headers[name]
+}
+
+// SetHeader --
+func (exchange *Exchange) SetHeader(name string, value interface{}) {
+	exchange.headers[name] = value
 }

@@ -5,5 +5,5 @@ type Component interface {
 	Service
 	ContextAware
 
-	Process(message string)
+	Process(Exchange *Exchange)
 }

@@ -3,10 +3,7 @@ package core
 import "github.com/lburgazzoli/camel-go/camel"
 
 // NewComponent --
-func NewComponent(order int) camel.Component {
-	return &DefaultComponent{
-		Service: NewServiceWithOrder(order),
-	}
+func NewComponent() camel.Component {
 }
 
 // DefaultComponent --
