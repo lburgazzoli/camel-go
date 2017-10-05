@@ -26,7 +26,7 @@ type pluginRegistryLoader struct {
 	searchPath string
 }
 
-// Start --
+// Status --
 func (loader *pluginRegistryLoader) Status() ServiceStatus {
 	return ServiceStatusSTARTED
 }
