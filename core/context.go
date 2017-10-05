@@ -48,6 +48,9 @@ func (context *defaultCamelContext) AddRegistryLoader(loader camel.RegistryLoade
 	context.registryLoaders = append(context.registryLoaders, loader)
 }
 
+func (context *defaultCamelContext) AddTypeConverter(converter camel.TypeConverter) {
+}
+
 func (context *defaultCamelContext) AddComponent(name string, component camel.Component) {
 	context.components[name] = component
 	context.components[name].SetContext(context)

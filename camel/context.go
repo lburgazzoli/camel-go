@@ -1,10 +1,16 @@
 package camel
 
+// TypeConverter --
+type TypeConverter interface {
+}
+
 // Context --
 type Context interface {
 	Service
 
 	AddRegistryLoader(loader RegistryLoader)
+
+	AddTypeConverter(converter TypeConverter)
 
 	AddComponent(name string, component Component)
 
