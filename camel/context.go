@@ -5,6 +5,7 @@ type Context struct {
 	name            string
 	registryLoaders []RegistryLoader
 	components      map[string]Component
+	typeConverter   DelegatingTypeConverter
 }
 
 // ==========================
@@ -19,6 +20,7 @@ func NewContext() *Context {
 		name:            "camel",
 		registryLoaders: make([]RegistryLoader, 0),
 		components:      make(map[string]Component),
+		typeConverter:   DelegatingTypeConverter{},
 	}
 }
 
@@ -28,6 +30,7 @@ func NewContextWithName(name string) *Context {
 		name:            name,
 		registryLoaders: make([]RegistryLoader, 0),
 		components:      make(map[string]Component),
+		typeConverter:   DelegatingTypeConverter{},
 	}
 }
 
@@ -43,7 +46,13 @@ func (context *Context) AddRegistryLoader(loader RegistryLoader) {
 }
 
 // AddTypeConverter --
-func (context *Context) AddTypeConverter(converter TypeConverter) {
+func (context *Context) AddTypeConverter(typeConverter TypeConverter) {
+	context.typeConverter.AddConverter(typeConverter)
+}
+
+// TypeConverter --
+func (context *Context) TypeConverter() TypeConverter {
+	return &context.typeConverter
 }
 
 // AddComponent --

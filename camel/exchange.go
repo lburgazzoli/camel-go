@@ -2,8 +2,9 @@ package camel
 
 // Exchange --
 type Exchange struct {
-	body    interface{}
-	headers map[string]interface{}
+	body       interface{}
+	headers    map[string]interface{}
+	properties map[string]interface{}
 }
 
 // ==========================
@@ -15,8 +16,9 @@ type Exchange struct {
 // NewExchange --
 func NewExchange() *Exchange {
 	return &Exchange{
-		body:    nil,
-		headers: make(map[string]interface{}),
+		body:       nil,
+		headers:    make(map[string]interface{}),
+		properties: make(map[string]interface{}),
 	}
 }
 
@@ -44,4 +46,14 @@ func (exchange *Exchange) Header(name string) interface{} {
 // SetHeader --
 func (exchange *Exchange) SetHeader(name string, value interface{}) {
 	exchange.headers[name] = value
+}
+
+// Property --
+func (exchange *Exchange) Property(name string) interface{} {
+	return exchange.properties[name]
+}
+
+// SetProperty --
+func (exchange *Exchange) SetProperty(name string, value interface{}) {
+	exchange.properties[name] = value
 }
