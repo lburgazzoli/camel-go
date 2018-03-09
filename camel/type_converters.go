@@ -74,6 +74,16 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 		} else {
 			answer, err = cast.ToIntE(source)
 		}
+	case reflect.Int8:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToInt8); ok {
+				answer, err = v.ToInt8()
+			} else {
+				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToInt8E(source)
+		}
 	case reflect.Int16:
 		if sourceKind == reflect.Struct {
 			if v, ok := source.(ToInt16); ok {
