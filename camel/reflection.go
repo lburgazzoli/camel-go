@@ -10,7 +10,8 @@ func SetField(context *Context, target interface{}, field string, value interfac
 		result, err := converter.Convert(value, v.Type())
 
 		if err != nil {
-			v.Set(result)
+			newValue := reflect.ValueOf(result)
+			v.Set(newValue)
 		}
 	}
 }
