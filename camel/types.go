@@ -4,6 +4,12 @@ import (
 	"reflect"
 )
 
+// ==========================
+//
+// Helper type definition
+//
+// ==========================
+
 // TypeInt --
 var TypeInt = reflect.TypeOf(int(0))
 
@@ -18,6 +24,15 @@ var TypeInt32 = reflect.TypeOf(int32(0))
 
 // TypeInt64 --
 var TypeInt64 = reflect.TypeOf(int64(0))
+
+// TypeString --
+var TypeString = reflect.TypeOf("")
+
+// ==========================
+//
+// Helpers
+//
+// ==========================
 
 // IsInt --
 func IsInt(t reflect.Type) bool {

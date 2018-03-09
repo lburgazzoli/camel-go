@@ -30,7 +30,7 @@ func SetField(context *Context, target interface{}, name string, value interface
 				newValue := reflect.ValueOf(result)
 				v.Set(newValue)
 			} else {
-				log.Fatalf("Unable to set field (name=%s, target=%v, error=%v)",
+				log.Fatalf("unable to set field (name=%s, target=%v, error=%v)",
 					name,
 					target,
 					err,
@@ -59,7 +59,7 @@ func SetField(context *Context, target interface{}, name string, value interface
 
 				m.Call(args)
 			} else {
-				log.Fatalf("Unable to set field thorugh method call (name=%s, target=%v, error=%v)",
+				log.Fatalf("unable to set field thorugh method call (name=%s, target=%v, error=%v)",
 					name,
 					target,
 					err,
@@ -69,6 +69,6 @@ func SetField(context *Context, target interface{}, name string, value interface
 			return
 		}
 	} else {
-		log.Fatalf("Unable to set field %s on %v as it is not a pointer", name, target)
+		log.Fatalf("unable to set field %s on %v as it is not a pointer", name, target)
 	}
 }

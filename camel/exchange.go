@@ -40,6 +40,11 @@ func (exchange *Exchange) Body() interface{} {
 	return exchange.body
 }
 
+// BodyAsOf --
+func (exchange *Exchange) BodyAsOf(asType interface{}) interface{} {
+	return exchange.BodyAs(reflect.TypeOf(asType))
+}
+
 // BodyAs --
 func (exchange *Exchange) BodyAs(asType reflect.Type) interface{} {
 	answer := exchange.Body()
@@ -68,6 +73,11 @@ func (exchange *Exchange) Header(name string) interface{} {
 	return exchange.headers[name]
 }
 
+// HeaderAsOf --
+func (exchange *Exchange) HeaderAsOf(name string, asType interface{}) interface{} {
+	return exchange.HeaderAs(name, reflect.TypeOf(asType))
+}
+
 // HeaderAs --
 func (exchange *Exchange) HeaderAs(name string, asType reflect.Type) interface{} {
 	answer := exchange.Header(name)
@@ -88,7 +98,7 @@ func (exchange *Exchange) HeaderAs(name string, asType reflect.Type) interface{}
 
 // HeaderOrDefault --
 func (exchange *Exchange) HeaderOrDefault(name string, defaultValue interface{}) interface{} {
-	answer := exchange.Header(name)
+	answer := exchange.HeaderAsOf(name, defaultValue)
 	if answer == nil {
 		answer = defaultValue
 	}

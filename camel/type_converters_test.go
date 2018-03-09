@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// ==========================
+//
+// Int converter
+//
+// ==========================
+
 func testStringToInt(t *testing.T, value string, expectedResult interface{}) {
 	expectedType := reflect.TypeOf(expectedResult)
 	converter := ToIntConverter{}
@@ -27,11 +33,10 @@ func TestStringToIntConverter(t *testing.T) {
 	testStringToInt(t, "1", int64(1))
 }
 
-func TestInvalidStringToIntConverter(t *testing.T) {
-	expectedType := reflect.TypeOf("")
+func TestStringToIntConverterWithInvalidType(t *testing.T) {
 	converter := ToIntConverter{}
 
-	r, e := converter.Convert("1", expectedType)
+	r, e := converter.Convert("1", TypeString)
 
 	assert.Nil(t, r)
 	assert.Error(t, e)

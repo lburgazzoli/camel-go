@@ -69,7 +69,7 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 			if v, ok := source.(ToInt); ok {
 				answer, err = v.ToInt()
 			} else {
-				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
 			}
 		} else {
 			answer, err = cast.ToIntE(source)
@@ -79,7 +79,7 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 			if v, ok := source.(ToInt8); ok {
 				answer, err = v.ToInt8()
 			} else {
-				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
 			}
 		} else {
 			answer, err = cast.ToInt8E(source)
@@ -89,7 +89,7 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 			if v, ok := source.(ToInt16); ok {
 				answer, err = v.ToInt16()
 			} else {
-				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
 			}
 		} else {
 			answer, err = cast.ToInt16E(source)
@@ -99,7 +99,7 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 			if v, ok := source.(ToInt32); ok {
 				answer, err = v.ToInt32()
 			} else {
-				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
 			}
 		} else {
 			answer, err = cast.ToInt32E(source)
@@ -109,7 +109,7 @@ func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.
 			if v, ok := source.(ToInt64); ok {
 				answer, err = v.ToInt64()
 			} else {
-				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
 			}
 		} else {
 			answer, err = cast.ToInt64E(source)

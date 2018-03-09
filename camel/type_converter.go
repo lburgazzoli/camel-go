@@ -41,5 +41,5 @@ func (typeConverter *DelegatingTypeConverter) Convert(source interface{}, target
 		}
 	}
 
-	return nil, fmt.Errorf("Unsupported type conversion (source:%v, target:%v", sourceType, targetType)
+	return nil, fmt.Errorf("unsupported type conversion (source:%v, target:%v", sourceType, targetType)
 }
