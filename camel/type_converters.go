@@ -1,82 +1,110 @@
 package camel
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
-	"strconv"
+
+	"github.com/spf13/cast"
 )
 
 // DefaultTypeConverters --
 func DefaultTypeConverters() []TypeConverter {
 	return []TypeConverter{
-		&FromStringConverter{},
+		&ToIntConverter{},
 	}
 }
 
 // ==========================
 //
-// String converter
+// Int converter
 //
 // ==========================
 
-// FromStringConverter --
-type FromStringConverter struct {
+// ToInt --
+type ToInt interface {
+	ToInt() (int, error)
+}
+
+// ToInt8 --
+type ToInt8 interface {
+	ToInt8() (int8, error)
+}
+
+// ToInt16 --
+type ToInt16 interface {
+	ToInt16() (int16, error)
+}
+
+// ToInt32 --
+type ToInt32 interface {
+	ToInt32() (int32, error)
+}
+
+// ToInt64 --
+type ToInt64 interface {
+	ToInt64() (int64, error)
+}
+
+// ToIntConverter --
+type ToIntConverter struct {
 	TypeConverter
 }
 
-// CanConvert --
-func (converter *FromStringConverter) CanConvert(sourceType reflect.Type, targetType reflect.Type) bool {
-	return sourceType.Kind() == reflect.String
-}
-
 // Convert --
-func (converter *FromStringConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
-	sourceType := reflect.TypeOf(source)
-	sourceKind := sourceType.Kind()
-	targetKind := targetType.Kind()
-
-	if sourceKind != reflect.String {
-		return nil, fmt.Errorf("Incompatible source, expected:%v got:%v", reflect.String, sourceKind)
-	}
-	if !converter.CanConvert(sourceType, targetType) {
-		return nil, fmt.Errorf("Unable to convert from:%v to:%v", sourceType, targetType)
+func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
+	if !IsInt(targetType) {
+		return nil, errors.New("unsupported")
 	}
 
-	str := source.(string)
 	var answer interface{}
 	var err error
 
-	switch targetKind {
-	case reflect.String:
-		answer = source
-	case reflect.Int8:
-		i, err := strconv.ParseInt(str, 10, 8)
-		if err == nil {
-			answer = int8(i)
+	sourceType := reflect.TypeOf(source)
+	sourceKind := sourceType.Kind()
+
+	switch targetType.Kind() {
+	case reflect.Int:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToInt); ok {
+				answer, err = v.ToInt()
+			} else {
+				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToIntE(source)
 		}
 	case reflect.Int16:
-		i, err := strconv.ParseInt(str, 10, 16)
-		if err == nil {
-			answer = int16(i)
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToInt16); ok {
+				answer, err = v.ToInt16()
+			} else {
+				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToInt16E(source)
 		}
 	case reflect.Int32:
-		i, err := strconv.ParseInt(str, 10, 32)
-		if err == nil {
-			answer = int32(i)
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToInt32); ok {
+				answer, err = v.ToInt32()
+			} else {
+				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToInt32E(source)
 		}
 	case reflect.Int64:
-		i, err := strconv.ParseInt(str, 10, 64)
-		if err == nil {
-			answer = int32(i)
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToInt64); ok {
+				answer, err = v.ToInt64()
+			} else {
+				err = fmt.Errorf("Unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToInt64E(source)
 		}
-	default:
-		answer = nil
-		err = fmt.Errorf("Unable to convert from:%v to:%v, error:%v", sourceType, targetType, err)
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("Unable to convert from:%v to:%v, error:%v", sourceType, targetType, err)
-	}
-
-	return answer, nil
+	return answer, err
 }

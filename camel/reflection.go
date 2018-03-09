@@ -23,17 +23,8 @@ func SetField(context *Context, target interface{}, name string, value interface
 
 		f = t.FieldByName(name)
 		if f.IsValid() && f.CanSet() {
-			fieldType := f.Type()
 			valueType := reflect.TypeOf(value)
-
 			converter := context.TypeConverter()
-			if !converter.CanConvert(valueType, fieldType) {
-				log.Fatalf("Unsupported conversion (source=%v, target=%v)",
-					valueType,
-					fieldType,
-				)
-			}
-
 			result, err := converter.Convert(value, valueType)
 			if err != nil {
 				newValue := reflect.ValueOf(result)
@@ -58,18 +49,9 @@ func SetField(context *Context, target interface{}, name string, value interface
 		}
 
 		m = v.MethodByName(name)
-		if m.IsValid() {
-			fieldType := m.Type().In(0)
+		if m.IsValid() && m.Type().NumIn() == 1 {
 			valueType := reflect.TypeOf(value)
-
 			converter := context.TypeConverter()
-			if !converter.CanConvert(valueType, fieldType) {
-				log.Fatalf("Unsupported conversion (source=%v, target=%v)",
-					valueType,
-					fieldType,
-				)
-			}
-
 			result, err := converter.Convert(value, valueType)
 			if err != nil {
 				newValue := reflect.ValueOf(result)
