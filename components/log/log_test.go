@@ -68,3 +68,24 @@ func TestLogLevelAsLevel(t *testing.T) {
 	assert.Equal(t, zl.FatalLevel, le.level)
 	assert.Equal(t, "test-log", le.name)
 }
+
+func TestLogNameOverride(t *testing.T) {
+	context := camel.NewContext()
+
+	component := NewComponent()
+	component.SetContext(context)
+
+	options := make(map[string]interface{})
+	options["level"] = zl.FatalLevel
+	options["name"] = "override"
+
+	endpoint, err := component.CreateEndpoint("test-log", options)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, endpoint)
+
+	le, ok := endpoint.(*logEndpoint)
+	assert.True(t, ok)
+	assert.Equal(t, zl.FatalLevel, le.level)
+	assert.Equal(t, "override", le.name)
+}
