@@ -7,6 +7,8 @@ import (
 
 // Exchange --
 type Exchange struct {
+	HasContext
+
 	context    *Context
 	body       interface{}
 	headers    map[string]interface{}
@@ -34,6 +36,11 @@ func NewExchange(context *Context) *Exchange {
 //
 //
 // ==========================
+
+// Context --
+func (exchange *Exchange) Context() *Context {
+	return exchange.context
+}
 
 // Body --
 func (exchange *Exchange) Body() interface{} {

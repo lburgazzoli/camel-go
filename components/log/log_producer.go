@@ -20,6 +20,12 @@ func (producer *logProducer) Endpoint() camel.Endpoint {
 	return producer.endpoint
 }
 
+func (endpoint *logProducer) Start() {
+}
+
+func (endpoint *logProducer) Stop() {
+}
+
 func (producer *logProducer) Process(exchange *camel.Exchange) {
 	if producer.endpoint.logHeaders {
 		l := producer.logger.WithLevel(producer.endpoint.level)

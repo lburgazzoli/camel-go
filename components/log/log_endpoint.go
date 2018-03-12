@@ -21,6 +21,12 @@ type logEndpoint struct {
 	logHeaders bool
 }
 
+func (endpoint *logEndpoint) Start() {
+}
+
+func (endpoint *logEndpoint) Stop() {
+}
+
 func (endpoint *logEndpoint) Component() camel.Component {
 	return endpoint.component
 }
@@ -36,7 +42,7 @@ func (endpoint *logEndpoint) CreateProducer() (camel.Producer, error) {
 	}, nil
 }
 
-func (endpoint *logEndpoint) CreateConsumer() (camel.Consumer, error) {
+func (endpoint *logEndpoint) CreateConsumer(producer camel.Producer) (camel.Consumer, error) {
 	return nil, errors.New("log is Producer only")
 }
 

@@ -27,5 +27,4 @@ const (
 type Service interface {
 	Start()
 	Stop()
-	Status() ServiceStatus
 }
