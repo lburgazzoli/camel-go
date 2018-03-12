@@ -5,6 +5,18 @@ import (
 	"reflect"
 )
 
+// HasContext --
+type HasContext interface {
+	Context() *Context
+}
+
+// ContextAware --
+type ContextAware interface {
+	HasContext
+
+	SetContext(context *Context)
+}
+
 // Context --
 type Context struct {
 	name            string
