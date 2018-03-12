@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// SetField --
-func SetField(context *Context, target interface{}, name string, value interface{}) bool {
+// SetProperty --
+func SetProperty(context *Context, target interface{}, name string, value interface{}) bool {
 	var v reflect.Value
 	var t reflect.Value
 	var f reflect.Value
@@ -28,7 +28,7 @@ func SetField(context *Context, target interface{}, name string, value interface
 			result, err := converter(value, targetType)
 			if err == nil && result != nil {
 				newValue := reflect.ValueOf(result)
-				v.Set(newValue)
+				f.Set(newValue)
 
 				return true
 			}
@@ -75,12 +75,12 @@ func SetField(context *Context, target interface{}, name string, value interface
 	return false
 }
 
-// SetFields --
-func SetFields(context *Context, target interface{}, options map[string]interface{}) int {
+// SetProperties --
+func SetProperties(context *Context, target interface{}, options map[string]interface{}) int {
 	count := 0
 
 	for k, v := range options {
-		if SetField(context, target, k, v) {
+		if SetProperty(context, target, k, v) {
 			count++
 		}
 	}

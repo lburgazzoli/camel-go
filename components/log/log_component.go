@@ -46,7 +46,7 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 	endpoint.level = zerolog.InfoLevel
 
 	// bind options to endpoint
-	camel.SetFields(component.context, &endpoint, options)
+	camel.SetProperties(component.context, &endpoint, options)
 
 	return &endpoint, nil
 }

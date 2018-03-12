@@ -21,16 +21,7 @@ type Context struct {
 
 // NewContext --
 func NewContext() *Context {
-	return &Context{
-		name:            "camel",
-		registryLoaders: make([]RegistryLoader, 0),
-		components:      make(map[string]Component),
-		converters: []TypeConverter{
-			ToIntConverter,
-			ToDuratioinConverter,
-			ToLogLevelConverter,
-		},
-	}
+	return NewContextWithName("camel")
 }
 
 // NewContextWithName --
