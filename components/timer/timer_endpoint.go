@@ -18,6 +18,10 @@ type timerEndpoint struct {
 	period    time.Duration
 }
 
+func (endpoint *timerEndpoint) SetPeriod(period time.Duration) {
+	endpoint.period = period
+}
+
 func (endpoint *timerEndpoint) Start() {
 }
 
@@ -33,5 +37,5 @@ func (endpoint *timerEndpoint) CreateProducer() (camel.Producer, error) {
 }
 
 func (endpoint *timerEndpoint) CreateConsumer(processor camel.Processor) (camel.Consumer, error) {
-	return &timerConsumer{endpoint: endpoint}, nil
+	return &timerConsumer{endpoint: endpoint, processor: processor}, nil
 }

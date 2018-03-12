@@ -26,7 +26,7 @@ func TestLogLevelAsString(t *testing.T) {
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
 	assert.Equal(t, zl.DebugLevel, le.level)
-	assert.Equal(t, "test-log", le.name)
+	assert.Equal(t, "test-log", le.logger)
 }
 
 func TestLogLevelAsUint8(t *testing.T) {
@@ -46,7 +46,7 @@ func TestLogLevelAsUint8(t *testing.T) {
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
 	assert.Equal(t, zl.WarnLevel, le.level)
-	assert.Equal(t, "test-log", le.name)
+	assert.Equal(t, "test-log", le.logger)
 }
 
 func TestLogLevelAsLevel(t *testing.T) {
@@ -66,7 +66,7 @@ func TestLogLevelAsLevel(t *testing.T) {
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
 	assert.Equal(t, zl.FatalLevel, le.level)
-	assert.Equal(t, "test-log", le.name)
+	assert.Equal(t, "test-log", le.logger)
 }
 
 func TestLogNameOverride(t *testing.T) {
@@ -77,7 +77,7 @@ func TestLogNameOverride(t *testing.T) {
 
 	options := make(map[string]interface{})
 	options["level"] = zl.FatalLevel
-	options["name"] = "override"
+	options["logger"] = "override"
 
 	endpoint, err := component.CreateEndpoint("test-log", options)
 
@@ -87,5 +87,5 @@ func TestLogNameOverride(t *testing.T) {
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
 	assert.Equal(t, zl.FatalLevel, le.level)
-	assert.Equal(t, "override", le.name)
+	assert.Equal(t, "override", le.logger)
 }

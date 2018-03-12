@@ -23,7 +23,7 @@ type Context struct {
 
 	name            string
 	registryLoaders []RegistryLoader
-	routes          []Route
+	routes          []*Route
 	components      map[string]Component
 	converters      []TypeConverter
 }
@@ -44,12 +44,13 @@ func NewContextWithName(name string) *Context {
 	return &Context{
 		name:            name,
 		registryLoaders: make([]RegistryLoader, 0),
-		routes:          make([]Route, 0),
+		routes:          make([]*Route, 0),
 		components:      make(map[string]Component),
 		converters: []TypeConverter{
 			ToIntConverter,
 			ToDuratioinConverter,
 			ToLogLevelConverter,
+			ToBoolConverter,
 		},
 	}
 }
@@ -150,6 +151,11 @@ func (context *Context) Component(name string) (Component, error) {
 	}
 
 	return component, nil
+}
+
+// AddRoute --
+func (context *Context) AddRoute(route *Route) {
+	context.routes = append(context.routes, route)
 }
 
 // ==========================

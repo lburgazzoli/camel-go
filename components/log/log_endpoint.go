@@ -16,7 +16,7 @@ import (
 
 type logEndpoint struct {
 	component  camel.Component
-	name       string
+	logger     string
 	level      zerolog.Level
 	logHeaders bool
 }
@@ -34,7 +34,7 @@ func (endpoint *logEndpoint) Component() camel.Component {
 func (endpoint *logEndpoint) CreateProducer() (camel.Producer, error) {
 	// need to be replaced with better configuration from camel logging
 	newlog := zerolog.New(os.Stderr).With().Timestamp().Logger()
-	logger := newlog.With().Str("name", endpoint.name).Logger()
+	logger := newlog.With().Str("logger", endpoint.logger).Logger()
 
 	return &logProducer{
 		endpoint: endpoint,
@@ -42,14 +42,18 @@ func (endpoint *logEndpoint) CreateProducer() (camel.Producer, error) {
 	}, nil
 }
 
-func (endpoint *logEndpoint) CreateConsumer(producer camel.Producer) (camel.Consumer, error) {
+func (endpoint *logEndpoint) CreateConsumer(producer camel.Processor) (camel.Consumer, error) {
 	return nil, errors.New("log is Producer only")
 }
 
-func (endpoint *logEndpoint) SetName(name string) {
-	endpoint.name = name
+func (endpoint *logEndpoint) SetLogger(logger string) {
+	endpoint.logger = logger
 }
 
 func (endpoint *logEndpoint) SetLevel(level zerolog.Level) {
 	endpoint.level = level
+}
+
+func (endpoint *logEndpoint) SetLogHeaders(logHeaders bool) {
+	endpoint.logHeaders = logHeaders
 }

@@ -42,7 +42,7 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 	// Create the endpoint and set default values
 	endpoint := logEndpoint{}
 	endpoint.component = component
-	endpoint.name = remaining
+	endpoint.logger = remaining
 	endpoint.level = zerolog.InfoLevel
 
 	// bind options to endpoint

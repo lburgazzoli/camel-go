@@ -20,10 +20,10 @@ func (producer *logProducer) Endpoint() camel.Endpoint {
 	return producer.endpoint
 }
 
-func (endpoint *logProducer) Start() {
+func (producer *logProducer) Start() {
 }
 
-func (endpoint *logProducer) Stop() {
+func (producer *logProducer) Stop() {
 }
 
 func (producer *logProducer) Process(exchange *camel.Exchange) {
