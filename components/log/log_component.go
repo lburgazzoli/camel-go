@@ -40,7 +40,8 @@ func (component *Component) Context() *camel.Context {
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (camel.Endpoint, error) {
 	// Create the endpoint and set default values
-	endpoint := logEndpoint{component: component}
+	endpoint := logEndpoint{}
+	endpoint.component = component
 	endpoint.name = remaining
 	endpoint.level = zerolog.InfoLevel
 
