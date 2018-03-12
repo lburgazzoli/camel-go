@@ -2,7 +2,7 @@ package camel
 
 // Producer --
 type Producer interface {
-	Endpoint() Endpoint
+	Processor
 
-	Process(exchange Exchange)
+	Endpoint() Endpoint
 }

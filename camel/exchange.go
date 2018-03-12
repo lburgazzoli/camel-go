@@ -68,6 +68,11 @@ func (exchange *Exchange) SetBody(body interface{}) {
 	exchange.body = body
 }
 
+// Headers --
+func (exchange *Exchange) Headers() map[string]interface{} {
+	return exchange.headers
+}
+
 // Header --
 func (exchange *Exchange) Header(name string) interface{} {
 	return exchange.headers[name]
@@ -109,6 +114,11 @@ func (exchange *Exchange) HeaderOrDefault(name string, defaultValue interface{})
 // SetHeader --
 func (exchange *Exchange) SetHeader(name string, value interface{}) {
 	exchange.headers[name] = value
+}
+
+// Properties --
+func (exchange *Exchange) Properties() map[string]interface{} {
+	return exchange.properties
 }
 
 // Property --
