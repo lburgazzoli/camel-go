@@ -82,6 +82,10 @@ func SetProperties(context *Context, target interface{}, options map[string]inte
 	for k, v := range options {
 		if SetProperty(context, target, k, v) {
 			count++
+
+			// remove the property if successfully
+			// se to the target
+			delete(options, k)
 		}
 	}
 
