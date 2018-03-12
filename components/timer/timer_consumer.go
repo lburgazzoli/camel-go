@@ -34,7 +34,7 @@ func (producer *timerConsumer) Start() {
 
 			counter++
 
-			exchange.SetHeader("timer.fire.unix", t.Unix())
+			exchange.SetHeader("timer.fire.time", t.UTC())
 			exchange.SetHeader("timer.fire.count", counter)
 			exchange.SetBody(nil)
 
