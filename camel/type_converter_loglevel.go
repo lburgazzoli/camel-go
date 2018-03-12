@@ -1,4 +1,4 @@
-package log
+package camel
 
 import (
 	"errors"
@@ -6,26 +6,16 @@ import (
 	"reflect"
 
 	zl "github.com/rs/zerolog"
-
-	"github.com/lburgazzoli/camel-go/camel"
 )
 
-func init() {
-	camel.AddTypeConverter(&stringToLogLevelConverter{})
-
-}
-
 // ==========================
 //
 //
 //
 // ==========================
 
-type stringToLogLevelConverter struct {
-}
-
-func (lc stringToLogLevelConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
-
+// ToLogLevelConverter --
+func ToLogLevelConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
 	if targetType == reflect.TypeOf(zl.InfoLevel) {
 		if l, ok := source.(string); ok {
 			switch l {

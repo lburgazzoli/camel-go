@@ -1,11 +1,16 @@
 package camel
 
+import (
+	"fmt"
+	"reflect"
+)
+
 // Context --
 type Context struct {
 	name            string
 	registryLoaders []RegistryLoader
 	components      map[string]Component
-	typeConverter   DelegatingTypeConverter
+	converters      []TypeConverter
 }
 
 // ==========================
@@ -20,7 +25,11 @@ func NewContext() *Context {
 		name:            "camel",
 		registryLoaders: make([]RegistryLoader, 0),
 		components:      make(map[string]Component),
-		typeConverter:   DelegatingTypeConverter{},
+		converters: []TypeConverter{
+			ToIntConverter,
+			ToDuratioinConverter,
+			ToLogLevelConverter,
+		},
 	}
 }
 
@@ -30,7 +39,11 @@ func NewContextWithName(name string) *Context {
 		name:            name,
 		registryLoaders: make([]RegistryLoader, 0),
 		components:      make(map[string]Component),
-		typeConverter:   DelegatingTypeConverter{},
+		converters: []TypeConverter{
+			ToIntConverter,
+			ToDuratioinConverter,
+			ToLogLevelConverter,
+		},
 	}
 }
 
@@ -46,13 +59,48 @@ func (context *Context) AddRegistryLoader(loader RegistryLoader) {
 }
 
 // AddTypeConverter --
-func (context *Context) AddTypeConverter(typeConverter TypeConverter) {
-	context.typeConverter.AddConverter(typeConverter)
+func (context *Context) AddTypeConverter(converter TypeConverter) {
+	context.converters = append(context.converters, converter)
 }
 
 // TypeConverter --
 func (context *Context) TypeConverter() TypeConverter {
-	return &context.typeConverter
+	return func(source interface{}, targetType reflect.Type) (interface{}, error) {
+		sourceType := reflect.TypeOf(source)
+
+		// Don't convert same type
+		if sourceType == targetType {
+			return source, nil
+		}
+
+		// Use global type converters
+		gTypeConvertersLock.RLock()
+		defer gTypeConvertersLock.RUnlock()
+		for _, converter := range gTypeConverters {
+			r, err := converter(source, targetType)
+			if err == nil {
+				return r, nil
+			}
+		}
+
+		// Context type converters
+		for _, converter := range context.converters {
+			r, err := converter(source, targetType)
+			if err == nil {
+				return r, nil
+			}
+		}
+
+		// Try implicit go conversion
+		if sourceType.ConvertibleTo(targetType) {
+			v := reflect.ValueOf(source).Convert(targetType)
+			if v.IsValid() {
+				return v.Interface(), nil
+			}
+		}
+
+		return nil, fmt.Errorf("unsupported type conversion (source:%v, target:%v", sourceType, targetType)
+	}
 }
 
 // AddComponent --

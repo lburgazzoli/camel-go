@@ -10,16 +10,6 @@ import (
 
 // ==========================
 //
-//
-//
-// ==========================
-
-func init() {
-	AddTypeConverter(&ToIntConverter{})
-}
-
-// ==========================
-//
 // Int converter
 //
 // ==========================
@@ -87,12 +77,7 @@ func (target Integer) ToInt64() int64 {
 // ==========================
 
 // ToIntConverter --
-type ToIntConverter struct {
-	TypeConverter
-}
-
-// Convert --
-func (converter *ToIntConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
+func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
 	if !IsInt(targetType) {
 		return nil, errors.New("unsupported")
 	}

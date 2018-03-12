@@ -15,9 +15,8 @@ import (
 
 func testStringToInt(t *testing.T, value string, expectedResult interface{}) {
 	expectedType := reflect.TypeOf(expectedResult)
-	converter := ToIntConverter{}
 
-	r, e := converter.Convert(value, expectedType)
+	r, e := ToIntConverter(value, expectedType)
 
 	assert.NoError(t, e)
 	assert.NotNil(t, r)
@@ -34,9 +33,8 @@ func TestStringToIntConverter(t *testing.T) {
 }
 
 func TestStringToIntConverterWithInvalidType(t *testing.T) {
-	converter := ToIntConverter{}
 
-	r, e := converter.Convert("1", TypeString)
+	r, e := ToIntConverter("1", TypeString)
 
 	assert.Nil(t, r)
 	assert.Error(t, e)

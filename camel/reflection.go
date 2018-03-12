@@ -25,7 +25,7 @@ func SetField(context *Context, target interface{}, name string, value interface
 		if f.IsValid() && f.CanSet() {
 			targetType := f.Type()
 			converter := context.TypeConverter()
-			result, err := converter.Convert(value, targetType)
+			result, err := converter(value, targetType)
 			if err == nil && result != nil {
 				newValue := reflect.ValueOf(result)
 				v.Set(newValue)
@@ -52,7 +52,7 @@ func SetField(context *Context, target interface{}, name string, value interface
 		if m.IsValid() && m.Type().NumIn() == 1 {
 			targetType := m.Type().In(0)
 			converter := context.TypeConverter()
-			result, err := converter.Convert(value, targetType)
+			result, err := converter(value, targetType)
 			if err == nil && result != nil {
 				newValue := reflect.ValueOf(result)
 				args := []reflect.Value{newValue}

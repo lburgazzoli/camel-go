@@ -58,7 +58,7 @@ func (exchange *Exchange) BodyAs(asType reflect.Type) interface{} {
 
 	if answer != nil {
 		converter := exchange.context.TypeConverter()
-		result, err := converter.Convert(answer, asType)
+		result, err := converter(answer, asType)
 
 		if err != nil {
 			log.Fatalf("Unable to covert body to required type: %v", asType)
@@ -96,7 +96,7 @@ func (exchange *Exchange) HeaderAs(name string, asType reflect.Type) interface{}
 
 	if answer != nil {
 		converter := exchange.context.TypeConverter()
-		result, err := converter.Convert(answer, asType)
+		result, err := converter(answer, asType)
 
 		if err != nil {
 			log.Fatalf("Unable to covert header: %s to required type: %v", name, asType)

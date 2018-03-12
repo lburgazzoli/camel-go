@@ -16,9 +16,8 @@ import (
 
 func testStringToDuration(t *testing.T, value string, expectedResult interface{}) {
 	expectedType := reflect.TypeOf(expectedResult)
-	converter := ToDurationConverter{}
 
-	r, e := converter.Convert(value, expectedType)
+	r, e := ToDuratioinConverter(value, expectedType)
 
 	assert.NoError(t, e)
 	assert.NotNil(t, r)

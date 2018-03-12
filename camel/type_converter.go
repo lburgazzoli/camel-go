@@ -12,6 +12,9 @@ import (
 //
 // ==========================
 
+// TypeConverter --
+type TypeConverter func(source interface{}, targetType reflect.Type) (interface{}, error)
+
 var gTypeConverters = make([]TypeConverter, 0)
 var gTypeConvertersLock = sync.RWMutex{}
 
@@ -20,11 +23,6 @@ func AddTypeConverter(converter TypeConverter) {
 	gTypeConvertersLock.Lock()
 	gTypeConverters = append(gTypeConverters, converter)
 	gTypeConvertersLock.Unlock()
-}
-
-// TypeConverter --
-type TypeConverter interface {
-	Convert(source interface{}, targetType reflect.Type) (interface{}, error)
 }
 
 // ==========================
@@ -56,7 +54,7 @@ func (typeConverter *DelegatingTypeConverter) Convert(source interface{}, target
 	gTypeConvertersLock.RLock()
 	defer gTypeConvertersLock.RUnlock()
 	for _, converter := range gTypeConverters {
-		r, err := converter.Convert(source, targetType)
+		r, err := converter(source, targetType)
 		if err == nil {
 			return r, nil
 		}
@@ -64,7 +62,7 @@ func (typeConverter *DelegatingTypeConverter) Convert(source interface{}, target
 
 	// Context type converters
 	for _, converter := range typeConverter.converters {
-		r, err := converter.Convert(source, targetType)
+		r, err := converter(source, targetType)
 		if err == nil {
 			return r, nil
 		}

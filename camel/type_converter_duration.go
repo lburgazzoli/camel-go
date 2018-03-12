@@ -11,16 +11,6 @@ import (
 
 // ==========================
 //
-//
-//
-// ==========================
-
-func init() {
-	AddTypeConverter(&ToIntConverter{})
-}
-
-// ==========================
-//
 // Duration converter
 //
 // ==========================
@@ -36,13 +26,8 @@ type ToDuration interface {
 //
 // ==========================
 
-// ToDurationConverter --
-type ToDurationConverter struct {
-	TypeConverter
-}
-
-// Convert --
-func (converter *ToDurationConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
+// ToDuratioinConverter --
+func ToDuratioinConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
 	if targetType == reflect.TypeOf(time.Duration(0)) {
 
 		var answer interface{}
