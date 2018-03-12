@@ -7,7 +7,7 @@ import (
 )
 
 // SetField --
-func SetField(context *Context, target interface{}, name string, value interface{}) {
+func SetField(context *Context, target interface{}, name string, value interface{}) bool {
 	var v reflect.Value
 	var t reflect.Value
 	var f reflect.Value
@@ -23,21 +23,21 @@ func SetField(context *Context, target interface{}, name string, value interface
 
 		f = t.FieldByName(name)
 		if f.IsValid() && f.CanSet() {
-			valueType := reflect.TypeOf(value)
+			targetType := f.Type()
 			converter := context.TypeConverter()
-			result, err := converter.Convert(value, valueType)
-			if err != nil {
+			result, err := converter.Convert(value, targetType)
+			if err == nil && result != nil {
 				newValue := reflect.ValueOf(result)
 				v.Set(newValue)
-			} else {
-				log.Fatalf("unable to set field (name=%s, target=%v, error=%v)",
-					name,
-					target,
-					err,
-				)
+
+				return true
 			}
 
-			return
+			log.Fatalf("unable to set field (name=%s, target=%v, error=%v)",
+				name,
+				target,
+				err,
+			)
 		}
 
 		// **************************
@@ -45,30 +45,45 @@ func SetField(context *Context, target interface{}, name string, value interface
 		// **************************
 
 		if !strings.HasPrefix(name, "Set") {
-			name = "Set" + name
+			name = "Set" + strings.ToUpper(name[0:1]) + name[1:]
 		}
 
 		m = v.MethodByName(name)
 		if m.IsValid() && m.Type().NumIn() == 1 {
-			valueType := reflect.TypeOf(value)
+			targetType := m.Type().In(0)
 			converter := context.TypeConverter()
-			result, err := converter.Convert(value, valueType)
-			if err != nil {
+			result, err := converter.Convert(value, targetType)
+			if err == nil && result != nil {
 				newValue := reflect.ValueOf(result)
 				args := []reflect.Value{newValue}
 
 				m.Call(args)
-			} else {
-				log.Fatalf("unable to set field thorugh method call (name=%s, target=%v, error=%v)",
-					name,
-					target,
-					err,
-				)
+
+				return true
 			}
 
-			return
+			log.Fatalf("unable to set field through method call (name=%s, target=%v, error=%v)",
+				name,
+				target,
+				err,
+			)
 		}
 	} else {
 		log.Fatalf("unable to set field %s on %v as it is not a pointer", name, target)
 	}
+
+	return false
+}
+
+// SetFields --
+func SetFields(context *Context, target interface{}, options map[string]interface{}) int {
+	count := 0
+
+	for k, v := range options {
+		if SetField(context, target, k, v) {
+			count++
+		}
+	}
+
+	return count
 }

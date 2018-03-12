@@ -4,6 +4,9 @@ import (
 	"reflect"
 )
 
+// Integer --
+type Integer int
+
 // ==========================
 //
 // Helper type definition

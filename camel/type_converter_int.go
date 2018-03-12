@@ -8,13 +8,6 @@ import (
 	"github.com/spf13/cast"
 )
 
-// DefaultTypeConverters --
-func DefaultTypeConverters() []TypeConverter {
-	return []TypeConverter{
-		&ToIntConverter{},
-	}
-}
-
 // ==========================
 //
 // Int converter
@@ -45,6 +38,43 @@ type ToInt32 interface {
 type ToInt64 interface {
 	ToInt64() (int64, error)
 }
+
+// ==========================
+//
+//
+//
+// ==========================
+
+// ToInt ..
+func (target Integer) ToInt() int {
+	return int(target)
+}
+
+// ToInt8 ..
+func (target Integer) ToInt8() int8 {
+	return int8(target)
+}
+
+// ToInt16 ..
+func (target Integer) ToInt16() int16 {
+	return int16(target)
+}
+
+// ToInt32 ..
+func (target Integer) ToInt32() int32 {
+	return int32(target)
+}
+
+// ToInt64 ..
+func (target Integer) ToInt64() int64 {
+	return int64(target)
+}
+
+// ==========================
+//
+// ToIntConverter
+//
+// ==========================
 
 // ToIntConverter --
 type ToIntConverter struct {
