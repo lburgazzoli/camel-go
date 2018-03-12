@@ -29,14 +29,14 @@ func TestLogLevelAsString(t *testing.T) {
 	assert.Equal(t, "test-log", le.name)
 }
 
-func TestLogLevelAsInt8(t *testing.T) {
+func TestLogLevelAsUint8(t *testing.T) {
 	context := camel.NewContext()
 
 	component := NewComponent()
 	component.SetContext(context)
 
 	options := make(map[string]interface{})
-	options["level"] = int8(zl.WarnLevel)
+	options["level"] = uint8(zl.WarnLevel)
 
 	endpoint, err := component.CreateEndpoint("test-log", options)
 

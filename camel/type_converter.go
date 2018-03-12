@@ -47,10 +47,8 @@ func (typeConverter *DelegatingTypeConverter) AddConverter(converter TypeConvert
 func (typeConverter *DelegatingTypeConverter) Convert(source interface{}, targetType reflect.Type) (interface{}, error) {
 	sourceType := reflect.TypeOf(source)
 
+	// Don't convert same type
 	if sourceType == targetType {
-		return source, nil
-	}
-	if sourceType.Kind() == targetType.Kind() {
 		return source, nil
 	}
 
@@ -69,6 +67,14 @@ func (typeConverter *DelegatingTypeConverter) Convert(source interface{}, target
 		r, err := converter.Convert(source, targetType)
 		if err == nil {
 			return r, nil
+		}
+	}
+
+	// Try implicit go conversion
+	if sourceType.ConvertibleTo(targetType) {
+		v := reflect.ValueOf(source).Convert(targetType)
+		if v.IsValid() {
+			return v.Interface(), nil
 		}
 	}
 

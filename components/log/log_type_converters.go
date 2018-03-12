@@ -43,22 +43,6 @@ func (lc stringToLogLevelConverter) Convert(source interface{}, targetType refle
 				return nil, fmt.Errorf("unknown level %s", l)
 			}
 		}
-		if l, ok := source.(int8); ok {
-			switch l {
-			case int8(zl.DebugLevel):
-				return zl.DebugLevel, nil
-			case int8(zl.InfoLevel):
-				return zl.InfoLevel, nil
-			case int8(zl.WarnLevel):
-				return zl.WarnLevel, nil
-			case int8(zl.FatalLevel):
-				return zl.FatalLevel, nil
-			case int8(zl.PanicLevel):
-				return zl.PanicLevel, nil
-			default:
-				return nil, fmt.Errorf("unknown level %d", l)
-			}
-		}
 	}
 
 	return nil, errors.New("unsupported")
