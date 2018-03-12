@@ -19,8 +19,11 @@ type ContextAware interface {
 
 // Context --
 type Context struct {
+	Service
+
 	name            string
 	registryLoaders []RegistryLoader
+	routes          []Route
 	components      map[string]Component
 	converters      []TypeConverter
 }
@@ -41,6 +44,7 @@ func NewContextWithName(name string) *Context {
 	return &Context{
 		name:            name,
 		registryLoaders: make([]RegistryLoader, 0),
+		routes:          make([]Route, 0),
 		components:      make(map[string]Component),
 		converters: []TypeConverter{
 			ToIntConverter,
@@ -156,8 +160,14 @@ func (context *Context) Component(name string) (Component, error) {
 
 // Start --
 func (context *Context) Start() {
+	for _, service := range context.routes {
+		service.Start()
+	}
 }
 
 // Stop --
 func (context *Context) Stop() {
+	for _, service := range context.routes {
+		service.Stop()
+	}
 }

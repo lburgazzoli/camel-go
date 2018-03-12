@@ -28,3 +28,17 @@ type Service interface {
 	Start()
 	Stop()
 }
+
+// StartServices --
+func StartServices(services []Service) {
+	for _, service := range services {
+		service.Start()
+	}
+}
+
+// StopServices --
+func StopServices(services []Service) {
+	for _, service := range services {
+		service.Stop()
+	}
+}
