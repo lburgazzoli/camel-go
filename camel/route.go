@@ -7,6 +7,12 @@ type Route struct {
 	services []Service
 }
 
+// ToRoute --
+type ToRoute interface {
+	// ToRoute --
+	ToRoute(context *Context) *Route
+}
+
 // NewRoute --
 func NewRoute() *Route {
 	return &Route{

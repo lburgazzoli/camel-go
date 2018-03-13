@@ -2,32 +2,15 @@ package camel
 
 import (
 	"fmt"
+	"net/url"
 	"reflect"
-	"sync"
 
 	"github.com/lburgazzoli/camel-go/types"
 )
 
 // ==========================
 //
-// Global Converters
 //
-// ==========================
-
-// TypeConverters
-var gTypeConverters = make([]types.TypeConverter, 0)
-var gTypeConvertersLock = sync.RWMutex{}
-
-// AddTypeConverter --
-func AddTypeConverter(converter types.TypeConverter) {
-	gTypeConvertersLock.Lock()
-	gTypeConverters = append(gTypeConverters, converter)
-	gTypeConvertersLock.Unlock()
-}
-
-// ==========================
-//
-// Global Converters
 //
 // ==========================
 
@@ -47,11 +30,10 @@ type ContextAware interface {
 type Context struct {
 	Service
 
-	name            string
-	registryLoaders []RegistryLoader
-	routes          []*Route
-	components      map[string]Component
-	converters      []types.TypeConverter
+	name       string
+	registry   *Registry
+	routes     []*Route
+	converters []types.TypeConverter
 }
 
 // ==========================
@@ -67,18 +49,22 @@ func NewContext() *Context {
 
 // NewContextWithName --
 func NewContextWithName(name string) *Context {
-	return &Context{
-		name:            name,
-		registryLoaders: make([]RegistryLoader, 0),
-		routes:          make([]*Route, 0),
-		components:      make(map[string]Component),
-		converters: []types.TypeConverter{
-			types.ToIntConverter,
-			types.ToDuratioinConverter,
-			types.ToLogLevelConverter,
-			types.ToBoolConverter,
-		},
+	context := Context{
+		name:       name,
+		routes:     make([]*Route, 0),
+		converters: make([]types.TypeConverter, 0),
 	}
+
+	// Type conversion
+	context.AddTypeConverter(types.ToIntConverter)
+	context.AddTypeConverter(types.ToDuratioinConverter)
+	context.AddTypeConverter(types.ToLogLevelConverter)
+	context.AddTypeConverter(types.ToBoolConverter)
+
+	// Set the registry
+	context.registry = NewRegistry(context.TypeConverter())
+
+	return &context
 }
 
 // ==========================
@@ -87,9 +73,9 @@ func NewContextWithName(name string) *Context {
 //
 // ==========================
 
-// AddRegistryLoader --
-func (context *Context) AddRegistryLoader(loader RegistryLoader) {
-	context.registryLoaders = append(context.registryLoaders, loader)
+// Registry --
+func (context *Context) Registry() *Registry {
+	return context.registry
 }
 
 // AddTypeConverter --
@@ -105,16 +91,6 @@ func (context *Context) TypeConverter() types.TypeConverter {
 		// Don't convert same type
 		if sourceType == targetType {
 			return source, nil
-		}
-
-		// Use global type converters
-		gTypeConvertersLock.RLock()
-		defer gTypeConvertersLock.RUnlock()
-		for _, converter := range gTypeConverters {
-			r, err := converter(source, targetType)
-			if err == nil {
-				return r, nil
-			}
 		}
 
 		// Context type converters
@@ -139,49 +115,83 @@ func (context *Context) TypeConverter() types.TypeConverter {
 
 // AddComponent --
 func (context *Context) AddComponent(name string, component Component) {
-	context.components[name] = component
-	context.components[name].SetContext(context)
+	component.SetContext(context)
+
+	context.registry.Bind(name, component)
 }
 
 // Component --
 func (context *Context) Component(name string) (Component, error) {
-	component, found := context.components[name]
+	value, err := context.registry.Lookup(name)
 
-	// check if the component has already been created or added to the context
-	// component list
-	if !found {
-		for _, loader := range context.registryLoaders {
-			component, err := loader.Load(name)
+	if err != nil {
+		return nil, err
+	}
 
-			if err != nil {
-				return nil, err
-			}
-
-			if component == nil {
-				continue
-			}
-
-			if _, ok := component.(Component); !ok {
-				// not a component
-				continue
-			}
-
-			if component != nil {
-				break
-			}
-		}
-
-		if component != nil {
-			context.AddComponent(name, component)
+	if value != nil {
+		if component, ok := value.(Component); ok {
+			return component, nil
 		}
 	}
 
-	return component, nil
+	return nil, fmt.Errorf("Unable toi find component %s", name)
 }
 
 // AddRoute --
 func (context *Context) AddRoute(route *Route) {
 	context.routes = append(context.routes, route)
+}
+
+// CreateEndpointFromURI --
+func (context *Context) CreateEndpointFromURI(uri string) (Endpoint, error) {
+	var err error
+	var endpointURL *url.URL
+	var component Component
+	var endpoint Endpoint
+
+	if endpointURL, err = url.Parse(uri); err != nil {
+		return nil, err
+	}
+
+	scheme := endpointURL.Scheme
+	opts := make(map[string]interface{})
+	vals := make(url.Values)
+
+	if vals, err = url.ParseQuery(endpointURL.RawQuery); err != nil {
+		return nil, err
+	}
+
+	for k, v := range vals {
+		opts[k] = v[0]
+	}
+
+	if component, err = context.Component(scheme); err != nil {
+		return nil, err
+	}
+
+	remaining := ""
+	if endpointURL.Opaque != "" {
+		if remaining, err = url.PathUnescape(endpointURL.Opaque); err != nil {
+			return nil, err
+		}
+	} else {
+		remaining = endpointURL.Host
+
+		if endpointURL.RawPath != "" {
+			path, err := url.PathUnescape(endpointURL.RawPath)
+			if err != nil {
+				return nil, err
+			}
+
+			remaining += path
+		}
+	}
+
+	if endpoint, err = component.CreateEndpoint(remaining, opts); err != nil {
+		return nil, err
+	}
+
+	return endpoint, nil
 }
 
 // ==========================
