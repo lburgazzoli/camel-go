@@ -1,13 +1,15 @@
-package camel
+package introspection
 
 import (
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/lburgazzoli/camel-go/camel"
 )
 
 // SetProperty --
-func SetProperty(context *Context, target interface{}, name string, value interface{}) bool {
+func SetProperty(context *camel.Context, target interface{}, name string, value interface{}) bool {
 	var v reflect.Value
 	var t reflect.Value
 	var f reflect.Value
@@ -76,7 +78,7 @@ func SetProperty(context *Context, target interface{}, name string, value interf
 }
 
 // SetProperties --
-func SetProperties(context *Context, target interface{}, options map[string]interface{}) int {
+func SetProperties(context *camel.Context, target interface{}, options map[string]interface{}) int {
 	count := 0
 
 	for k, v := range options {

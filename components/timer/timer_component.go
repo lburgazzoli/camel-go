@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/introspection"
 )
 
 // ==========================
@@ -50,7 +51,7 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 	}
 
 	// bind options to endpoint
-	camel.SetProperties(component.context, &endpoint, options)
+	introspection.SetProperties(component.context, &endpoint, options)
 
 	return &endpoint, nil
 }

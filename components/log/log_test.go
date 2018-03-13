@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/lburgazzoli/camel-go/camel"
-	zl "github.com/rs/zerolog"
+	"github.com/rs/zerolog"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +25,7 @@ func TestLogLevelAsString(t *testing.T) {
 
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
-	assert.Equal(t, zl.DebugLevel, le.level)
+	assert.Equal(t, zerolog.DebugLevel, le.level)
 	assert.Equal(t, "test-log", le.logger)
 }
 
@@ -36,7 +36,7 @@ func TestLogLevelAsUint8(t *testing.T) {
 	component.SetContext(context)
 
 	options := make(map[string]interface{})
-	options["level"] = uint8(zl.WarnLevel)
+	options["level"] = uint8(zerolog.WarnLevel)
 
 	endpoint, err := component.CreateEndpoint("test-log", options)
 
@@ -45,7 +45,7 @@ func TestLogLevelAsUint8(t *testing.T) {
 
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
-	assert.Equal(t, zl.WarnLevel, le.level)
+	assert.Equal(t, zerolog.WarnLevel, le.level)
 	assert.Equal(t, "test-log", le.logger)
 }
 
@@ -65,7 +65,7 @@ func TestLogLevelAsLevel(t *testing.T) {
 
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
-	assert.Equal(t, zl.FatalLevel, le.level)
+	assert.Equal(t, zerolog.FatalLevel, le.level)
 	assert.Equal(t, "test-log", le.logger)
 }
 
@@ -76,7 +76,7 @@ func TestLogNameOverride(t *testing.T) {
 	component.SetContext(context)
 
 	options := make(map[string]interface{})
-	options["level"] = zl.FatalLevel
+	options["level"] = zerolog.FatalLevel
 	options["logger"] = "override"
 
 	endpoint, err := component.CreateEndpoint("test-log", options)
@@ -86,6 +86,6 @@ func TestLogNameOverride(t *testing.T) {
 
 	le, ok := endpoint.(*logEndpoint)
 	assert.True(t, ok)
-	assert.Equal(t, zl.FatalLevel, le.level)
+	assert.Equal(t, zerolog.FatalLevel, le.level)
 	assert.Equal(t, "override", le.logger)
 }

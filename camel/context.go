@@ -3,7 +3,33 @@ package camel
 import (
 	"fmt"
 	"reflect"
+	"sync"
+
+	"github.com/lburgazzoli/camel-go/types"
 )
+
+// ==========================
+//
+// Global Converters
+//
+// ==========================
+
+// TypeConverters
+var gTypeConverters = make([]types.TypeConverter, 0)
+var gTypeConvertersLock = sync.RWMutex{}
+
+// AddTypeConverter --
+func AddTypeConverter(converter types.TypeConverter) {
+	gTypeConvertersLock.Lock()
+	gTypeConverters = append(gTypeConverters, converter)
+	gTypeConvertersLock.Unlock()
+}
+
+// ==========================
+//
+// Global Converters
+//
+// ==========================
 
 // HasContext --
 type HasContext interface {
@@ -25,7 +51,7 @@ type Context struct {
 	registryLoaders []RegistryLoader
 	routes          []*Route
 	components      map[string]Component
-	converters      []TypeConverter
+	converters      []types.TypeConverter
 }
 
 // ==========================
@@ -46,11 +72,11 @@ func NewContextWithName(name string) *Context {
 		registryLoaders: make([]RegistryLoader, 0),
 		routes:          make([]*Route, 0),
 		components:      make(map[string]Component),
-		converters: []TypeConverter{
-			ToIntConverter,
-			ToDuratioinConverter,
-			ToLogLevelConverter,
-			ToBoolConverter,
+		converters: []types.TypeConverter{
+			types.ToIntConverter,
+			types.ToDuratioinConverter,
+			types.ToLogLevelConverter,
+			types.ToBoolConverter,
 		},
 	}
 }
@@ -67,12 +93,12 @@ func (context *Context) AddRegistryLoader(loader RegistryLoader) {
 }
 
 // AddTypeConverter --
-func (context *Context) AddTypeConverter(converter TypeConverter) {
+func (context *Context) AddTypeConverter(converter types.TypeConverter) {
 	context.converters = append(context.converters, converter)
 }
 
 // TypeConverter --
-func (context *Context) TypeConverter() TypeConverter {
+func (context *Context) TypeConverter() types.TypeConverter {
 	return func(source interface{}, targetType reflect.Type) (interface{}, error) {
 		sourceType := reflect.TypeOf(source)
 

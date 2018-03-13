@@ -1,4 +1,4 @@
-package camel
+package types
 
 import (
 	"reflect"

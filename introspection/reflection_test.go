@@ -1,8 +1,9 @@
-package camel
+package introspection
 
 import (
 	"testing"
 
+	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,7 @@ func TestSetProperty(t *testing.T) {
 		Field3: "f3",
 	}
 
-	context := NewContext()
+	context := camel.NewContext()
 	r1 := SetProperty(context, &my, "Field1", "new-value-1")
 	r2 := SetProperty(context, &my, "f2", "new-value-2")
 	r3 := SetProperty(context, &my, "f3", "new-value-3")
