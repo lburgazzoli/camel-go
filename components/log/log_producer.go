@@ -13,6 +13,7 @@ import (
 
 type logProducer struct {
 	endpoint *logEndpoint
+	pipe     *camel.Pipe
 	logger   *zerolog.Logger
 }
 
@@ -21,12 +22,13 @@ func (producer *logProducer) Endpoint() camel.Endpoint {
 }
 
 func (producer *logProducer) Start() {
+	producer.pipe = producer.pipe.Process(producer.process)
 }
 
 func (producer *logProducer) Stop() {
 }
 
-func (producer *logProducer) Process(exchange *camel.Exchange) {
+func (producer *logProducer) process(exchange *camel.Exchange) *camel.Exchange {
 	if producer.endpoint.logHeaders {
 		l := producer.logger.WithLevel(producer.endpoint.level)
 		d := zerolog.Dict()
@@ -39,4 +41,6 @@ func (producer *logProducer) Process(exchange *camel.Exchange) {
 	} else {
 		producer.logger.WithLevel(producer.endpoint.level).Msgf("%+v", exchange.Body())
 	}
+
+	return exchange
 }

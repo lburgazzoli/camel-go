@@ -27,11 +27,14 @@ func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
 	var producer Producer
 	var consumer Consumer
 
-	if producer, err = toEndpoint.CreateProducer(); err != nil {
+	t := NewPipeIn()
+	f := NewPipeWithNext(t)
+
+	if producer, err = toEndpoint.CreateProducer(t); err != nil {
 		return nil, err
 	}
 
-	if consumer, err = fromEndpoint.CreateConsumer(producer); err != nil {
+	if consumer, err = fromEndpoint.CreateConsumer(f); err != nil {
 		return nil, err
 	}
 

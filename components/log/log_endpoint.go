@@ -31,18 +31,19 @@ func (endpoint *logEndpoint) Component() camel.Component {
 	return endpoint.component
 }
 
-func (endpoint *logEndpoint) CreateProducer() (camel.Producer, error) {
+func (endpoint *logEndpoint) CreateProducer(pipe *camel.Pipe) (camel.Producer, error) {
 	// need to be replaced with better configuration from camel logging
 	newlog := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	logger := newlog.With().Str("logger", endpoint.logger).Logger()
 
 	return &logProducer{
 		endpoint: endpoint,
+		pipe:     pipe,
 		logger:   &logger,
 	}, nil
 }
 
-func (endpoint *logEndpoint) CreateConsumer(producer camel.Processor) (camel.Consumer, error) {
+func (endpoint *logEndpoint) CreateConsumer(pipe *camel.Pipe) (camel.Consumer, error) {
 	return nil, errors.New("log is Producer only")
 }
 

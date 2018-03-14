@@ -13,24 +13,24 @@ import (
 // ==========================
 
 type timerConsumer struct {
-	endpoint  *timerEndpoint
-	processor camel.Processor
-	ticker    *time.Ticker
+	endpoint *timerEndpoint
+	pipe     *camel.Pipe
+	ticker   *time.Ticker
 }
 
 // Endpoint --
-func (producer *timerConsumer) Endpoint() camel.Endpoint {
-	return producer.endpoint
+func (consumer *timerConsumer) Endpoint() camel.Endpoint {
+	return consumer.endpoint
 }
 
 // Start --
-func (producer *timerConsumer) Start() {
-	producer.ticker = time.NewTicker(producer.endpoint.period)
+func (consumer *timerConsumer) Start() {
+	consumer.ticker = time.NewTicker(consumer.endpoint.period)
 	go func() {
 		var counter uint64
 
-		for t := range producer.ticker.C {
-			exchange := camel.NewExchange(producer.endpoint.component.context)
+		for t := range consumer.ticker.C {
+			exchange := camel.NewExchange(consumer.endpoint.component.context)
 
 			counter++
 
@@ -38,14 +38,14 @@ func (producer *timerConsumer) Start() {
 			exchange.SetHeader("timer.fire.count", counter)
 			exchange.SetBody(nil)
 
-			producer.processor.Process(exchange)
+			consumer.pipe.Publish(exchange)
 		}
 	}()
 }
 
 // Stop
-func (producer *timerConsumer) Stop() {
-	if producer.ticker != nil {
-		producer.ticker.Stop()
+func (consumer *timerConsumer) Stop() {
+	if consumer.ticker != nil {
+		consumer.ticker.Stop()
 	}
 }
