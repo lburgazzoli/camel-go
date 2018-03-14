@@ -12,15 +12,19 @@ import (
 //
 // ==========================
 
+func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
+	c := timerConsumer{
+		endpoint: endpoint,
+		pipe:     &camel.Pipe{},
+	}
+
+	return &c
+}
+
 type timerConsumer struct {
 	endpoint *timerEndpoint
 	pipe     *camel.Pipe
 	ticker   *time.Ticker
-}
-
-// Endpoint --
-func (consumer *timerConsumer) Endpoint() camel.Endpoint {
-	return consumer.endpoint
 }
 
 // Start --
@@ -48,4 +52,13 @@ func (consumer *timerConsumer) Stop() {
 	if consumer.ticker != nil {
 		consumer.ticker.Stop()
 	}
+}
+
+// Endpoint --
+func (consumer *timerConsumer) Endpoint() camel.Endpoint {
+	return consumer.endpoint
+}
+
+func (consumer *timerConsumer) Pipe() *camel.Pipe {
+	return consumer.pipe
 }

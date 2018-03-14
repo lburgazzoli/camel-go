@@ -6,6 +6,6 @@ type Endpoint interface {
 
 	Component() Component
 
-	CreateProducer(pipe *Pipe) (Producer, error)
-	CreateConsumer(pipe *Pipe) (Consumer, error)
+	CreateProducer() (Producer, error)
+	CreateConsumer() (Consumer, error)
 }

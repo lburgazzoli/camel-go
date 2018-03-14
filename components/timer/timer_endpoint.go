@@ -32,10 +32,10 @@ func (endpoint *timerEndpoint) Component() camel.Component {
 	return endpoint.component
 }
 
-func (endpoint *timerEndpoint) CreateProducer(pipe *camel.Pipe) (camel.Producer, error) {
+func (endpoint *timerEndpoint) CreateProducer() (camel.Producer, error) {
 	return nil, errors.New("log is Consumer only")
 }
 
-func (endpoint *timerEndpoint) CreateConsumer(pipe *camel.Pipe) (camel.Consumer, error) {
-	return &timerConsumer{endpoint: endpoint, pipe: pipe}, nil
+func (endpoint *timerEndpoint) CreateConsumer() (camel.Consumer, error) {
+	return newTimerConsumer(endpoint), nil
 }

@@ -4,18 +4,10 @@ package camel
 // NODE: this is an example
 //
 
-// ProcessorFactory --
-type ProcessorFactory func(parent Processor) Processor
-
 // RouteDefinition --
 type RouteDefinition struct {
 	From string
 	To   string
-}
-
-// FromX --
-func (definition *RouteDefinition) FromX(uri string) *ProcessorDefinition {
-	return nil
 }
 
 // ToRoute --
@@ -27,16 +19,16 @@ func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
 	var producer Producer
 	var consumer Consumer
 
-	t := NewPipeIn()
-	f := NewPipeWithNext(t)
-
-	if producer, err = toEndpoint.CreateProducer(t); err != nil {
+	if producer, err = toEndpoint.CreateProducer(); err != nil {
 		return nil, err
 	}
 
-	if consumer, err = fromEndpoint.CreateConsumer(f); err != nil {
+	if consumer, err = fromEndpoint.CreateConsumer(); err != nil {
 		return nil, err
 	}
+
+	producer.Pipe().In = make(chan *Exchange)
+	consumer.Pipe().Next = producer.Pipe()
 
 	route := Route{}
 	route.AddService(consumer)
@@ -45,11 +37,36 @@ func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
 	return &route, nil
 }
 
-// ProcessorDefinition --
-type ProcessorDefinition struct {
+// RouteDefinitionNg --
+type RouteDefinitionNg struct {
+	context *Context
 }
 
-// ToX --
-func (definition *ProcessorDefinition) ToX(uri string) *ProcessorDefinition {
+// From --
+func (definition *RouteDefinitionNg) From(uri string) *ProcessorDefinitionNg {
+	return nil
+}
+
+// ProcessorDefinitionNg --
+type ProcessorDefinitionNg struct {
+	context *Context
+}
+
+// To --
+func (definition *ProcessorDefinitionNg) To(uri string) *ProcessorDefinitionNg {
+	var err error
+	var producer Producer
+	var endpoint Endpoint
+
+	if endpoint, err = definition.context.CreateEndpointFromURI(uri); err != nil {
+		return nil
+	}
+
+	if producer, err = endpoint.CreateProducer(); err != nil {
+		return nil
+	}
+
+	producer.Pipe()
+
 	return nil
 }

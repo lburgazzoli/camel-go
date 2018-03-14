@@ -7,7 +7,7 @@ import (
 // NewPipe --
 func NewPipe() *Pipe {
 	return &Pipe{
-		done: make(chan bool, 1),
+		Done: make(chan bool, 1),
 		In:   nil,
 		Next: nil,
 	}
@@ -16,7 +16,7 @@ func NewPipe() *Pipe {
 // NewPipeIn --
 func NewPipeIn() *Pipe {
 	return &Pipe{
-		done: make(chan bool, 1),
+		Done: make(chan bool, 1),
 		In:   make(chan *Exchange),
 		Next: nil,
 	}
@@ -25,7 +25,7 @@ func NewPipeIn() *Pipe {
 // NewPipeWithNext --
 func NewPipeWithNext(pipe *Pipe) *Pipe {
 	return &Pipe{
-		done: pipe.done,
+		Done: pipe.Done,
 		In:   nil,
 		Next: pipe,
 	}
@@ -33,7 +33,7 @@ func NewPipeWithNext(pipe *Pipe) *Pipe {
 
 // Pipe --
 type Pipe struct {
-	done chan bool
+	Done chan bool
 	In   chan *Exchange
 	Next *Pipe
 }
@@ -58,7 +58,7 @@ func (pipe *Pipe) PublishAsync(exchange *Exchange) *Pipe {
 func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 	next := Pipe{}
 	next.In = make(chan *Exchange)
-	next.done = pipe.done
+	next.Done = pipe.Done
 	next.Next = pipe.Next
 
 	go func() {
@@ -76,7 +76,7 @@ func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 
 					next.Publish(exchange)
 				}
-			case <-pipe.done:
+			case <-pipe.Done:
 				log.Info().Msg("done")
 				return
 			}

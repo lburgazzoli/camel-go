@@ -3,6 +3,7 @@ package log
 import (
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -11,21 +12,50 @@ import (
 //
 // ==========================
 
+func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer {
+	p := logProducer{
+		endpoint: endpoint,
+		logger:   logger,
+		pipe:     &camel.Pipe{},
+	}
+
+	return &p
+}
+
 type logProducer struct {
 	endpoint *logEndpoint
 	pipe     *camel.Pipe
 	logger   *zerolog.Logger
 }
 
+func (producer *logProducer) Start() {
+	go func() {
+		for {
+			select {
+			case exchange, ok := <-producer.pipe.In:
+				if !ok {
+					log.Warn().Msgf("Channel %+v is not ready", producer.pipe.In)
+				} else {
+					producer.process(exchange)
+					producer.pipe.Publish(exchange)
+				}
+			case <-producer.pipe.Done:
+				log.Info().Msg("done")
+				return
+			}
+		}
+	}()
+}
+
+func (producer *logProducer) Stop() {
+}
+
 func (producer *logProducer) Endpoint() camel.Endpoint {
 	return producer.endpoint
 }
 
-func (producer *logProducer) Start() {
-	producer.pipe = producer.pipe.Process(producer.process)
-}
-
-func (producer *logProducer) Stop() {
+func (producer *logProducer) Pipe() *camel.Pipe {
+	return producer.pipe
 }
 
 func (producer *logProducer) process(exchange *camel.Exchange) *camel.Exchange {
