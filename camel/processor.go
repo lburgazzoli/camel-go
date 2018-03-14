@@ -1,10 +1,7 @@
 package camel
 
-// ==========================
-//
-// Processor
-//
-// ==========================
-
 // Processor --
-type Processor func(*Exchange) *Exchange
+type Processor func(*Exchange)
+
+// Trasformer --
+type Trasformer func(*Exchange) *Exchange

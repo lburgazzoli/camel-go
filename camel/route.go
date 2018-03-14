@@ -10,7 +10,7 @@ type Route struct {
 // ToRoute --
 type ToRoute interface {
 	// ToRoute --
-	ToRoute(context *Context) *Route
+	ToRoute(context *Context) (*Route, error)
 }
 
 // NewRoute --
@@ -22,7 +22,9 @@ func NewRoute() *Route {
 
 // AddService --
 func (route *Route) AddService(service Service) {
-	route.services = append(route.services, service)
+	if service != nil {
+		route.services = append(route.services, service)
+	}
 }
 
 // Start --

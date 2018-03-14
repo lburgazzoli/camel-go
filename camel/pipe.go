@@ -54,12 +54,50 @@ func (pipe *Pipe) PublishAsync(exchange *Exchange) *Pipe {
 	return pipe
 }
 
-// Process --
-func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
-	next := Pipe{}
-	next.In = make(chan *Exchange)
-	next.Done = pipe.Done
-	next.Next = pipe.Next
+// ==========================
+//
+// Helpers
+//
+// ==========================
+
+// NewProcessorPipe --
+func NewProcessorPipe(processor Processor, processors ...Processor) *Pipe {
+	pipe := Pipe{}
+	pipe.In = nil
+	pipe.Done = nil
+	pipe.Next = nil
+
+	go func() {
+		for {
+			select {
+			case exchange, ok := <-pipe.In:
+				if !ok {
+					log.Warn().Msgf("Channel %+v is not ready", pipe.In)
+				} else {
+					processor(exchange)
+
+					for _, proc := range processors {
+						proc(exchange)
+					}
+
+					pipe.Publish(exchange)
+				}
+			case <-pipe.Done:
+				log.Info().Msg("done")
+				return
+			}
+		}
+	}()
+
+	return &pipe
+}
+
+// NewTrasformerPipe --
+func NewTrasformerPipe(processor Trasformer, processors ...Trasformer) *Pipe {
+	pipe := Pipe{}
+	pipe.In = nil
+	pipe.Done = nil
+	pipe.Next = nil
 
 	go func() {
 		for {
@@ -74,7 +112,7 @@ func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 						exchange = proc(exchange)
 					}
 
-					next.Publish(exchange)
+					pipe.Publish(exchange)
 				}
 			case <-pipe.Done:
 				log.Info().Msg("done")
@@ -83,5 +121,5 @@ func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 		}
 	}()
 
-	return &next
+	return &pipe
 }
