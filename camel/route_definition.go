@@ -6,24 +6,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ProcessorDefinition --
-type ProcessorDefinition interface {
-	To(uri string) ProcessorDefinition
-	Process(processor Processor) ProcessorDefinition
-}
-
-// RouteDefinition --
-type RouteDefinition interface {
-	ToRoute
-
-	From(uri string) ProcessorDefinition
-}
-
-// NewRouteDefinition --
-func NewRouteDefinition(context *Context) RouteDefinition {
-	return &defaultRouteDefinition{context: context}
-}
-
 // ==========================
 //
 // ==========================
@@ -32,37 +14,50 @@ type definitionFactory func(parent *Pipe) (*Pipe, Service)
 
 // ==========================
 //
-// RouteDefinition Impl
+// RouteDefinition
 //
 //    WORK IN PROGRESS
 //
 // ==========================
 
-type defaultRouteDefinition struct {
-	RouteDefinition
+// NewRouteDefinition --
+func NewRouteDefinition(context *Context) *RouteDefinition {
+	return &RouteDefinition{context: context}
+}
 
+// RouteDefinition --
+type RouteDefinition struct {
 	context             *Context
 	definition          definitionFactory
-	processorDefinition *defaultProcessorDefinition
+	processorDefinition *ProcessorDefinition
+}
+
+func (definition *RouteDefinition) addDefinitionsToRoute(route *Route, rootPipe *Pipe, rootDefinition *ProcessorDefinition) {
+	var s Service
+
+	if rootDefinition.definitions != nil {
+		for _, def := range rootDefinition.definitions {
+			rootPipe, s = def(rootPipe)
+
+			route.AddService(s)
+		}
+	}
+
+	if rootDefinition.child != nil {
+		definition.addDefinitionsToRoute(route, rootPipe, rootDefinition.child)
+	}
 }
 
 // ToRoute --
-func (definition *defaultRouteDefinition) ToRoute(context *Context) (*Route, error) {
+func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
 	route := Route{}
 
 	if definition.definition != nil {
-		var p *Pipe
-		var s Service
-
-		p, s = definition.definition(nil)
+		p, s := definition.definition(nil)
 		route.AddService(s)
 
 		if definition.processorDefinition != nil {
-			for _, def := range definition.processorDefinition.definitions {
-				p, s = def(p)
-
-				route.AddService(s)
-			}
+			definition.addDefinitionsToRoute(&route, p, definition.processorDefinition)
 		}
 	} else {
 		return nil, errors.New("No from")
@@ -72,7 +67,7 @@ func (definition *defaultRouteDefinition) ToRoute(context *Context) (*Route, err
 }
 
 // From --
-func (definition *defaultRouteDefinition) From(uri string) ProcessorDefinition {
+func (definition *RouteDefinition) From(uri string) *ProcessorDefinition {
 	var err error
 	var consumer Consumer
 	var endpoint Endpoint
@@ -93,62 +88,11 @@ func (definition *defaultRouteDefinition) From(uri string) ProcessorDefinition {
 		return consumer.Pipe(), consumer
 	}
 
-	definition.processorDefinition = &defaultProcessorDefinition{}
+	definition.processorDefinition = &ProcessorDefinition{}
 	definition.processorDefinition.parent = nil
 	definition.processorDefinition.child = nil
 	definition.processorDefinition.context = definition.context
 	definition.processorDefinition.definitions = make([]definitionFactory, 0)
 
 	return definition.processorDefinition
-}
-
-// ==========================
-//
-// ProcessorDefinition Impl
-//
-//    WORK IN PROGRESS
-//
-// ==========================
-
-type defaultProcessorDefinition struct {
-	ProcessorDefinition
-
-	context     *Context
-	definitions []definitionFactory
-	child       *defaultProcessorDefinition
-	parent      *defaultProcessorDefinition
-}
-
-func (definition *defaultProcessorDefinition) addFactory(factory definitionFactory) ProcessorDefinition {
-	definition.definitions = append(definition.definitions, factory)
-
-	return definition
-}
-
-// To --
-func (definition *defaultProcessorDefinition) To(uri string) ProcessorDefinition {
-	var err error
-	var producer Producer
-	var endpoint Endpoint
-
-	if endpoint, err = definition.context.CreateEndpointFromURI(uri); err != nil {
-		return nil
-	}
-
-	if producer, err = endpoint.CreateProducer(); err != nil {
-		return nil
-	}
-
-	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		p := producer.Pipe()
-		parent.Next(p)
-
-		return p, producer
-	})
-}
-
-func (definition *defaultProcessorDefinition) Process(processor Processor) ProcessorDefinition {
-	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		return parent.Process(processor), nil
-	})
 }
