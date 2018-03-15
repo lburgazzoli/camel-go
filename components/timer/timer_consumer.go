@@ -15,7 +15,7 @@ import (
 func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 	c := timerConsumer{
 		endpoint: endpoint,
-		pipe:     &camel.Pipe{},
+		pipe:     camel.NewPipe(),
 	}
 
 	return &c

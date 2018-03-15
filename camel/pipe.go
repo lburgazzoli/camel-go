@@ -1,48 +1,60 @@
 package camel
 
 import (
+	"github.com/reactivex/rxgo/handlers"
+	"github.com/reactivex/rxgo/iterable"
+	"github.com/reactivex/rxgo/observable"
 	"github.com/rs/zerolog/log"
 )
 
+// ==========================
+//
+//
+//
+// ==========================
+
 // NewPipe --
 func NewPipe() *Pipe {
-	return &Pipe{
-		Done: make(chan bool, 1),
-		In:   nil,
-		Next: nil,
-	}
-}
+	p := Pipe{}
+	p.in = make(chan interface{})
 
-// NewPipeIn --
-func NewPipeIn() *Pipe {
-	return &Pipe{
-		Done: make(chan bool, 1),
-		In:   make(chan *Exchange),
-		Next: nil,
-	}
-}
+	iter, _ := iterable.New(p.in)
+	p.observable = observable.From(iter)
 
-// NewPipeWithNext --
-func NewPipeWithNext(pipe *Pipe) *Pipe {
-	return &Pipe{
-		Done: pipe.Done,
-		In:   nil,
-		Next: pipe,
-	}
+	return &p
 }
 
 // Pipe --
 type Pipe struct {
-	Done chan bool
-	In   chan *Exchange
-	Next *Pipe
+	in         chan interface{}
+	observable observable.Observable
+}
+
+// Next --
+func (pipe *Pipe) Next(next *Pipe) *Pipe {
+	return pipe.Subscribe(func(e *Exchange) {
+		next.Publish(e)
+	})
+}
+
+// Subscribe --
+func (pipe *Pipe) Subscribe(processor Processor) *Pipe {
+	onNext := handlers.NextFunc(func(item interface{}) {
+		if exchange, ok := item.(*Exchange); ok {
+			processor(exchange)
+		} else {
+			log.Panic().Msgf("Unexpected type: %T", item)
+		}
+	})
+
+	pipe.observable.Subscribe(onNext)
+
+	return pipe
 }
 
 // Publish --
 func (pipe *Pipe) Publish(exchange *Exchange) *Pipe {
-	if pipe.Next != nil && pipe.Next.In != nil {
-		pipe.Next.In <- exchange
-	}
+	pipe.in <- exchange
 
 	return pipe
 }
@@ -54,72 +66,36 @@ func (pipe *Pipe) PublishAsync(exchange *Exchange) *Pipe {
 	return pipe
 }
 
-// ==========================
-//
-// Helpers
-//
-// ==========================
+// Process --
+func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
+	next := NewPipe()
 
-// NewProcessorPipe --
-func NewProcessorPipe(processor Processor, processors ...Processor) *Pipe {
-	pipe := Pipe{}
-	pipe.In = nil
-	pipe.Done = nil
-	pipe.Next = nil
+	pipe.Subscribe(func(e *Exchange) {
+		processor(e)
 
-	go func() {
-		for {
-			select {
-			case exchange, ok := <-pipe.In:
-				if !ok {
-					log.Warn().Msgf("Channel %+v is not ready", pipe.In)
-				} else {
-					processor(exchange)
-
-					for _, proc := range processors {
-						proc(exchange)
-					}
-
-					pipe.Publish(exchange)
-				}
-			case <-pipe.Done:
-				log.Info().Msg("done")
-				return
-			}
+		for _, proc := range processors {
+			proc(e)
 		}
-	}()
 
-	return &pipe
+		next.Publish(e)
+	})
+
+	return next
 }
 
-// NewTrasformerPipe --
-func NewTrasformerPipe(processor Trasformer, processors ...Trasformer) *Pipe {
-	pipe := Pipe{}
-	pipe.In = nil
-	pipe.Done = nil
-	pipe.Next = nil
+// Trasformer --
+func (pipe *Pipe) Trasformer(processor Trasformer, processors ...Trasformer) *Pipe {
+	next := NewPipe()
 
-	go func() {
-		for {
-			select {
-			case exchange, ok := <-pipe.In:
-				if !ok {
-					log.Warn().Msgf("Channel %+v is not ready", pipe.In)
-				} else {
-					exchange = processor(exchange)
+	pipe.Subscribe(func(e *Exchange) {
+		e = processor(e)
 
-					for _, proc := range processors {
-						exchange = proc(exchange)
-					}
-
-					pipe.Publish(exchange)
-				}
-			case <-pipe.Done:
-				log.Info().Msg("done")
-				return
-			}
+		for _, proc := range processors {
+			e = proc(e)
 		}
-	}()
 
-	return &pipe
+		next.Publish(e)
+	})
+
+	return next
 }

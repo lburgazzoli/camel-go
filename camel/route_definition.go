@@ -2,6 +2,8 @@ package camel
 
 import (
 	"errors"
+
+	"github.com/rs/zerolog/log"
 )
 
 // ProcessorDefinition --
@@ -26,7 +28,7 @@ func NewRouteDefinition(context *Context) RouteDefinition {
 //
 // ==========================
 
-type definitionFactory func() (*Pipe, Service)
+type definitionFactory func(parent *Pipe) (*Pipe, Service)
 
 // ==========================
 //
@@ -49,26 +51,17 @@ func (definition *defaultRouteDefinition) ToRoute(context *Context) (*Route, err
 	route := Route{}
 
 	if definition.definition != nil {
+		var p *Pipe
+		var s Service
 
-		p, s := definition.definition()
-
+		p, s = definition.definition(nil)
 		route.AddService(s)
 
 		if definition.processorDefinition != nil {
-			px := p
-
 			for _, def := range definition.processorDefinition.definitions {
-				pn, sn := def()
+				p, s = def(p)
 
-				if pn.In == nil {
-					pn.In = make(chan *Exchange)
-				}
-
-				px.Next = pn
-
-				route.AddService(sn)
-
-				px = pn
+				route.AddService(s)
 			}
 		}
 	} else {
@@ -92,7 +85,11 @@ func (definition *defaultRouteDefinition) From(uri string) ProcessorDefinition {
 		return nil
 	}
 
-	definition.definition = func() (*Pipe, Service) {
+	definition.definition = func(parent *Pipe) (*Pipe, Service) {
+		if parent != nil {
+			log.Panic().Msgf("Parent pipe should be nil, got %+v", parent)
+		}
+
 		return consumer.Pipe(), consumer
 	}
 
@@ -142,13 +139,16 @@ func (definition *defaultProcessorDefinition) To(uri string) ProcessorDefinition
 		return nil
 	}
 
-	return definition.addFactory(func() (*Pipe, Service) {
-		return producer.Pipe(), producer
+	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
+		p := producer.Pipe()
+		parent.Next(p)
+
+		return p, producer
 	})
 }
 
 func (definition *defaultProcessorDefinition) Process(processor Processor) ProcessorDefinition {
-	return definition.addFactory(func() (*Pipe, Service) {
-		return NewProcessorPipe(processor), nil
+	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
+		return parent.Process(processor), nil
 	})
 }

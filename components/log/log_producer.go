@@ -3,7 +3,6 @@ package log
 import (
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -16,7 +15,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 	p := logProducer{
 		endpoint: endpoint,
 		logger:   logger,
-		pipe:     &camel.Pipe{},
+		pipe:     camel.NewPipe(),
 	}
 
 	return &p
@@ -29,22 +28,7 @@ type logProducer struct {
 }
 
 func (producer *logProducer) Start() {
-	go func() {
-		for {
-			select {
-			case exchange, ok := <-producer.pipe.In:
-				if !ok {
-					log.Warn().Msgf("Channel %+v is not ready", producer.pipe.In)
-				} else {
-					producer.process(exchange)
-					producer.pipe.Publish(exchange)
-				}
-			case <-producer.pipe.Done:
-				log.Info().Msg("done")
-				return
-			}
-		}
-	}()
+	producer.pipe.Subscribe(producer.process)
 }
 
 func (producer *logProducer) Stop() {
@@ -58,7 +42,7 @@ func (producer *logProducer) Pipe() *camel.Pipe {
 	return producer.pipe
 }
 
-func (producer *logProducer) process(exchange *camel.Exchange) *camel.Exchange {
+func (producer *logProducer) process(exchange *camel.Exchange) {
 	if producer.endpoint.logHeaders {
 		l := producer.logger.WithLevel(producer.endpoint.level)
 		d := zerolog.Dict()
@@ -71,6 +55,4 @@ func (producer *logProducer) process(exchange *camel.Exchange) *camel.Exchange {
 	} else {
 		producer.logger.WithLevel(producer.endpoint.level).Msgf("%+v", exchange.Body())
 	}
-
-	return exchange
 }
