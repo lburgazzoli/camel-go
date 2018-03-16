@@ -61,7 +61,7 @@ func (exchange *Exchange) BodyAs(asType reflect.Type) interface{} {
 		result, err := converter(answer, asType)
 
 		if err != nil {
-			log.Fatalf("Unable to covert body to required type: %v", asType)
+			log.Fatalf("unable to covert body to required type: %v", asType)
 		}
 
 		return result
@@ -99,7 +99,7 @@ func (exchange *Exchange) HeaderAs(name string, asType reflect.Type) interface{}
 		result, err := converter(answer, asType)
 
 		if err != nil {
-			log.Fatalf("Unable to covert header: %s to required type: %v", name, asType)
+			log.Fatalf("unable to covert header: %s to required type: %v", name, asType)
 		}
 
 		return result

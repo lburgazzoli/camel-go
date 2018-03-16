@@ -60,7 +60,7 @@ func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
 			definition.addDefinitionsToRoute(&route, p, definition.processorDefinition)
 		}
 	} else {
-		return nil, errors.New("No from")
+		return nil, errors.New("no from")
 	}
 
 	return &route, nil
@@ -82,7 +82,7 @@ func (definition *RouteDefinition) From(uri string) *ProcessorDefinition {
 
 	definition.definition = func(parent *Pipe) (*Pipe, Service) {
 		if parent != nil {
-			log.Panic().Msgf("Parent pipe should be nil, got %+v", parent)
+			log.Panic().Msgf("parent pipe should be nil, got %+v", parent)
 		}
 
 		return consumer.Pipe(), consumer

@@ -47,7 +47,7 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 
 	// endpoint option validation
 	if _, ok := options["period"]; !ok {
-		return nil, fmt.Errorf("Missing mandatory option: period")
+		return nil, fmt.Errorf("missing mandatory option: period")
 	}
 
 	// bind options to endpoint

@@ -3,7 +3,7 @@ package camel
 // Processor --
 type Processor func(*Exchange)
 
-// Trasformer --
+// Transformer --
 type Trasformer func(*Exchange) *Exchange
 
 // Predicate

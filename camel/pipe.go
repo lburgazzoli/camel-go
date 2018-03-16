@@ -43,7 +43,7 @@ func (pipe *Pipe) Subscribe(processor Processor) *Pipe {
 		if exchange, ok := item.(*Exchange); ok {
 			processor(exchange)
 		} else {
-			log.Panic().Msgf("Unexpected type: %T", item)
+			log.Panic().Msgf("unexpected type: %T", item)
 		}
 	})
 
@@ -83,8 +83,8 @@ func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 	return next
 }
 
-// Trasformer --
-func (pipe *Pipe) Trasformer(processor Trasformer, processors ...Trasformer) *Pipe {
+// Transformer --
+func (pipe *Pipe) Transformer(processor Trasformer, processors ...Trasformer) *Pipe {
 	next := NewPipe()
 
 	pipe.Subscribe(func(e *Exchange) {

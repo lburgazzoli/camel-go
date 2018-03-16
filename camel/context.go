@@ -134,7 +134,7 @@ func (context *Context) Component(name string) (Component, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Unable toi find component %s", name)
+	return nil, fmt.Errorf("uUnable toi find component %s", name)
 }
 
 // AddRoute --
