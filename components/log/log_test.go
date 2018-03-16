@@ -56,7 +56,7 @@ func TestLogLevelAsLevel(t *testing.T) {
 	component.SetContext(context)
 
 	options := make(map[string]interface{})
-	options["level"] = zl.FatalLevel
+	options["level"] = zerolog.FatalLevel
 
 	endpoint, err := component.CreateEndpoint("test-log", options)
 
