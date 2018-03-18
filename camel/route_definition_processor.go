@@ -65,17 +65,23 @@ func (definition *ProcessorDefinition) To(uri string) *ProcessorDefinition {
 
 	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
 		p := producer.Pipe()
-		parent.Next(p)
+
+		parent.Subscribe(func(e *Exchange) {
+			p.Publish(e)
+		})
 
 		return p, producer
 	})
 }
 
 // Process --
-func (definition *ProcessorDefinition) Process(processor Processor) *ProcessorDefinition {
-	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		return parent.Process(processor), nil
-	})
+func (definition *ProcessorDefinition) Process() *ProcessDefinition {
+	process := ProcessDefinition{}
+	process.context = definition.context
+
+	definition.child = &process.ProcessorDefinition
+
+	return &process
 }
 
 // Filter --
@@ -86,9 +92,4 @@ func (definition *ProcessorDefinition) Filter() *FilterDefinition {
 	definition.child = &filter.ProcessorDefinition
 
 	return &filter
-}
-
-// FilterWithPredicate --
-func (definition *ProcessorDefinition) FilterWithPredicate(predicate Predicate) *ProcessorDefinition {
-	return definition.Filter().WithPredicate(predicate)
 }

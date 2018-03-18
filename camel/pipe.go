@@ -30,13 +30,6 @@ type Pipe struct {
 	observable observable.Observable
 }
 
-// Next --
-func (pipe *Pipe) Next(next *Pipe) *Pipe {
-	return pipe.Subscribe(func(e *Exchange) {
-		next.Publish(e)
-	})
-}
-
 // Subscribe --
 func (pipe *Pipe) Subscribe(processor Processor) *Pipe {
 	onNext := handlers.NextFunc(func(item interface{}) {
