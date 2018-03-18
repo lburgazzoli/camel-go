@@ -24,7 +24,14 @@ func (definition *ProcessDefinition) Fn(processor Processor) *ProcessorDefinitio
 	definition.child = NewProcessorDefinitionWithParent(&definition.ProcessorDefinition)
 
 	definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		return parent.Process(processor), nil
+		next := NewPipe()
+
+		parent.Subscribe(func(e *Exchange) {
+			processor(e)
+			next.Publish(e)
+		})
+
+		return next, nil
 	})
 
 	return definition.child

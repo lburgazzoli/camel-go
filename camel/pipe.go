@@ -59,8 +59,9 @@ func (pipe *Pipe) PublishAsync(exchange *Exchange) *Pipe {
 	return pipe
 }
 
+/*
 // Process --
-func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
+func Process(pipe *Pipe, processor Processor, processors ...Processor) *Pipe {
 	next := NewPipe()
 
 	pipe.Subscribe(func(e *Exchange) {
@@ -77,7 +78,7 @@ func (pipe *Pipe) Process(processor Processor, processors ...Processor) *Pipe {
 }
 
 // Transformer --
-func (pipe *Pipe) Transformer(processor Trasformer, processors ...Trasformer) *Pipe {
+func Transformer(pipe *Pipe, processor Trasformer, processors ...Trasformer) *Pipe {
 	next := NewPipe()
 
 	pipe.Subscribe(func(e *Exchange) {
@@ -92,3 +93,4 @@ func (pipe *Pipe) Transformer(processor Trasformer, processors ...Trasformer) *P
 
 	return next
 }
+*/
