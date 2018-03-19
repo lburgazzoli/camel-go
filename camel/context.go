@@ -134,11 +134,19 @@ func (context *Context) Component(name string) (Component, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("uUnable toi find component %s", name)
+	return nil, fmt.Errorf("unable toi find component %s", name)
 }
 
-// AddRoute --
-func (context *Context) AddRoute(route *Route) {
+// AddRouteDefinition --
+func (context *Context) AddRouteDefinition(definition *RouteDefinition) {
+	route := &Route{}
+
+	// Find the root
+	for definition.parent != nil {
+		definition = definition.parent
+	}
+
+	context.addDefinitionsToRoute(route, nil, definition)
 	context.routes = append(context.routes, route)
 }
 
@@ -212,4 +220,29 @@ func (context *Context) Stop() {
 	for _, service := range context.routes {
 		service.Stop()
 	}
+}
+
+// ==========================
+//
+// Helpers
+//
+// ==========================
+
+func (context *Context) addDefinitionsToRoute(route *Route, pipe *Pipe, definition *RouteDefinition) *Pipe {
+	var s Service
+	var e error
+
+	if definition.factories != nil {
+		for _, def := range definition.factories {
+			if pipe, s, e = def(context, pipe); e == nil {
+				route.AddService(s)
+			}
+		}
+	}
+
+	if definition.child != nil {
+		pipe = context.addDefinitionsToRoute(route, pipe, definition.child)
+	}
+
+	return pipe
 }

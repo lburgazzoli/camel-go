@@ -1,16 +1,16 @@
 package camel
 
+// ==========================
+//
+// Route
+//
+// ==========================
+
 // Route --
 type Route struct {
 	Service
 
 	services []Service
-}
-
-// ToRoute --
-type ToRoute interface {
-	// ToRoute --
-	ToRoute(context *Context) (*Route, error)
 }
 
 // NewRoute --
@@ -35,4 +35,15 @@ func (route *Route) Start() {
 // Stop --
 func (route *Route) Stop() {
 	StopServices(route.services)
+}
+
+// ==========================
+//
+// Route Loader
+//
+// ==========================
+
+// RouteLoader --
+type RouteLoader interface {
+	Load() (*Route, error)
 }

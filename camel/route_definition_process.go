@@ -9,12 +9,11 @@ package camel
 // ==========================
 
 // Process --
-func (definition *ProcessorDefinition) Process() *ProcessDefinition {
+func (definition *RouteDefinition) Process() *ProcessDefinition {
 	process := ProcessDefinition{}
-	process.context = definition.context
 	process.parent = definition
 
-	definition.child = &process.ProcessorDefinition
+	definition.child = &process.RouteDefinition
 
 	return &process
 }
@@ -29,37 +28,38 @@ func (definition *ProcessorDefinition) Process() *ProcessDefinition {
 
 // ProcessDefinition --
 type ProcessDefinition struct {
-	ProcessorDefinition
-	processor Processor
+	RouteDefinition
 }
 
 // P --
-func (definition *ProcessDefinition) P(processor Processor) *ProcessorDefinition {
-	definition.processor = processor
-	definition.child = NewProcessorDefinitionWithParent(&definition.ProcessorDefinition)
-
-	definition.AddFactory(func(parent *Pipe) (*Pipe, Service) {
-		return NewProcessorPipe(parent, processor), nil
+func (definition *ProcessDefinition) P(processor Processor) *RouteDefinition {
+	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		return NewProcessorPipe(parent, processor), nil, nil
 	})
 
-	return definition.child
+	return definition.parent
 }
 
 // Fn --
-func (definition *ProcessDefinition) Fn(processor ProcessorFn) *ProcessorDefinition {
+func (definition *ProcessDefinition) Fn(processor ProcessorFn) *RouteDefinition {
 	return definition.P(NewProcessorFromFn(processor))
 }
 
 // Ref --
-func (definition *ProcessDefinition) Ref(ref string) *ProcessorDefinition {
-	registry := definition.context.Registry()
-	ifc, err := registry.Lookup(ref)
+func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
+	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		registry := context.Registry()
+		ifc, err := registry.Lookup(ref)
 
-	if ifc != nil && err == nil {
-		if p, ok := ifc.(Processor); ok {
-			return definition.P(p)
+		if ifc != nil && err == nil {
+			if p, ok := ifc.(Processor); ok {
+				return NewProcessorPipe(parent, p), nil, nil
+			}
 		}
-	}
+
+		// TODO: error handling
+		return nil, nil, nil
+	})
 
 	return definition.parent
 }

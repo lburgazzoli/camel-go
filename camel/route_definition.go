@@ -1,16 +1,13 @@
 package camel
 
-import (
-	"errors"
-
-	"github.com/rs/zerolog/log"
-)
+import "github.com/rs/zerolog/log"
 
 // ==========================
 //
 // ==========================
 
-type definitionFactory func(parent *Pipe) (*Pipe, Service)
+// DefinitionFactory --
+type DefinitionFactory func(context *Context, parent *Pipe) (*Pipe, Service, error)
 
 // ==========================
 //
@@ -20,79 +17,71 @@ type definitionFactory func(parent *Pipe) (*Pipe, Service)
 //
 // ==========================
 
-// NewRouteDefinition --
-func NewRouteDefinition(context *Context) *RouteDefinition {
-	return &RouteDefinition{context: context}
-}
-
-// RouteDefinition --
-type RouteDefinition struct {
-	context             *Context
-	definition          definitionFactory
-	processorDefinition *ProcessorDefinition
-}
-
-func (definition *RouteDefinition) addDefinitionsToRoute(route *Route, rootPipe *Pipe, rootDefinition *ProcessorDefinition) {
-	var s Service
-
-	if rootDefinition.definitions != nil {
-		for _, def := range rootDefinition.definitions {
-			rootPipe, s = def(rootPipe)
-
-			route.AddService(s)
-		}
-	}
-
-	if rootDefinition.child != nil {
-		definition.addDefinitionsToRoute(route, rootPipe, rootDefinition.child)
-	}
-}
-
-// ToRoute --
-func (definition *RouteDefinition) ToRoute(context *Context) (*Route, error) {
-	route := Route{}
-
-	if definition.definition != nil {
-		p, s := definition.definition(nil)
-		route.AddService(s)
-
-		if definition.processorDefinition != nil {
-			definition.addDefinitionsToRoute(&route, p, definition.processorDefinition)
-		}
-	} else {
-		return nil, errors.New("no from")
-	}
-
-	return &route, nil
-}
-
 // From --
-func (definition *RouteDefinition) From(uri string) *ProcessorDefinition {
-	var err error
-	var consumer Consumer
-	var endpoint Endpoint
+func From(uri string) *RouteDefinition {
+	definition := RouteDefinition{factories: make([]DefinitionFactory, 0)}
+	definition.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		var err error
+		var consumer Consumer
+		var endpoint Endpoint
 
-	if endpoint, err = definition.context.CreateEndpointFromURI(uri); err != nil {
-		return nil
-	}
+		if endpoint, err = context.CreateEndpointFromURI(uri); err != nil {
+			return parent, nil, nil
+		}
 
-	if consumer, err = endpoint.CreateConsumer(); err != nil {
-		return nil
-	}
+		if consumer, err = endpoint.CreateConsumer(); err != nil {
+			return parent, nil, nil
+		}
 
-	definition.definition = func(parent *Pipe) (*Pipe, Service) {
 		if parent != nil {
 			log.Panic().Msgf("parent pipe should be nil, got %+v", parent)
 		}
 
-		return consumer.Pipe(), consumer
-	}
+		return consumer.Pipe(), consumer, nil
+	})
 
-	definition.processorDefinition = &ProcessorDefinition{}
-	definition.processorDefinition.parent = nil
-	definition.processorDefinition.child = nil
-	definition.processorDefinition.context = definition.context
-	definition.processorDefinition.definitions = make([]definitionFactory, 0)
+	return &definition
+}
 
-	return definition.processorDefinition
+// RouteDefinition --
+type RouteDefinition struct {
+	factories []DefinitionFactory
+	child     *RouteDefinition
+	parent    *RouteDefinition
+}
+
+// AddFactory --
+func (definition *RouteDefinition) AddFactory(factory DefinitionFactory) *RouteDefinition {
+	definition.factories = append(definition.factories, factory)
+
+	return definition
+}
+
+// End --
+func (definition *RouteDefinition) End() *RouteDefinition {
+	return definition.parent
+}
+
+// To --
+func (definition *RouteDefinition) To(uri string) *RouteDefinition {
+	return definition.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		var err error
+		var producer Producer
+		var endpoint Endpoint
+
+		if endpoint, err = context.CreateEndpointFromURI(uri); err != nil {
+			return parent, nil, err
+		}
+
+		if producer, err = endpoint.CreateProducer(); err != nil {
+			return parent, nil, err
+		}
+		p := producer.Pipe()
+
+		parent.Subscribe(func(e *Exchange) {
+			p.Publish(e)
+		})
+
+		return p, producer, nil
+	})
 }

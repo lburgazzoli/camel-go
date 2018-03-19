@@ -9,12 +9,11 @@ package camel
 // ==========================
 
 // Filter --
-func (definition *ProcessorDefinition) Filter() *FilterDefinition {
+func (definition *RouteDefinition) Filter() *FilterDefinition {
 	filter := FilterDefinition{}
-	filter.context = definition.context
 	filter.parent = definition
 
-	definition.child = &filter.ProcessorDefinition
+	definition.child = &filter.RouteDefinition
 
 	return &filter
 }
@@ -29,37 +28,38 @@ func (definition *ProcessorDefinition) Filter() *FilterDefinition {
 
 // FilterDefinition --
 type FilterDefinition struct {
-	ProcessorDefinition
-	predicate Predicate
+	RouteDefinition
 }
 
 // P --
-func (definition *FilterDefinition) P(predicate Predicate) *ProcessorDefinition {
-	definition.predicate = predicate
-	definition.child = NewProcessorDefinitionWithParent(&definition.ProcessorDefinition)
-
-	definition.AddFactory(func(parent *Pipe) (*Pipe, Service) {
-		return NewPredicatePipe(parent, predicate), nil
+func (definition *FilterDefinition) P(predicate Predicate) *RouteDefinition {
+	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		return NewPredicatePipe(parent, predicate), nil, nil
 	})
 
-	return definition.child
+	return definition.parent
 }
 
 // Fn --
-func (definition *FilterDefinition) Fn(predicate PredicateFn) *ProcessorDefinition {
+func (definition *FilterDefinition) Fn(predicate PredicateFn) *RouteDefinition {
 	return definition.P(NewPredicateFromFn(predicate))
 }
 
 // Ref --
-func (definition *FilterDefinition) Ref(ref string) *ProcessorDefinition {
-	registry := definition.context.Registry()
-	ifc, err := registry.Lookup(ref)
+func (definition *FilterDefinition) Ref(ref string) *RouteDefinition {
+	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+		registry := context.Registry()
+		ifc, err := registry.Lookup(ref)
 
-	if ifc != nil && err == nil {
-		if p, ok := ifc.(Predicate); ok {
-			return definition.P(p)
+		if ifc != nil && err == nil {
+			if p, ok := ifc.(Predicate); ok {
+				return NewPredicatePipe(parent, p), nil, nil
+			}
 		}
-	}
+
+		// TODO: error handling
+		return nil, nil, nil
+	})
 
 	return definition.parent
 }
