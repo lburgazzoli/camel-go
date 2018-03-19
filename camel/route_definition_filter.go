@@ -1,12 +1,29 @@
 package camel
 
-import "reflect"
-
 // ==========================
 //
 // FilterDefinition
 //
 //    WORK IN PROGRESS
+//
+// ==========================
+
+// Filter --
+func (definition *ProcessorDefinition) Filter() *FilterDefinition {
+	filter := FilterDefinition{}
+	filter.context = definition.context
+	filter.parent = definition
+
+	definition.child = &filter.ProcessorDefinition
+
+	return &filter
+}
+
+// ==========================
+//
+//
+//
+//
 //
 // ==========================
 
@@ -16,24 +33,21 @@ type FilterDefinition struct {
 	predicate Predicate
 }
 
-// Fn --
-func (definition *FilterDefinition) Fn(predicate Predicate) *ProcessorDefinition {
+// P --
+func (definition *FilterDefinition) P(predicate Predicate) *ProcessorDefinition {
 	definition.predicate = predicate
 	definition.child = NewProcessorDefinitionWithParent(&definition.ProcessorDefinition)
 
-	definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		next := NewPipe()
-
-		parent.Subscribe(func(e *Exchange) {
-			if definition.predicate != nil && definition.predicate(e) {
-				next.Publish(e)
-			}
-		})
-
-		return next, nil
+	definition.AddFactory(func(parent *Pipe) (*Pipe, Service) {
+		return NewPredicatePipe(parent, predicate), nil
 	})
 
 	return definition.child
+}
+
+// Fn --
+func (definition *FilterDefinition) Fn(predicate PredicateFn) *ProcessorDefinition {
+	return definition.P(NewPredicateFromFn(predicate))
 }
 
 // Ref --
@@ -42,18 +56,10 @@ func (definition *FilterDefinition) Ref(ref string) *ProcessorDefinition {
 	ifc, err := registry.Lookup(ref)
 
 	if ifc != nil && err == nil {
-		if IsPredicate(ifc) {
-			p := func(e *Exchange) bool {
-				pv := reflect.ValueOf(ifc)
-				ev := reflect.ValueOf(e)
-				rv := pv.Call([]reflect.Value{ev})
-
-				return rv[0].Bool()
-			}
-
-			return definition.Fn(p)
+		if p, ok := ifc.(Predicate); ok {
+			return definition.P(p)
 		}
 	}
 
-	return definition.child
+	return definition.parent
 }

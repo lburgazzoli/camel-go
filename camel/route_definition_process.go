@@ -1,14 +1,29 @@
 package camel
 
-import (
-	"reflect"
-)
-
 // ==========================
 //
 // ProcessDefinition
 //
 //    WORK IN PROGRESS
+//
+// ==========================
+
+// Process --
+func (definition *ProcessorDefinition) Process() *ProcessDefinition {
+	process := ProcessDefinition{}
+	process.context = definition.context
+	process.parent = definition
+
+	definition.child = &process.ProcessorDefinition
+
+	return &process
+}
+
+// ==========================
+//
+//
+//
+//
 //
 // ==========================
 
@@ -18,23 +33,21 @@ type ProcessDefinition struct {
 	processor Processor
 }
 
-// Fn --
-func (definition *ProcessDefinition) Fn(processor Processor) *ProcessorDefinition {
+// P --
+func (definition *ProcessDefinition) P(processor Processor) *ProcessorDefinition {
 	definition.processor = processor
 	definition.child = NewProcessorDefinitionWithParent(&definition.ProcessorDefinition)
 
-	definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
-		next := NewPipe()
-
-		parent.Subscribe(func(e *Exchange) {
-			processor(e)
-			next.Publish(e)
-		})
-
-		return next, nil
+	definition.AddFactory(func(parent *Pipe) (*Pipe, Service) {
+		return NewProcessorPipe(parent, processor), nil
 	})
 
 	return definition.child
+}
+
+// Fn --
+func (definition *ProcessDefinition) Fn(processor ProcessorFn) *ProcessorDefinition {
+	return definition.P(NewProcessorFromFn(processor))
 }
 
 // Ref --
@@ -43,17 +56,10 @@ func (definition *ProcessDefinition) Ref(ref string) *ProcessorDefinition {
 	ifc, err := registry.Lookup(ref)
 
 	if ifc != nil && err == nil {
-		if IsProcessor(ifc) {
-			p := func(e *Exchange) {
-				pv := reflect.ValueOf(ifc)
-				ev := reflect.ValueOf(e)
-
-				pv.Call([]reflect.Value{ev})
-			}
-
-			return definition.Fn(p)
+		if p, ok := ifc.(Processor); ok {
+			return definition.P(p)
 		}
 	}
 
-	return definition.child
+	return definition.parent
 }

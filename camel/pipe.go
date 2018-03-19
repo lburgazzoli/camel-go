@@ -31,10 +31,10 @@ type Pipe struct {
 }
 
 // Subscribe --
-func (pipe *Pipe) Subscribe(processor Processor) *Pipe {
+func (pipe *Pipe) Subscribe(consumer func(*Exchange)) *Pipe {
 	onNext := handlers.NextFunc(func(item interface{}) {
 		if exchange, ok := item.(*Exchange); ok {
-			processor(exchange)
+			consumer(exchange)
 		} else {
 			log.Panic().Msgf("unexpected type: %T", item)
 		}
@@ -59,16 +59,15 @@ func (pipe *Pipe) PublishAsync(exchange *Exchange) *Pipe {
 	return pipe
 }
 
-/*
-// Process --
-func Process(pipe *Pipe, processor Processor, processors ...Processor) *Pipe {
+// NewProcessorPipe --
+func NewProcessorPipe(parent *Pipe, processor Processor, processors ...Processor) *Pipe {
 	next := NewPipe()
 
-	pipe.Subscribe(func(e *Exchange) {
-		processor(e)
+	parent.Subscribe(func(e *Exchange) {
+		processor.Process(e)
 
 		for _, proc := range processors {
-			proc(e)
+			proc.Process(e)
 		}
 
 		next.Publish(e)
@@ -77,15 +76,15 @@ func Process(pipe *Pipe, processor Processor, processors ...Processor) *Pipe {
 	return next
 }
 
-// Transformer --
-func Transformer(pipe *Pipe, processor Trasformer, processors ...Trasformer) *Pipe {
+// NewTransformerPipe --
+func NewTransformerPipe(pipe *Pipe, processor Trasformer, processors ...Trasformer) *Pipe {
 	next := NewPipe()
 
 	pipe.Subscribe(func(e *Exchange) {
-		e = processor(e)
+		e = processor.Trasform(e)
 
 		for _, proc := range processors {
-			e = proc(e)
+			e = proc.Trasform(e)
 		}
 
 		next.Publish(e)
@@ -93,4 +92,24 @@ func Transformer(pipe *Pipe, processor Trasformer, processors ...Trasformer) *Pi
 
 	return next
 }
-*/
+
+// NewPredicatePipe --
+func NewPredicatePipe(pipe *Pipe, processor Predicate, processors ...Predicate) *Pipe {
+	next := NewPipe()
+
+	pipe.Subscribe(func(e *Exchange) {
+		if ok := processor.Test(e); !ok {
+			return
+		}
+
+		for _, proc := range processors {
+			if ok := proc.Test(e); !ok {
+				return
+			}
+		}
+
+		next.Publish(e)
+	})
+
+	return next
+}

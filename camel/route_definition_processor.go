@@ -38,7 +38,8 @@ type ProcessorDefinition struct {
 	parent      *ProcessorDefinition
 }
 
-func (definition *ProcessorDefinition) addFactory(factory definitionFactory) *ProcessorDefinition {
+// AddFactory --
+func (definition *ProcessorDefinition) AddFactory(factory definitionFactory) *ProcessorDefinition {
 	definition.definitions = append(definition.definitions, factory)
 
 	return definition
@@ -63,7 +64,7 @@ func (definition *ProcessorDefinition) To(uri string) *ProcessorDefinition {
 		return nil
 	}
 
-	return definition.addFactory(func(parent *Pipe) (*Pipe, Service) {
+	return definition.AddFactory(func(parent *Pipe) (*Pipe, Service) {
 		p := producer.Pipe()
 
 		parent.Subscribe(func(e *Exchange) {
@@ -72,24 +73,4 @@ func (definition *ProcessorDefinition) To(uri string) *ProcessorDefinition {
 
 		return p, producer
 	})
-}
-
-// Process --
-func (definition *ProcessorDefinition) Process() *ProcessDefinition {
-	process := ProcessDefinition{}
-	process.context = definition.context
-
-	definition.child = &process.ProcessorDefinition
-
-	return &process
-}
-
-// Filter --
-func (definition *ProcessorDefinition) Filter() *FilterDefinition {
-	filter := FilterDefinition{}
-	filter.context = definition.context
-
-	definition.child = &filter.ProcessorDefinition
-
-	return &filter
 }

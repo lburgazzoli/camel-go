@@ -1,48 +1,29 @@
 package camel
 
-import "reflect"
+// ==========================
+//
+//
+//
+// ==========================
 
 // Processor --
-type Processor func(*Exchange)
-
-// IsProcessor --
-func IsProcessor(ifc interface{}) bool {
-	fv := reflect.ValueOf(ifc)
-	ft := fv.Type()
-
-	if fv.Kind() != reflect.Func {
-		return false
-	}
-
-	if ft.NumIn() != 1 {
-		return false
-	}
-
-	return ft.In(0) == reflect.TypeOf(&Exchange{})
+type Processor interface {
+	Process(*Exchange)
 }
 
-// Trasformer --
-type Trasformer func(*Exchange) *Exchange
+// ProcessorFn --
+type ProcessorFn func(*Exchange)
 
-// Predicate --
-type Predicate func(*Exchange) bool
+type processorFnBridge struct {
+	Processor
+	fn ProcessorFn
+}
 
-// IsPredicate --
-func IsPredicate(ifc interface{}) bool {
-	fv := reflect.ValueOf(ifc)
-	ft := fv.Type()
+func (bridge *processorFnBridge) Process(e *Exchange) {
+	bridge.fn(e)
+}
 
-	if fv.Kind() != reflect.Func {
-		return false
-	}
-
-	if ft.NumIn() != 1 {
-		return false
-	}
-
-	if ft.NumOut() != 1 {
-		return false
-	}
-
-	return ft.In(0) == reflect.TypeOf(&Exchange{}) && ft.Out(0).Kind() == reflect.Bool
+// NewProcessorFromFn --
+func NewProcessorFromFn(fn ProcessorFn) Processor {
+	return &processorFnBridge{fn: fn}
 }
