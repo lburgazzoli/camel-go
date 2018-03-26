@@ -15,7 +15,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 	p := logProducer{
 		endpoint: endpoint,
 		logger:   logger,
-		pipe:     camel.NewPipe(),
+		pipe:     camel.NewSubject(),
 	}
 
 	return &p
@@ -23,7 +23,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 
 type logProducer struct {
 	endpoint *logEndpoint
-	pipe     *camel.Pipe
+	pipe     *camel.Subject
 	logger   *zerolog.Logger
 }
 
@@ -38,7 +38,7 @@ func (producer *logProducer) Endpoint() camel.Endpoint {
 	return producer.endpoint
 }
 
-func (producer *logProducer) Pipe() *camel.Pipe {
+func (producer *logProducer) Subject() *camel.Subject {
 	return producer.pipe
 }
 

@@ -33,8 +33,8 @@ type FilterDefinition struct {
 
 // P --
 func (definition *FilterDefinition) P(predicate Predicate) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
-		return NewPredicatePipe(parent, predicate), nil, nil
+	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
+		return NewSubject().SubscribeWithPredicate(parent, predicate), nil, nil
 	})
 
 	return definition.parent
@@ -47,13 +47,13 @@ func (definition *FilterDefinition) Fn(predicate PredicateFn) *RouteDefinition {
 
 // Ref --
 func (definition *FilterDefinition) Ref(ref string) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
 		registry := context.Registry()
 		ifc, err := registry.Lookup(ref)
 
 		if ifc != nil && err == nil {
 			if p, ok := ifc.(Predicate); ok {
-				return NewPredicatePipe(parent, p), nil, nil
+				return NewSubject().SubscribeWithPredicate(parent, p), nil, nil
 			}
 		}
 

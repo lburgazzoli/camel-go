@@ -228,21 +228,21 @@ func (context *Context) Stop() {
 //
 // ==========================
 
-func (context *Context) addDefinitionsToRoute(route *Route, pipe *Pipe, definition *RouteDefinition) *Pipe {
+func (context *Context) addDefinitionsToRoute(route *Route, subject *Subject, definition *RouteDefinition) *Subject {
 	var s Service
 	var e error
 
 	if definition.factories != nil {
 		for _, def := range definition.factories {
-			if pipe, s, e = def(context, pipe); e == nil {
+			if subject, s, e = def(context, subject); e == nil {
 				route.AddService(s)
 			}
 		}
 	}
 
 	if definition.child != nil {
-		pipe = context.addDefinitionsToRoute(route, pipe, definition.child)
+		subject = context.addDefinitionsToRoute(route, subject, definition.child)
 	}
 
-	return pipe
+	return subject
 }

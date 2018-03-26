@@ -6,24 +6,24 @@ package camel
 //
 // ==========================
 
-// Trasformer --
-type Trasformer interface {
-	Trasform(*Exchange) *Exchange
+// Transformer --
+type Transformer interface {
+	Transform(*Exchange) *Exchange
 }
 
-// TrasformerFn --
-type TrasformerFn func(*Exchange) *Exchange
+// TransformerFn --
+type TransformerFn func(*Exchange) *Exchange
 
-type trasformerFnBridge struct {
+type transformerFnBridge struct {
 	Processor
-	fn TrasformerFn
+	fn TransformerFn
 }
 
-func (bridge *trasformerFnBridge) Trasform(e *Exchange) *Exchange {
+func (bridge *transformerFnBridge) Transform(e *Exchange) *Exchange {
 	return bridge.fn(e)
 }
 
-// NewTrasformerFromFn --
-func NewTrasformerFromFn(fn TrasformerFn) Trasformer {
-	return &trasformerFnBridge{fn: fn}
+// NewTransformerFromFn --
+func NewTransformerFromFn(fn TransformerFn) Transformer {
+	return &transformerFnBridge{fn: fn}
 }

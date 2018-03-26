@@ -33,8 +33,8 @@ type ProcessDefinition struct {
 
 // P --
 func (definition *ProcessDefinition) P(processor Processor) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
-		return NewProcessorPipe(parent, processor), nil, nil
+	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
+		return NewSubject().SubscribeWithProcessor(parent, processor), nil, nil
 	})
 
 	return definition.parent
@@ -47,13 +47,13 @@ func (definition *ProcessDefinition) Fn(processor ProcessorFn) *RouteDefinition 
 
 // Ref --
 func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Pipe) (*Pipe, Service, error) {
+	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
 		registry := context.Registry()
 		ifc, err := registry.Lookup(ref)
 
 		if ifc != nil && err == nil {
 			if p, ok := ifc.(Processor); ok {
-				return NewProcessorPipe(parent, p), nil, nil
+				return NewSubject().SubscribeWithProcessor(parent, p), nil, nil
 			}
 		}
 
