@@ -1,87 +1,79 @@
 package camel
 
-import "github.com/rs/zerolog/log"
-
 // ==========================
+//
+//
 //
 // ==========================
 
-// DefinitionFactory --
-type DefinitionFactory func(context *Context, parent Processor) (Processor, Service, error)
+// Unwrappable --
+type Unwrappable interface {
+	Unwrap(context *Context, parent Processor) (Processor, Service, error)
+}
 
 // ==========================
 //
-// RouteDefinition
 //
-//    WORK IN PROGRESS
+//
+// ==========================
+
+// Definition --
+type Definition interface {
+	Parent() Definition
+	Children() []Definition
+}
+
+// ==========================
+//
+//
+//
+// ==========================
+
+// RouteDefinition --
+type RouteDefinition struct {
+	parent   Definition
+	children []Definition
+}
+
+// Parent --
+func (definition *RouteDefinition) Parent() Definition {
+	return definition.parent
+}
+
+// Children --
+func (definition *RouteDefinition) Children() []Definition {
+	return definition.children
+}
+
+// AddChild --
+func (definition *RouteDefinition) AddChild(child Definition) *RouteDefinition {
+	if definition.children == nil {
+		definition.children = make([]Definition, 0)
+	}
+
+	definition.children = append(definition.children, child)
+
+	return definition
+}
+
+// ==========================
+//
+//
 //
 // ==========================
 
 // From --
 func From(uri string) *RouteDefinition {
-	definition := RouteDefinition{factories: make([]DefinitionFactory, 0)}
-	definition.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
-		var err error
-		var consumer Consumer
-		var endpoint Endpoint
+	from := FromDefinition{}
+	from.parent = nil
+	from.children = nil
+	from.URI = uri
 
-		if endpoint, err = context.CreateEndpointFromURI(uri); err != nil {
-			return parent, nil, nil
-		}
+	def := RouteDefinition{}
+	def.parent = &from
+	def.children = make([]Definition, 0)
 
-		if consumer, err = endpoint.CreateConsumer(); err != nil {
-			return parent, nil, nil
-		}
+	from.children = []Definition{&def}
 
-		if parent != nil {
-			log.Panic().Msgf("parent pipe should be nil, got %+v", parent)
-		}
-
-		return consumer.Processor(), consumer, nil
-	})
-
-	return &definition
-}
-
-// RouteDefinition --
-type RouteDefinition struct {
-	factories []DefinitionFactory
-	child     *RouteDefinition
-	parent    *RouteDefinition
-}
-
-// AddFactory --
-func (definition *RouteDefinition) AddFactory(factory DefinitionFactory) *RouteDefinition {
-	definition.factories = append(definition.factories, factory)
-
-	return definition
-}
-
-// End --
-func (definition *RouteDefinition) End() *RouteDefinition {
-	return definition.parent
-}
-
-// To --
-func (definition *RouteDefinition) To(uri string) *RouteDefinition {
-	return definition.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
-		var err error
-		var producer Producer
-		var endpoint Endpoint
-
-		if endpoint, err = context.CreateEndpointFromURI(uri); err != nil {
-			return parent, nil, err
-		}
-
-		if producer, err = endpoint.CreateProducer(); err != nil {
-			return parent, nil, err
-		}
-		p := producer.Processor()
-
-		parent.Subscribe(func(e *Exchange) {
-			p.Publish(e)
-		})
-
-		return p, producer, nil
-	})
+	return &def
 }

@@ -4,59 +4,68 @@ import "fmt"
 
 // ==========================
 //
-// ProcessDefinition
-//
-//    WORK IN PROGRESS
+// Extend RouteDefinition DSL
 //
 // ==========================
 
 // Process --
 func (definition *RouteDefinition) Process() *ProcessDefinition {
-	process := ProcessDefinition{}
-	process.parent = definition
+	d := ProcessDefinition{
+		parent:   definition,
+		children: nil,
+	}
 
-	definition.child = &process.RouteDefinition
+	definition.AddChild(&d)
 
-	return &process
+	return &d
 }
 
 // ==========================
 //
-//
-//
-//
+// ProcessDefinition
 //
 // ==========================
 
 // ProcessDefinition --
 type ProcessDefinition struct {
-	RouteDefinition
+	parent   *RouteDefinition
+	children []Definition
+
+	processor    func(*Exchange)
+	processorRef string
 }
 
-// Fn --
-func (definition *ProcessDefinition) Fn(consumer func(*Exchange)) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
+// Parent --
+func (definition *ProcessDefinition) Parent() Definition {
+	return definition.parent
+}
+
+// Children --
+func (definition *ProcessDefinition) Children() []Definition {
+	return definition.children
+}
+
+// Unwrap ---
+func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) (Processor, Service, error) {
+	if definition.processor != nil {
 		p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
-			consumer(e)
+			definition.processor(e)
+
 			out <- e
 		})
 
 		return p, nil, nil
-	})
+	}
 
-	return definition.parent
-}
-
-// Ref --
-func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
+	if definition.processorRef != "" {
 		registry := context.Registry()
-		ifc, err := registry.Lookup(ref)
+		ifc, err := registry.Lookup(definition.processorRef)
 
 		if ifc != nil && err == nil {
-			if consumer, ok := ifc.(func(*Exchange)); ok {
+			if processor, ok := ifc.(func(e *Exchange)); ok {
 				p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
-					consumer(e)
+					processor(e)
+
 					out <- e
 				})
 
@@ -65,8 +74,21 @@ func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
 		}
 
 		// TODO: error handling
-		return parent, nil, fmt.Errorf("Unsupported type for ref:%s, type=%T", ref, ifc)
-	})
+		return nil, nil, fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.processorRef, ifc)
+	}
 
+	return nil, nil, nil
+
+}
+
+// Fn --
+func (definition *ProcessDefinition) Fn(processor func(*Exchange)) *RouteDefinition {
+	definition.processor = processor
+	return definition.parent
+}
+
+// Ref --
+func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
+	definition.processorRef = ref
 	return definition.parent
 }

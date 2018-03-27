@@ -138,12 +138,12 @@ func (context *Context) Component(name string) (Component, error) {
 }
 
 // AddRouteDefinition --
-func (context *Context) AddRouteDefinition(definition *RouteDefinition) {
+func (context *Context) AddRouteDefinition(definition Definition) {
 	route := &Route{}
 
 	// Find the root
-	for definition.parent != nil {
-		definition = definition.parent
+	for definition.Parent() != nil {
+		definition = definition.Parent()
 	}
 
 	context.addDefinitionsToRoute(route, nil, definition)
@@ -228,21 +228,28 @@ func (context *Context) Stop() {
 //
 // ==========================
 
-func (context *Context) addDefinitionsToRoute(route *Route, processor Processor, definition *RouteDefinition) Processor {
+func (context *Context) addDefinitionsToRoute(route *Route, processor Processor, definition Definition) Processor {
 	var s Service
 	var e error
+	var p Processor
 
-	if definition.factories != nil {
-		for _, def := range definition.factories {
-			if processor, s, e = def(context, processor); e == nil {
-				route.AddService(s)
-			}
+	if u, ok := definition.(Unwrappable); ok {
+		p = processor
+
+		if p, s, e = u.Unwrap(context, p); e == nil {
+			route.AddService(s)
 		}
+
+		if p == nil {
+			p = processor
+		}
+	} else {
+		p = processor
 	}
 
-	if definition.child != nil {
-		processor = context.addDefinitionsToRoute(route, processor, definition.child)
+	for _, c := range definition.Children() {
+		p = context.addDefinitionsToRoute(route, p, c)
 	}
 
-	return processor
+	return p
 }
