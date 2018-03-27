@@ -1,5 +1,7 @@
 package camel
 
+import "fmt"
+
 // ==========================
 //
 // ProcessDefinition
@@ -31,34 +33,45 @@ type ProcessDefinition struct {
 	RouteDefinition
 }
 
-// P --
-func (definition *ProcessDefinition) P(processor Processor) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
-		return NewSubject().SubscribeWithProcessor(parent, processor), nil, nil
+// Fn --
+func (definition *ProcessDefinition) Fn(consumer func(*Exchange)) *RouteDefinition {
+	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
+		fn := func(e *Exchange, out chan<- *Exchange) {
+			consumer(e)
+			out <- e
+		}
+
+		p := NewProcessor(fn)
+		p.Parent(parent)
+
+		return p, nil, nil
 	})
 
 	return definition.parent
 }
 
-// Fn --
-func (definition *ProcessDefinition) Fn(processor ProcessorFn) *RouteDefinition {
-	return definition.P(NewProcessorFromFn(processor))
-}
-
 // Ref --
 func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
-	definition.parent.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
+	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
 		registry := context.Registry()
 		ifc, err := registry.Lookup(ref)
 
 		if ifc != nil && err == nil {
-			if p, ok := ifc.(Processor); ok {
-				return NewSubject().SubscribeWithProcessor(parent, p), nil, nil
+			if consumer, ok := ifc.(func(*Exchange)); ok {
+				fn := func(e *Exchange, out chan<- *Exchange) {
+					consumer(e)
+					out <- e
+				}
+
+				p := NewProcessor(fn)
+				p.Parent(parent)
+
+				return p, nil, nil
 			}
 		}
 
 		// TODO: error handling
-		return nil, nil, nil
+		return parent, nil, fmt.Errorf("Unsupported type for ref:%s, type=%T", ref, ifc)
 	})
 
 	return definition.parent

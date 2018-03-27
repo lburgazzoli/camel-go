@@ -13,22 +13,22 @@ import (
 
 func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer {
 	p := logProducer{
-		endpoint: endpoint,
-		logger:   logger,
-		pipe:     camel.NewSubject(),
+		endpoint:  endpoint,
+		logger:    logger,
+		processor: camel.NewProcessorSource(),
 	}
 
 	return &p
 }
 
 type logProducer struct {
-	endpoint *logEndpoint
-	pipe     *camel.Subject
-	logger   *zerolog.Logger
+	endpoint  *logEndpoint
+	processor camel.Processor
+	logger    *zerolog.Logger
 }
 
 func (producer *logProducer) Start() {
-	producer.pipe.Subscribe(producer.process)
+	producer.processor.Subscribe(producer.process)
 }
 
 func (producer *logProducer) Stop() {
@@ -38,8 +38,8 @@ func (producer *logProducer) Endpoint() camel.Endpoint {
 	return producer.endpoint
 }
 
-func (producer *logProducer) Subject() *camel.Subject {
-	return producer.pipe
+func (producer *logProducer) Processor() camel.Processor {
+	return producer.processor
 }
 
 func (producer *logProducer) process(exchange *camel.Exchange) {

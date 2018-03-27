@@ -7,7 +7,7 @@ import "github.com/rs/zerolog/log"
 // ==========================
 
 // DefinitionFactory --
-type DefinitionFactory func(context *Context, parent *Subject) (*Subject, Service, error)
+type DefinitionFactory func(context *Context, parent Processor) (Processor, Service, error)
 
 // ==========================
 //
@@ -20,7 +20,7 @@ type DefinitionFactory func(context *Context, parent *Subject) (*Subject, Servic
 // From --
 func From(uri string) *RouteDefinition {
 	definition := RouteDefinition{factories: make([]DefinitionFactory, 0)}
-	definition.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
+	definition.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
 		var err error
 		var consumer Consumer
 		var endpoint Endpoint
@@ -37,7 +37,7 @@ func From(uri string) *RouteDefinition {
 			log.Panic().Msgf("parent pipe should be nil, got %+v", parent)
 		}
 
-		return consumer.Subject(), consumer, nil
+		return consumer.Processor(), consumer, nil
 	})
 
 	return &definition
@@ -64,7 +64,7 @@ func (definition *RouteDefinition) End() *RouteDefinition {
 
 // To --
 func (definition *RouteDefinition) To(uri string) *RouteDefinition {
-	return definition.AddFactory(func(context *Context, parent *Subject) (*Subject, Service, error) {
+	return definition.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
 		var err error
 		var producer Producer
 		var endpoint Endpoint
@@ -76,7 +76,7 @@ func (definition *RouteDefinition) To(uri string) *RouteDefinition {
 		if producer, err = endpoint.CreateProducer(); err != nil {
 			return parent, nil, err
 		}
-		p := producer.Subject()
+		p := producer.Processor()
 
 		parent.Subscribe(func(e *Exchange) {
 			p.Publish(e)

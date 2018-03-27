@@ -5,5 +5,5 @@ type Consumer interface {
 	Service
 
 	Endpoint() Endpoint
-	Subject() *Subject
+	Processor() Processor
 }

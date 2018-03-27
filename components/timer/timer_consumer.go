@@ -14,17 +14,17 @@ import (
 
 func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 	c := timerConsumer{
-		endpoint: endpoint,
-		pipe:     camel.NewSubject(),
+		endpoint:  endpoint,
+		processor: camel.NewProcessorSource(),
 	}
 
 	return &c
 }
 
 type timerConsumer struct {
-	endpoint *timerEndpoint
-	pipe     *camel.Subject
-	ticker   *time.Ticker
+	endpoint  *timerEndpoint
+	processor camel.Processor
+	ticker    *time.Ticker
 }
 
 // Start --
@@ -42,7 +42,7 @@ func (consumer *timerConsumer) Start() {
 			exchange.SetHeader("timer.fire.count", counter)
 			exchange.SetBody(nil)
 
-			consumer.pipe.Publish(exchange)
+			consumer.processor.Publish(exchange)
 		}
 	}()
 }
@@ -59,6 +59,6 @@ func (consumer *timerConsumer) Endpoint() camel.Endpoint {
 	return consumer.endpoint
 }
 
-func (consumer *timerConsumer) Subject() *camel.Subject {
-	return consumer.pipe
+func (consumer *timerConsumer) Processor() camel.Processor {
+	return consumer.processor
 }

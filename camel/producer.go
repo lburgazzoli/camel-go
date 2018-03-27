@@ -5,5 +5,5 @@ type Producer interface {
 	Service
 
 	Endpoint() Endpoint
-	Subject() *Subject
+	Processor() Processor
 }
