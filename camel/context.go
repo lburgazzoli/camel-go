@@ -231,20 +231,23 @@ func (context *Context) Stop() {
 func (context *Context) addDefinitionsToRoute(route *Route, processor Processor, definition Definition) Processor {
 	var s Service
 	var e error
-	var p Processor
+
+	p := processor
 
 	if u, ok := definition.(Unwrappable); ok {
-		p = processor
+		p, s, e = u.Unwrap(context, p)
 
-		if p, s, e = u.Unwrap(context, p); e == nil {
+		if e == nil && s != nil {
 			route.AddService(s)
 		}
 
-		if p == nil {
+		if p != nil {
+			if s, ok := p.(Service); ok {
+				route.AddService(s)
+			}
+		} else {
 			p = processor
 		}
-	} else {
-		p = processor
 	}
 
 	for _, c := range definition.Children() {
