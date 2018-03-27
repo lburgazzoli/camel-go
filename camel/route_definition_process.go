@@ -36,13 +36,10 @@ type ProcessDefinition struct {
 // Fn --
 func (definition *ProcessDefinition) Fn(consumer func(*Exchange)) *RouteDefinition {
 	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
-		fn := func(e *Exchange, out chan<- *Exchange) {
+		p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
 			consumer(e)
 			out <- e
-		}
-
-		p := NewProcessor(fn)
-		p.Parent(parent)
+		})
 
 		return p, nil, nil
 	})
@@ -58,13 +55,10 @@ func (definition *ProcessDefinition) Ref(ref string) *RouteDefinition {
 
 		if ifc != nil && err == nil {
 			if consumer, ok := ifc.(func(*Exchange)); ok {
-				fn := func(e *Exchange, out chan<- *Exchange) {
+				p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
 					consumer(e)
 					out <- e
-				}
-
-				p := NewProcessor(fn)
-				p.Parent(parent)
+				})
 
 				return p, nil, nil
 			}

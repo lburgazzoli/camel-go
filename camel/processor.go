@@ -39,6 +39,17 @@ func NewProcessor(fn ProcessorFn) Processor {
 	return &p
 }
 
+// NewProcessorWithParent --
+func NewProcessorWithParent(parent Processor, fn ProcessorFn) Processor {
+	p := NewProcessor(fn)
+
+	parent.Subscribe(func(e *Exchange) {
+		p.Publish(e)
+	})
+
+	return p
+}
+
 // defaultProcessor --
 type defaultProcessor struct {
 	in  chan *Exchange
@@ -86,6 +97,17 @@ func NewProcessorSource() Processor {
 	}
 
 	return &p
+}
+
+// NewProcessorSourceWithParent --
+func NewProcessorSourceWithParent(parent Processor, fn ProcessorFn) Processor {
+	p := NewProcessorSource()
+
+	parent.Subscribe(func(e *Exchange) {
+		p.Publish(e)
+	})
+
+	return p
 }
 
 // defaultProcessor --

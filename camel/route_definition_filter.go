@@ -38,14 +38,11 @@ type FilterDefinition struct {
 // Fn --
 func (definition *FilterDefinition) Fn(predicate func(*Exchange) bool) *RouteDefinition {
 	definition.parent.AddFactory(func(context *Context, parent Processor) (Processor, Service, error) {
-		fn := func(e *Exchange, out chan<- *Exchange) {
+		p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
 			if predicate(e) {
 				out <- e
 			}
-		}
-
-		p := NewProcessor(fn)
-		p.Parent(parent)
+		})
 
 		return p, nil, nil
 	})
@@ -61,14 +58,11 @@ func (definition *FilterDefinition) Ref(ref string) *RouteDefinition {
 
 		if ifc != nil && err == nil {
 			if predicate, ok := ifc.(func(e *Exchange) bool); ok {
-				fn := func(e *Exchange, out chan<- *Exchange) {
+				p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
 					if predicate(e) {
 						out <- e
 					}
-				}
-
-				p := NewProcessor(fn)
-				p.Parent(parent)
+				})
 
 				return p, nil, nil
 			}
