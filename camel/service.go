@@ -1,26 +1,21 @@
 package camel
 
+import "sync/atomic"
+
 // ServiceStatus --
-type ServiceStatus int
+type ServiceStatus int32
 
 const (
-	// ServiceStatusSTOPPING --
-	ServiceStatusSTOPPING ServiceStatus = 10
+	_ = iota
 
 	// ServiceStatusSTOPPED --
-	ServiceStatusSTOPPED ServiceStatus = 11
-
-	// ServiceStatusSUSPENDING --
-	ServiceStatusSUSPENDING ServiceStatus = 20
+	ServiceStatusSTOPPED
 
 	// ServiceStatusSUSPENDED --
-	ServiceStatusSUSPENDED ServiceStatus = 21
-
-	// ServiceStatusSTARTING --
-	ServiceStatusSTARTING ServiceStatus = 30
+	ServiceStatusSUSPENDED
 
 	// ServiceStatusSTARTED --
-	ServiceStatusSTARTED ServiceStatus = 31
+	ServiceStatusSTARTED
 )
 
 // Service --
@@ -41,4 +36,33 @@ func StopServices(services []Service) {
 	for _, service := range services {
 		service.Stop()
 	}
+}
+
+// TODO: state machine alike
+
+// NewServiceState --
+func NewServiceState(status ServiceStatus) ServiceState {
+	return ServiceState{status: int32(status)}
+}
+
+// ServiceState --
+type ServiceState struct {
+	status int32
+}
+
+// Set --
+func (state *ServiceState) Set(status ServiceStatus) {
+	atomic.StoreInt32(&state.status, int32(status))
+}
+
+// Transition --
+func (state *ServiceState) Transition(from ServiceStatus, to ServiceStatus, transition func()) bool {
+
+	if atomic.CompareAndSwapInt32(&state.status, int32(from), int32(to)) {
+		transition()
+
+		return true
+	}
+
+	return false
 }

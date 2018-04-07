@@ -113,13 +113,6 @@ func (context *Context) TypeConverter() types.TypeConverter {
 	}
 }
 
-// AddComponent --
-func (context *Context) AddComponent(name string, component Component) {
-	component.SetContext(context)
-
-	context.registry.Bind(name, component)
-}
-
 // Component --
 func (context *Context) Component(name string) (Component, error) {
 	value, err := context.registry.Lookup(name)
@@ -130,6 +123,9 @@ func (context *Context) Component(name string) (Component, error) {
 
 	if value != nil {
 		if component, ok := value.(Component); ok {
+			component.SetContext(context)
+			component.Start()
+
 			return component, nil
 		}
 	}

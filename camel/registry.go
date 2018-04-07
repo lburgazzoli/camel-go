@@ -2,6 +2,7 @@ package camel
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/lburgazzoli/camel-go/types"
 )
@@ -16,7 +17,6 @@ import (
 func NewRegistry(converter types.TypeConverter) *Registry {
 	return &Registry{
 		converter: converter,
-		local:     make(map[string]interface{}),
 		loaders:   make([]RegistryLoader, 0),
 	}
 }
@@ -30,7 +30,7 @@ func NewRegistry(converter types.TypeConverter) *Registry {
 // Registry --
 type Registry struct {
 	converter types.TypeConverter
-	local     map[string]interface{}
+	local     sync.Map
 	loaders   []RegistryLoader
 }
 
@@ -41,19 +41,19 @@ func (registry *Registry) AddLoader(loader RegistryLoader) {
 
 // Bind --
 func (registry *Registry) Bind(name string, value interface{}) {
-	old, found := registry.local[name]
+	old, found := registry.local.Load(name)
 	if found {
 		if service, ok := old.(Service); ok {
 			service.Stop()
 		}
 	}
 
-	registry.local[name] = value
+	registry.local.Store(name, value)
 }
 
 // Lookup --
 func (registry *Registry) Lookup(name string) (interface{}, error) {
-	var value, found = registry.local[name]
+	var value, found = registry.local.Load(name)
 
 	// check if the value has already been created
 	if !found {

@@ -15,7 +15,9 @@ import (
 
 // NewComponent --
 func NewComponent() camel.Component {
-	return &Component{}
+	return &Component{
+		state: camel.NewServiceState(camel.ServiceStatusSTOPPED),
+	}
 }
 
 // ==========================
@@ -26,6 +28,7 @@ func NewComponent() camel.Component {
 
 // Component --
 type Component struct {
+	state   camel.ServiceState
 	context *camel.Context
 }
 
@@ -37,6 +40,17 @@ func (component *Component) SetContext(context *camel.Context) {
 // Context --
 func (component *Component) Context() *camel.Context {
 	return component.context
+}
+
+// Start --
+func (component *Component) Start() {
+	component.state.Transition(camel.ServiceStatusSTOPPED, camel.ServiceStatusSTARTED, component.doStart)
+	component.state.Transition(camel.ServiceStatusSUSPENDED, camel.ServiceStatusSTARTED, component.doStart)
+}
+
+// Stop --
+func (component *Component) Stop() {
+	component.state.Transition(camel.ServiceStatusSTARTED, camel.ServiceStatusSTOPPED, component.doStop)
 }
 
 // CreateEndpoint --
@@ -54,4 +68,16 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 	introspection.SetProperties(component.context, &endpoint, options)
 
 	return &endpoint, nil
+}
+
+// ==========================
+//
+// Helpers
+//
+// ==========================
+
+func (component *Component) doStart() {
+}
+
+func (component *Component) doStop() {
 }
