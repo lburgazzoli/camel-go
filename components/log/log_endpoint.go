@@ -33,7 +33,7 @@ func (endpoint *logEndpoint) Component() camel.Component {
 
 func (endpoint *logEndpoint) CreateProducer() (camel.Producer, error) {
 	// need to be replaced with better configuration from camel logging
-	newlog := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	newlog := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	logger := newlog.With().Str("logger", endpoint.logger).Logger()
 
 	return newLogProducer(endpoint, &logger), nil

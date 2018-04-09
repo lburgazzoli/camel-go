@@ -9,16 +9,11 @@ import "sync/atomic"
 // ==========================
 
 // ServiceStatus --
-type ServiceStatus int32
+type ServiceStatus uint32
 
 // Is --
 func (status ServiceStatus) Is(other ServiceStatus) bool {
 	return status == other
-}
-
-// IsInTransition --
-func (status ServiceStatus) IsInTransition() bool {
-	return status.Is(ServiceStatusTRANSITION)
 }
 
 // IsStopped --
@@ -38,7 +33,7 @@ func (status ServiceStatus) IsStarted() bool {
 
 const (
 	// ServiceStatusTRANSITION --
-	ServiceStatusTRANSITION ServiceStatus = iota
+	serviceStatusTRANSITION ServiceStatus = iota
 
 	// ServiceStatusSTOPPED --
 	ServiceStatusSTOPPED
@@ -48,6 +43,29 @@ const (
 
 	// ServiceStatusSTARTED --
 	ServiceStatusSTARTED
+)
+
+// ==========================
+//
+// ServiceStage
+//
+// ==========================
+
+// ServiceStage --
+type ServiceStage uint32
+
+const (
+	// ServiceStageContext --
+	ServiceStageContext ServiceStage = iota
+
+	// ServiceStageComponent --
+	ServiceStageComponent
+
+	// ServiceStageEndpoint --
+	ServiceStageEndpoint
+
+	// ServiceStageMisc --
+	ServiceStageMisc
 )
 
 // ==========================
@@ -78,48 +96,51 @@ func StopServices(services []Service) {
 
 // ==========================
 //
-// ServiceState
+// ServiceSupport
 //
 // ==========================
 
-// TODO: state machine alike
-
-// NewServiceState --
-func NewServiceState(status ServiceStatus) ServiceState {
-	return ServiceState{status: int32(status)}
+// NewServiceSupport --
+func NewServiceSupport() ServiceSupport {
+	return ServiceSupport{
+		status:   uint32(ServiceStatusSTOPPED),
+		handlers: make(map[ServiceStatus]map[ServiceStatus]func()),
+	}
 }
 
-// ServiceState --
-type ServiceState struct {
-	status int32
-}
+// ServiceSupport  --
+type ServiceSupport struct {
+	status uint32
 
-// Set --
-func (state *ServiceState) Set(status ServiceStatus) {
-	atomic.StoreInt32(&state.status, int32(status))
+	handlers map[ServiceStatus]map[ServiceStatus]func()
 }
 
 // Transition --
-func (state *ServiceState) Transition(from ServiceStatus, to ServiceStatus, transition func()) bool {
+func (support *ServiceSupport) Transition(from ServiceStatus, to ServiceStatus, transition func()) {
+	handlers, ok := support.handlers[to]
+	if !ok {
+		handlers = make(map[ServiceStatus]func())
+		support.handlers[to] = handlers
+	}
 
-	if atomic.CompareAndSwapInt32(&state.status, int32(from), int32(to)) {
-		transition()
+	handlers[from] = transition
+}
 
-		return true
+// To --
+func (support *ServiceSupport) To(to ServiceStatus) bool {
+	if handlers, ok := support.handlers[to]; ok {
+		for from, function := range handlers {
+			// Set the state to the reserved 'in transition' state
+			if atomic.CompareAndSwapUint32(&support.status, uint32(from), uint32(serviceStatusTRANSITION)) {
+				function()
+
+				// set the targer state
+				atomic.StoreUint32(&support.status, uint32(to))
+
+				return true
+			}
+		}
 	}
 
 	return false
-}
-
-// ==========================
-//
-// ServiceX
-//
-// ==========================
-
-type stateHandlers map[ServiceStatus]func()
-
-// ServiceX  --
-type ServiceX struct {
-	status int32
 }

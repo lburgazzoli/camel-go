@@ -4,6 +4,7 @@ import (
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/introspection"
 	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -14,9 +15,15 @@ import (
 
 // NewComponent --
 func NewComponent() camel.Component {
-	return &Component{
-		state: camel.NewServiceState(camel.ServiceStatusSTOPPED),
+	component := &Component{
+		logger:         zlog.With().Str("logger", "log.Component").Logger(),
+		serviceSupport: camel.NewServiceSupport(),
 	}
+
+	component.serviceSupport.Transition(camel.ServiceStatusSTOPPED, camel.ServiceStatusSTARTED, component.doStart)
+	component.serviceSupport.Transition(camel.ServiceStatusSTARTED, camel.ServiceStatusSTOPPED, component.doStop)
+
+	return component
 }
 
 // ==========================
@@ -27,8 +34,9 @@ func NewComponent() camel.Component {
 
 // Component --
 type Component struct {
-	state   camel.ServiceState
-	context *camel.Context
+	logger         zerolog.Logger
+	serviceSupport camel.ServiceSupport
+	context        *camel.Context
 }
 
 // SetContext --
@@ -43,13 +51,12 @@ func (component *Component) Context() *camel.Context {
 
 // Start --
 func (component *Component) Start() {
-	component.state.Transition(camel.ServiceStatusSTOPPED, camel.ServiceStatusSTARTED, component.doStart)
-	component.state.Transition(camel.ServiceStatusSUSPENDED, camel.ServiceStatusSTARTED, component.doStart)
+	component.serviceSupport.To(camel.ServiceStatusSTARTED)
 }
 
 // Stop --
 func (component *Component) Stop() {
-	component.state.Transition(camel.ServiceStatusSTARTED, camel.ServiceStatusSTOPPED, component.doStop)
+	component.serviceSupport.To(camel.ServiceStatusSTOPPED)
 }
 
 // CreateEndpoint --
@@ -73,7 +80,9 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 // ==========================
 
 func (component *Component) doStart() {
+	component.logger.Debug().Msg("Started")
 }
 
 func (component *Component) doStop() {
+	component.logger.Debug().Msg("Stopped")
 }
