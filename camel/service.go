@@ -2,11 +2,43 @@ package camel
 
 import "sync/atomic"
 
+// ==========================
+//
+// ServiceStatus
+//
+// ==========================
+
 // ServiceStatus --
 type ServiceStatus int32
 
+// Is --
+func (status ServiceStatus) Is(other ServiceStatus) bool {
+	return status == other
+}
+
+// IsInTransition --
+func (status ServiceStatus) IsInTransition() bool {
+	return status.Is(ServiceStatusTRANSITION)
+}
+
+// IsStopped --
+func (status ServiceStatus) IsStopped() bool {
+	return status.Is(ServiceStatusSTOPPED)
+}
+
+// IsSuspended --
+func (status ServiceStatus) IsSuspended() bool {
+	return status.Is(ServiceStatusSUSPENDED)
+}
+
+// IsStarted --
+func (status ServiceStatus) IsStarted() bool {
+	return status.Is(ServiceStatusSTARTED)
+}
+
 const (
-	_ = iota
+	// ServiceStatusTRANSITION --
+	ServiceStatusTRANSITION ServiceStatus = iota
 
 	// ServiceStatusSTOPPED --
 	ServiceStatusSTOPPED
@@ -17,6 +49,12 @@ const (
 	// ServiceStatusSTARTED --
 	ServiceStatusSTARTED
 )
+
+// ==========================
+//
+// Service
+//
+// ==========================
 
 // Service --
 type Service interface {
@@ -37,6 +75,12 @@ func StopServices(services []Service) {
 		service.Stop()
 	}
 }
+
+// ==========================
+//
+// ServiceState
+//
+// ==========================
 
 // TODO: state machine alike
 
@@ -65,4 +109,17 @@ func (state *ServiceState) Transition(from ServiceStatus, to ServiceStatus, tran
 	}
 
 	return false
+}
+
+// ==========================
+//
+// ServiceX
+//
+// ==========================
+
+type stateHandlers map[ServiceStatus]func()
+
+// ServiceX  --
+type ServiceX struct {
+	status int32
 }

@@ -4,6 +4,15 @@ import (
 	"reflect"
 )
 
+// ==========================
+//
+// Helper 'const'
+//
+// ==========================
+
+// EmptyStruct --
+var EmptyStruct = struct{}{}
+
 // Integer --
 type Integer int
 
