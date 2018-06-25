@@ -62,7 +62,7 @@ func NewContextWithName(name string) *Context {
 
 	// Type conversion
 	context.AddTypeConverter(types.ToIntConverter)
-	context.AddTypeConverter(types.ToDuratioinConverter)
+	context.AddTypeConverter(types.ToDurationConverter)
 	context.AddTypeConverter(types.ToLogLevelConverter)
 	context.AddTypeConverter(types.ToBoolConverter)
 

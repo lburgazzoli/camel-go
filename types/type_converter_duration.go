@@ -27,7 +27,7 @@ type ToDuration interface {
 // ==========================
 
 // ToDuratioinConverter --
-func ToDuratioinConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
+func ToDurationConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
 	if targetType == reflect.TypeOf(time.Duration(0)) {
 
 		var answer interface{}
