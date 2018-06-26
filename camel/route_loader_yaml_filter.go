@@ -1,10 +1,6 @@
 package camel
 
 import (
-	"fmt"
-	"os"
-	"plugin"
-
 	"github.com/mitchellh/mapstructure"
 	zlog "github.com/rs/zerolog/log"
 )
@@ -30,24 +26,9 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 	zlog.Debug().Msgf("handle filter: step=<%v>, impl=<%+v>", step, impl)
 
 	if impl.Location != "" {
-		_, err := os.Stat(impl.Location)
-
-		if os.IsNotExist(err) {
-			return nil, err
-		}
-
+		symbol, err := LoadSymbol(impl.Location, impl.Ref)
 		if err != nil {
 			return nil, err
-		}
-
-		plug, err := plugin.Open(impl.Location)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open plugin %s: %v", impl.Location, err)
-		}
-
-		symbol, err := plug.Lookup(impl.Ref)
-		if err != nil {
-			return nil, fmt.Errorf("plugin %s does not export symbol \"%s\"", impl.Location, impl.Ref)
 		}
 
 		return route.Filter().Fn(symbol.(func(*Exchange) bool)), nil
