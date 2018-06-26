@@ -53,23 +53,22 @@ func (registry *Registry) Bind(name string, value interface{}) {
 
 // Lookup --
 func (registry *Registry) Lookup(name string) (interface{}, error) {
-	var value, found = registry.local.Load(name)
+	var value interface{}
+	var found bool
+	var err error
 
-	// check if the value has already been created
+	value, found = registry.local.Load(name)
+
 	if !found {
 		for _, loader := range registry.loaders {
-			value, err := loader.Load(name)
+			value, err = loader.Load(name)
 
 			if err != nil {
 				return nil, err
 			}
 
-			if value == nil {
-				continue
-			}
-
 			if value != nil {
-				break
+				return value, nil
 			}
 		}
 	}

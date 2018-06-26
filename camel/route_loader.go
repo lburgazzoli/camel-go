@@ -8,5 +8,5 @@ package camel
 
 // RouteLoader --
 type RouteLoader interface {
-	Load(data []byte) ([]Definition, error)
+	Load() ([]Definition, error)
 }

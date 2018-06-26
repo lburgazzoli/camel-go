@@ -2,22 +2,21 @@ package camel
 
 import (
 	"fmt"
-	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
+	"github.com/spf13/viper"
 
 	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
 //
-// YAMLLoader
+// ViperYAMLLoader
 //
 // ==========================
 
-// YAMLLoader --
-type YAMLLoader struct {
-	data     []byte
+// ViperYAMLLoader --
+type ViperYAMLLoader struct {
+	viper    *viper.Viper
 	handlers map[string]StepHandler
 }
 
@@ -27,10 +26,10 @@ type YAMLLoader struct {
 //
 // ==========================
 
-// NewYAMLLoader --
-func NewYAMLLoader(data []byte) RouteLoader {
-	loader := YAMLLoader{
-		data:     data,
+// NewViperYAMLLoader --
+func NewViperYAMLLoader(viper *viper.Viper) RouteLoader {
+	loader := ViperYAMLLoader{
+		viper:    viper,
 		handlers: make(map[string]StepHandler, 0),
 	}
 
@@ -47,7 +46,7 @@ func NewYAMLLoader(data []byte) RouteLoader {
 //
 // ==========================
 
-func (loader *YAMLLoader) findHandler(stepType string) (StepHandler, error) {
+func (loader *ViperYAMLLoader) findHandler(stepType string) (StepHandler, error) {
 	if h, ok := loader.handlers[stepType]; ok {
 		return h, nil
 	}
@@ -56,17 +55,18 @@ func (loader *YAMLLoader) findHandler(stepType string) (StepHandler, error) {
 }
 
 // Load --
-func (loader *YAMLLoader) Load() ([]Definition, error) {
-	integration := Integration{}
-	err := yaml.Unmarshal([]byte(loader.data), &integration)
+func (loader *ViperYAMLLoader) Load() ([]Definition, error) {
+	flows := make([]Flow, 0)
+	err := loader.viper.UnmarshalKey("flows", &flows)
 
+	zlog.Info().Msgf("flows: %v", flows)
 	if err != nil {
 		return nil, err
 	}
 
 	definitions := make([]Definition, 0)
 
-	for _, f := range integration.Flows {
+	for _, f := range flows {
 		var route *RouteDefinition
 
 		for i, s := range f.Steps {
@@ -94,23 +94,4 @@ func (loader *YAMLLoader) Load() ([]Definition, error) {
 	}
 
 	return definitions, nil
-}
-
-// ==========================
-//
-// Helpers
-//
-// ==========================
-
-// LoadRouteFromYAMLFile --
-func LoadRouteFromYAMLFile(path string) ([]Definition, error) {
-	zlog.Debug().Msgf("Loading routes from:  %s", path)
-
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	loader := NewYAMLLoader(data)
-	return loader.Load()
 }

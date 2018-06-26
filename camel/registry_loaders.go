@@ -3,9 +3,10 @@ package camel
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+	"os"
 	"path"
-	"strings"
+
+	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -20,7 +21,7 @@ import (
 func NewPluginRegistryLoader(searchPath string) RegistryLoader {
 	return &pluginRegistryLoader{
 		cache:      make(map[string]interface{}),
-		searchPath: searchPath,
+		searchPath: os.ExpandEnv(searchPath),
 	}
 }
 
@@ -48,16 +49,34 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 	var result, found = loader.cache[name]
 
 	if !found {
-		pluginPath := path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
-		symbol, err := LoadSymbol(pluginPath, "Create")
+		var symbol interface{}
+		var err error
+		var pluginPath string
 
+		// first scan all the plugins to find one that export the
+		// name as symbol
+		symbol, err = loader.scanForSymbol(name)
 		if err != nil {
-			log.Printf("plugin %s does not export symbol \"Create\"\n", name)
 			return nil, err
 		}
 
-		// Load the object from
-		result = symbol.(func() interface{})()
+		if symbol != nil {
+			result = symbol
+		}
+
+		if result == nil {
+			// then lookup a factory
+			pluginPath = path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
+			symbol, err = LoadSymbol(pluginPath, "Create")
+
+			if err != nil {
+				zlog.Warn().Msgf("plugin %s does not export symbol \"Create\"", name)
+				return nil, err
+			}
+
+			// Load the object from
+			result = symbol.(func() interface{})()
+		}
 
 		loader.cache[name] = result
 	}
@@ -65,28 +84,25 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 	return result, nil
 }
 
-// LoadAll --
-func (loader *pluginRegistryLoader) LoadAll() ([]interface{}, error) {
-
+// scanForSymbol --
+func (loader *pluginRegistryLoader) scanForSymbol(name string) (interface{}, error) {
 	files, err := ioutil.ReadDir(loader.searchPath)
 	if err != nil {
 		return nil, err
 	}
 
-	answer := make([]interface{}, 0)
 	for _, file := range files {
 		ext := path.Ext(file.Name())
 		if ext == ".so" {
-			name := strings.TrimSuffix(file.Name(), ext)
+			symbol, err := LoadSymbol(path.Join(loader.searchPath, file.Name()), name)
 
-			value, err := loader.Load(name)
 			if err != nil {
 				return nil, err
 			}
 
-			answer = append(answer, value)
+			return symbol, nil
 		}
 	}
 
-	return answer, nil
+	return nil, nil
 }
