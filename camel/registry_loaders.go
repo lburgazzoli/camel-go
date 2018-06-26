@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path"
-	"plugin"
 	"strings"
 )
 
@@ -51,23 +49,8 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 
 	if !found {
 		pluginPath := path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
-		_, err := os.Stat(pluginPath)
+		symbol, err := LoadSymbol(pluginPath, "Create")
 
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		plug, err := plugin.Open(pluginPath)
-		if err != nil {
-			log.Printf("failed to open plugin %s: %v\n", name, err)
-			return nil, err
-		}
-
-		symbol, err := plug.Lookup("Create")
 		if err != nil {
 			log.Printf("plugin %s does not export symbol \"Create\"\n", name)
 			return nil, err
