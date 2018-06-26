@@ -1,11 +1,12 @@
 package camel
 
-// Step --
-type Step struct {
-	URI string `yaml:"uri"`
-}
+// ==========================
+//
+// Route Loader
+//
+// ==========================
 
-// Flow --
-type Flow struct {
-	Steps []Step `yaml:"steps"`
+// RouteLoader --
+type RouteLoader interface {
+	Load(data []byte) ([]Definition, error)
 }

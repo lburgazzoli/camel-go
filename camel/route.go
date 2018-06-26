@@ -36,14 +36,3 @@ func (route *Route) Start() {
 func (route *Route) Stop() {
 	StopServices(route.services)
 }
-
-// ==========================
-//
-// Route Loader
-//
-// ==========================
-
-// RouteLoader --
-type RouteLoader interface {
-	Load() (*Route, error)
-}
