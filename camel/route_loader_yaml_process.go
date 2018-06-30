@@ -1,6 +1,7 @@
 package camel
 
 import (
+	"github.com/lburgazzoli/camel-go/module"
 	"github.com/mitchellh/mapstructure"
 	zlog "github.com/rs/zerolog/log"
 )
@@ -26,7 +27,7 @@ func ProcessStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, er
 	zlog.Debug().Msgf("handle process: step=<%v>, impl=<%+v>", step, impl)
 
 	if impl.Location != "" {
-		symbol, err := LoadSymbol(impl.Location, impl.Ref)
+		symbol, err := module.LoadSymbol(impl.Location, impl.Ref)
 		if err != nil {
 			return nil, err
 		}

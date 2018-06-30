@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/lburgazzoli/camel-go/module"
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -67,7 +68,7 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 		if result == nil {
 			// then lookup a factory
 			pluginPath = path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
-			symbol, err = LoadSymbol(pluginPath, "Create")
+			symbol, err = module.LoadSymbol(pluginPath, "Create")
 
 			if err != nil {
 				zlog.Warn().Msgf("plugin %s does not export symbol \"Create\"", name)
@@ -94,7 +95,7 @@ func (loader *pluginRegistryLoader) scanForSymbol(name string) (interface{}, err
 	for _, file := range files {
 		ext := path.Ext(file.Name())
 		if ext == ".so" {
-			symbol, err := LoadSymbol(path.Join(loader.searchPath, file.Name()), name)
+			symbol, err := module.LoadSymbol(path.Join(loader.searchPath, file.Name()), name)
 
 			if err != nil {
 				return nil, err

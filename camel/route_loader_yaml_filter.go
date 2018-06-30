@@ -1,6 +1,7 @@
 package camel
 
 import (
+	"github.com/lburgazzoli/camel-go/module"
 	"github.com/mitchellh/mapstructure"
 	zlog "github.com/rs/zerolog/log"
 )
@@ -26,7 +27,7 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 	zlog.Debug().Msgf("handle filter: step=<%v>, impl=<%+v>", step, impl)
 
 	if impl.Location != "" {
-		symbol, err := LoadSymbol(impl.Location, impl.Ref)
+		symbol, err := module.LoadSymbol(impl.Location, impl.Ref)
 		if err != nil {
 			return nil, err
 		}
