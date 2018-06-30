@@ -1,6 +1,8 @@
 package camel
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ==========================
 //
@@ -73,8 +75,12 @@ func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) 
 			}
 		}
 
+		if err == nil {
+			err = fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.processorRef, ifc)
+		}
+
 		// TODO: error handling
-		return nil, nil, fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.processorRef, ifc)
+		return nil, nil, err
 	}
 
 	return nil, nil, nil

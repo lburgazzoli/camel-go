@@ -75,8 +75,12 @@ func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (
 			}
 		}
 
+		if err == nil {
+			err = fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.predicateRef, ifc)
+		}
+
 		// TODO: error handling
-		return nil, nil, fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.predicateRef, ifc)
+		return nil, nil, err
 	}
 
 	return nil, nil, nil

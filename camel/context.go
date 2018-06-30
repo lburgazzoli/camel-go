@@ -272,6 +272,10 @@ func (context *Context) addDefinitionsToRoute(route *Route, processor Processor,
 	if u, ok := definition.(Unwrappable); ok {
 		p, s, e = u.Unwrap(context, p)
 
+		if e != nil {
+			zlog.Fatal().Msgf("unable to load processor %v (%s)", definition, e)
+		}
+
 		if e == nil && s != nil {
 			route.AddService(s)
 		}
