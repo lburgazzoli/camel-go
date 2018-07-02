@@ -32,6 +32,7 @@ type ContextAware interface {
 type Context struct {
 	Service
 
+	parent       *Context
 	name         string
 	registry     *Registry
 	routes       []*Route
@@ -39,6 +40,9 @@ type Context struct {
 	services     []Service
 	servicesLock sync.RWMutex
 }
+
+// RootContext --
+var RootContext = NewContextWithParentAndName(nil, "root")
 
 // ==========================
 //
@@ -48,12 +52,23 @@ type Context struct {
 
 // NewContext --
 func NewContext() *Context {
-	return NewContextWithName("camel")
+	return NewContextWithParentAndName(RootContext, "camel")
+}
+
+// NewContextWithParent --
+func NewContextWithParent(parent *Context) *Context {
+	return NewContextWithParentAndName(parent, "camel")
 }
 
 // NewContextWithName --
 func NewContextWithName(name string) *Context {
+	return NewContextWithParentAndName(RootContext, name)
+}
+
+// NewContextWithParentAndName --
+func NewContextWithParentAndName(paretn *Context, name string) *Context {
 	context := Context{
+		parent:     paretn,
 		name:       name,
 		routes:     make([]*Route, 0),
 		converters: make([]types.TypeConverter, 0),
@@ -90,7 +105,7 @@ func (context *Context) AddTypeConverter(converter types.TypeConverter) {
 
 // TypeConverter --
 func (context *Context) TypeConverter() types.TypeConverter {
-	return func(source interface{}, targetType reflect.Type) (interface{}, error) {
+	converter := func(source interface{}, targetType reflect.Type) (interface{}, error) {
 		sourceType := reflect.TypeOf(source)
 
 		// Don't convert same type
@@ -116,6 +131,12 @@ func (context *Context) TypeConverter() types.TypeConverter {
 
 		return nil, fmt.Errorf("unsupported type conversion (source:%v, target:%v", sourceType, targetType)
 	}
+
+	if context.parent != nil {
+		return types.NewConbinedTypeConverter(converter, context.parent.TypeConverter())
+	}
+
+	return converter
 }
 
 // Component --
@@ -134,6 +155,10 @@ func (context *Context) Component(name string) (Component, error) {
 
 			return component, nil
 		}
+	}
+
+	if context.parent != nil {
+		return context.parent.Component(name)
 	}
 
 	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
