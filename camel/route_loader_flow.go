@@ -18,6 +18,7 @@ import (
 
 // FlowLoader --
 type FlowLoader struct {
+	context  *Context
 	flows    []Flow
 	handlers map[string]StepHandler
 }
@@ -29,8 +30,9 @@ type FlowLoader struct {
 // ==========================
 
 // NewFlowLoader --
-func NewFlowLoader(flows []Flow) *FlowLoader {
+func NewFlowLoader(context *Context, flows []Flow) *FlowLoader {
 	loader := FlowLoader{
+		context:  context,
 		flows:    flows,
 		handlers: make(map[string]StepHandler, 0),
 	}
@@ -79,6 +81,19 @@ func (loader *FlowLoader) Load() ([]Definition, error) {
 }
 
 func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
+	r := loader.context.Registry()
+	h, e := r.Lookup(stepType)
+
+	if e != nil {
+		return nil, e
+	}
+
+	if h != nil {
+		if s, ok := h.(StepHandler); ok {
+			return s, nil
+		}
+	}
+
 	if h, ok := loader.handlers[stepType]; ok {
 		return h, nil
 	}
@@ -93,7 +108,7 @@ func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
 // ==========================
 
 // LoadFlowFromYAMLFile --
-func LoadFlowFromYAMLFile(path string) ([]Definition, error) {
+func LoadFlowFromYAMLFile(context *Context, path string) ([]Definition, error) {
 	zlog.Debug().Msgf("Loading routes from:  %s", path)
 
 	var err error
@@ -111,11 +126,11 @@ func LoadFlowFromYAMLFile(path string) ([]Definition, error) {
 		return nil, err
 	}
 
-	return NewFlowLoader(integration.Flows).Load()
+	return NewFlowLoader(context, integration.Flows).Load()
 }
 
 // LoadFlowFromViper --
-func LoadFlowFromViper(v *viper.Viper) ([]Definition, error) {
+func LoadFlowFromViper(context *Context, v *viper.Viper) ([]Definition, error) {
 	flows := make([]Flow, 0)
 	err := v.UnmarshalKey("flows", &flows)
 
@@ -123,5 +138,5 @@ func LoadFlowFromViper(v *viper.Viper) ([]Definition, error) {
 		return nil, err
 	}
 
-	return NewFlowLoader(flows).Load()
+	return NewFlowLoader(context, flows).Load()
 }
