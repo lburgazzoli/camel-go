@@ -2,8 +2,8 @@ package camel
 
 import (
 	"reflect"
-	"sync"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/types"
 )
 
@@ -14,82 +14,87 @@ import (
 // ==========================
 
 // NewRegistry --
-func NewRegistry(converter types.TypeConverter) *Registry {
-	return &Registry{
+func NewRegistry(converter types.TypeConverter) api.LoadingRegistry {
+	return &defaultRegistry{
 		converter: converter,
-		loaders:   make([]RegistryLoader, 0),
+		local:     api.NewInMemoryRegistry(converter),
+		loaders:   make([]api.RegistryLoader, 0),
 	}
 }
 
 // ==========================
 //
-// Registry
+// defaultRegistry
 //
 // ==========================
 
-// Registry --
-type Registry struct {
+// defaultRegistry --
+type defaultRegistry struct {
 	converter types.TypeConverter
-	local     sync.Map
-	loaders   []RegistryLoader
+	local     api.Registry
+	loaders   []api.RegistryLoader
 }
 
 // AddLoader --
-func (registry *Registry) AddLoader(loader RegistryLoader) {
+func (registry *defaultRegistry) AddLoader(loader api.RegistryLoader) {
 	registry.loaders = append(registry.loaders, loader)
 }
 
 // Bind --
-func (registry *Registry) Bind(name string, value interface{}) {
-	old, found := registry.local.Load(name)
+func (registry *defaultRegistry) Bind(name string, value interface{}) {
+	old, found := registry.local.Lookup(name)
 	if found {
-		if service, ok := old.(Service); ok {
+		if service, ok := old.(api.Service); ok {
 			service.Stop()
 		}
 	}
 
-	registry.local.Store(name, value)
+	registry.local.Bind(name, value)
 }
 
 // Lookup --
-func (registry *Registry) Lookup(name string) (interface{}, error) {
+func (registry *defaultRegistry) Lookup(name string) (interface{}, bool) {
 	var value interface{}
 	var found bool
 	var err error
 
-	value, found = registry.local.Load(name)
+	value, found = registry.local.Lookup(name)
 
 	if !found {
 		for _, loader := range registry.loaders {
 			value, err = loader.Load(name)
 
 			if err != nil {
-				return nil, err
+				return nil, false
 			}
 
 			if value != nil {
-				return value, nil
+				return value, true
 			}
 		}
 	}
 
-	return value, nil
+	return value, value != nil
 }
 
 // LookupAs --
-func (registry *Registry) LookupAs(name string, expectedType reflect.Type) (interface{}, error) {
-	value, err := registry.Lookup(name)
+func (registry *defaultRegistry) LookupAs(name string, expectedType reflect.Type) (interface{}, bool) {
+	var value interface{}
+	var found bool
+	var err error
 
-	// check if the value has already been created
-	if err != nil {
-		return nil, err
+	if value, found = registry.Lookup(name); found {
+		// Convert to the expected type
+		value, err = registry.converter(value, expectedType)
+		if err != nil {
+			return nil, false
+		}
 	}
 
-	// Convert to the expected type
-	return registry.converter(value, expectedType)
+	return value, value != nil
 }
 
-// LookupAsOf --
-func (registry *Registry) LookupAsOf(name string, expectedType interface{}) (interface{}, error) {
-	return registry.LookupAs(name, reflect.TypeOf(expectedType))
+// Range --
+func (registry *defaultRegistry) Range(f func(key string, value interface{}) bool) {
+	registry.local.Range(f)
 }

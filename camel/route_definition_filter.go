@@ -2,6 +2,8 @@ package camel
 
 import (
 	"fmt"
+
+	"github.com/lburgazzoli/camel-go/api"
 )
 
 // ==========================
@@ -33,7 +35,7 @@ type FilterDefinition struct {
 	parent   *RouteDefinition
 	children []Definition
 
-	predicate    func(*Exchange) bool
+	predicate    func(api.Exchange) bool
 	predicateRef string
 }
 
@@ -48,9 +50,9 @@ func (definition *FilterDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (Processor, Service, error) {
+func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
 	if definition.predicate != nil {
-		p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
+		p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 			if definition.predicate(e) {
 				out <- e
 			}
@@ -61,11 +63,11 @@ func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (
 
 	if definition.predicateRef != "" {
 		registry := context.Registry()
-		ifc, err := registry.Lookup(definition.predicateRef)
+		ifc, found := registry.Lookup(definition.predicateRef)
 
-		if ifc != nil && err == nil {
-			if predicate, ok := ifc.(func(e *Exchange) bool); ok {
-				p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
+		if ifc != nil && found {
+			if predicate, ok := ifc.(func(e api.Exchange) bool); ok {
+				p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 					if predicate(e) {
 						out <- e
 					}
@@ -75,7 +77,9 @@ func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (
 			}
 		}
 
-		if err == nil {
+		var err error
+
+		if !found {
 			err = fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.predicateRef, ifc)
 		}
 
@@ -88,7 +92,7 @@ func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (
 }
 
 // Fn --
-func (definition *FilterDefinition) Fn(predicate func(*Exchange) bool) *RouteDefinition {
+func (definition *FilterDefinition) Fn(predicate func(api.Exchange) bool) *RouteDefinition {
 	definition.predicate = predicate
 	return definition.parent
 }

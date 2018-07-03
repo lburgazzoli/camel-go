@@ -1,8 +1,10 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // Consumer --
 type Consumer interface {
-	Service
+	api.Service
 
 	Endpoint() Endpoint
 	Processor() Processor

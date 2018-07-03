@@ -1,5 +1,7 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // ==========================
 //
 //
@@ -8,7 +10,7 @@ package camel
 
 // Unwrappable --
 type Unwrappable interface {
-	Unwrap(context *Context, parent Processor) (Processor, Service, error)
+	Unwrap(context *Context, parent Processor) (Processor, api.Service, error)
 }
 
 // ==========================

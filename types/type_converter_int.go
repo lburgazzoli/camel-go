@@ -19,9 +19,19 @@ type ToInt interface {
 	ToInt() (int, error)
 }
 
+// ToUInt --
+type ToUInt interface {
+	ToUInt() (int, error)
+}
+
 // ToInt8 --
 type ToInt8 interface {
 	ToInt8() (int8, error)
+}
+
+// ToUInt8 --
+type ToUInt8 interface {
+	ToUInt8() (int8, error)
 }
 
 // ToInt16 --
@@ -29,14 +39,29 @@ type ToInt16 interface {
 	ToInt16() (int16, error)
 }
 
+// ToUInt16 --
+type ToUInt16 interface {
+	ToUInt16() (int16, error)
+}
+
 // ToInt32 --
 type ToInt32 interface {
 	ToInt32() (int32, error)
 }
 
+// ToUInt32 --
+type ToUInt32 interface {
+	ToUInt32() (int32, error)
+}
+
 // ToInt64 --
 type ToInt64 interface {
 	ToInt64() (int64, error)
+}
+
+// ToUInt64 --
+type ToUInt64 interface {
+	ToUInt64() (int64, error)
 }
 
 // ==========================
@@ -50,9 +75,19 @@ func (target Integer) ToInt() int {
 	return int(target)
 }
 
+// ToUInt ..
+func (target Integer) ToUInt() uint {
+	return uint(target)
+}
+
 // ToInt8 ..
 func (target Integer) ToInt8() int8 {
 	return int8(target)
+}
+
+// ToUInt8 ..
+func (target Integer) ToUInt8() uint8 {
+	return uint8(target)
 }
 
 // ToInt16 ..
@@ -60,14 +95,29 @@ func (target Integer) ToInt16() int16 {
 	return int16(target)
 }
 
+// ToUInt16 ..
+func (target Integer) ToUInt16() uint16 {
+	return uint16(target)
+}
+
 // ToInt32 ..
 func (target Integer) ToInt32() int32 {
 	return int32(target)
 }
 
+// ToUInt32 ..
+func (target Integer) ToUInt32() uint32 {
+	return uint32(target)
+}
+
 // ToInt64 ..
 func (target Integer) ToInt64() int64 {
 	return int64(target)
+}
+
+// ToUInt64 ..
+func (target Integer) ToUInt64() uint64 {
+	return uint64(target)
 }
 
 // ==========================
@@ -99,6 +149,16 @@ func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, e
 		} else {
 			answer, err = cast.ToIntE(source)
 		}
+	case reflect.Uint:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToUInt); ok {
+				answer, err = v.ToUInt()
+			} else {
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToUintE(source)
+		}
 	case reflect.Int8:
 		if sourceKind == reflect.Struct {
 			if v, ok := source.(ToInt8); ok {
@@ -108,6 +168,16 @@ func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, e
 			}
 		} else {
 			answer, err = cast.ToInt8E(source)
+		}
+	case reflect.Uint8:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToUInt8); ok {
+				answer, err = v.ToUInt8()
+			} else {
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToUint8E(source)
 		}
 	case reflect.Int16:
 		if sourceKind == reflect.Struct {
@@ -119,6 +189,16 @@ func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, e
 		} else {
 			answer, err = cast.ToInt16E(source)
 		}
+	case reflect.Uint16:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToUInt16); ok {
+				answer, err = v.ToUInt16()
+			} else {
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToUint16E(source)
+		}
 	case reflect.Int32:
 		if sourceKind == reflect.Struct {
 			if v, ok := source.(ToInt32); ok {
@@ -129,6 +209,16 @@ func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, e
 		} else {
 			answer, err = cast.ToInt32E(source)
 		}
+	case reflect.Uint32:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToUInt32); ok {
+				answer, err = v.ToUInt32()
+			} else {
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToUint32E(source)
+		}
 	case reflect.Int64:
 		if sourceKind == reflect.Struct {
 			if v, ok := source.(ToInt64); ok {
@@ -138,6 +228,16 @@ func ToIntConverter(source interface{}, targetType reflect.Type) (interface{}, e
 			}
 		} else {
 			answer, err = cast.ToInt64E(source)
+		}
+	case reflect.Uint64:
+		if sourceKind == reflect.Struct {
+			if v, ok := source.(ToUInt64); ok {
+				answer, err = v.ToUInt64()
+			} else {
+				err = fmt.Errorf("unable to convert struct:%T to:%v", source, targetType)
+			}
+		} else {
+			answer, err = cast.ToUint64E(source)
 		}
 	}
 

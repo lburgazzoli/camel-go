@@ -1,6 +1,7 @@
 package camel
 
 import (
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/module"
 	"github.com/mitchellh/mapstructure"
 	zlog "github.com/rs/zerolog/log"
@@ -32,7 +33,7 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 			return nil, err
 		}
 
-		return route.Filter().Fn(symbol.(func(*Exchange) bool)), nil
+		return route.Filter().Fn(symbol.(func(api.Exchange) bool)), nil
 	}
 
 	return route.Filter().Ref(impl.Ref), nil

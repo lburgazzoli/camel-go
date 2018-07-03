@@ -1,4 +1,4 @@
-package camel
+package api
 
 import "sync/atomic"
 

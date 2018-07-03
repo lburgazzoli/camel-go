@@ -82,13 +82,9 @@ func (loader *FlowLoader) Load() ([]Definition, error) {
 
 func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
 	r := loader.context.Registry()
-	h, e := r.Lookup(stepType)
+	h, f := r.Lookup(stepType)
 
-	if e != nil {
-		return nil, e
-	}
-
-	if h != nil {
+	if f && h != nil {
 		if s, ok := h.(StepHandler); ok {
 			return s, nil
 		}

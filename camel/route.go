@@ -1,5 +1,7 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // ==========================
 //
 // Route
@@ -8,20 +10,20 @@ package camel
 
 // Route --
 type Route struct {
-	Service
+	api.Service
 
-	services []Service
+	services []api.Service
 }
 
 // NewRoute --
 func NewRoute() *Route {
 	return &Route{
-		services: make([]Service, 0),
+		services: make([]api.Service, 0),
 	}
 }
 
 // AddService --
-func (route *Route) AddService(service Service) {
+func (route *Route) AddService(service api.Service) {
 	if service != nil {
 		route.services = append(route.services, service)
 	}
@@ -29,10 +31,10 @@ func (route *Route) AddService(service Service) {
 
 // Start --
 func (route *Route) Start() {
-	StartServices(route.services)
+	api.StartServices(route.services)
 }
 
 // Stop --
 func (route *Route) Stop() {
-	StopServices(route.services)
+	api.StopServices(route.services)
 }

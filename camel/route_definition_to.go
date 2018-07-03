@@ -1,5 +1,7 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // ==========================
 //
 // Extend RouteDefinition DSL
@@ -44,7 +46,7 @@ func (definition *ToDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *ToDefinition) Unwrap(context *Context, parent Processor) (Processor, Service, error) {
+func (definition *ToDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
 	var err error
 	var producer Producer
 	var endpoint Endpoint
@@ -58,7 +60,7 @@ func (definition *ToDefinition) Unwrap(context *Context, parent Processor) (Proc
 	}
 	p := producer.Processor()
 
-	parent.Subscribe(func(e *Exchange) {
+	parent.Subscribe(func(e api.Exchange) {
 		p.Publish(e)
 	})
 

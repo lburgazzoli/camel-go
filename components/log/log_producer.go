@@ -1,6 +1,7 @@
 package log
 
 import (
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/rs/zerolog"
 )
@@ -42,14 +43,15 @@ func (producer *logProducer) Processor() camel.Processor {
 	return producer.processor
 }
 
-func (producer *logProducer) process(exchange *camel.Exchange) {
+func (producer *logProducer) process(exchange api.Exchange) {
 	if producer.endpoint.logHeaders {
 		l := producer.logger.WithLevel(producer.endpoint.level)
 		d := zerolog.Dict()
 
-		for k, v := range exchange.Headers() {
-			d.Interface(k, v)
-		}
+		exchange.Headers().Range(func(key string, val interface{}) bool {
+			d.Interface(key, val)
+			return true
+		})
 
 		l.Dict("headers", d).Msgf("%+v", exchange.Body())
 	} else {

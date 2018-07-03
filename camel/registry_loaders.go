@@ -2,11 +2,12 @@ package camel
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/module"
+
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -19,7 +20,7 @@ import (
 // ==========================
 
 // NewPluginRegistryLoader --
-func NewPluginRegistryLoader(searchPath string) RegistryLoader {
+func NewPluginRegistryLoader(searchPath string) api.RegistryLoader {
 	return &pluginRegistryLoader{
 		cache:      make(map[string]interface{}),
 		searchPath: os.ExpandEnv(searchPath),
@@ -32,8 +33,8 @@ type pluginRegistryLoader struct {
 }
 
 // Status --
-func (loader *pluginRegistryLoader) Status() ServiceStatus {
-	return ServiceStatusSTARTED
+func (loader *pluginRegistryLoader) Status() api.ServiceStatus {
+	return api.ServiceStatusSTARTED
 }
 
 // Start --
@@ -50,34 +51,17 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 	var result, found = loader.cache[name]
 
 	if !found {
-		var symbol interface{}
-		var err error
-		var pluginPath string
+		// then lookup a factory
+		pluginPath := path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
+		symbol, err := module.LoadSymbol(pluginPath, "Create")
 
-		// first scan all the plugins to find one that export the
-		// name as symbol
-		symbol, err = loader.scanForSymbol(name)
 		if err != nil {
+			zlog.Warn().Msgf("plugin %s does not export symbol \"Create\"", name)
 			return nil, err
 		}
 
-		if symbol != nil {
-			result = symbol
-		}
-
-		if result == nil {
-			// then lookup a factory
-			pluginPath = path.Join(loader.searchPath, fmt.Sprintf("%s.so", name))
-			symbol, err = module.LoadSymbol(pluginPath, "Create")
-
-			if err != nil {
-				zlog.Warn().Msgf("plugin %s does not export symbol \"Create\"", name)
-				return nil, err
-			}
-
-			// Load the object from
-			result = symbol.(func() interface{})()
-		}
+		// Load the object from
+		result = symbol.(func() interface{})()
 
 		loader.cache[name] = result
 	}
@@ -85,6 +69,7 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 	return result, nil
 }
 
+/*
 // scanForSymbol --
 func (loader *pluginRegistryLoader) scanForSymbol(name string) (interface{}, error) {
 	files, err := ioutil.ReadDir(loader.searchPath)
@@ -107,3 +92,4 @@ func (loader *pluginRegistryLoader) scanForSymbol(name string) (interface{}, err
 
 	return nil, nil
 }
+*/

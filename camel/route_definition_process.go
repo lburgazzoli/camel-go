@@ -2,6 +2,8 @@ package camel
 
 import (
 	"fmt"
+
+	"github.com/lburgazzoli/camel-go/api"
 )
 
 // ==========================
@@ -33,7 +35,7 @@ type ProcessDefinition struct {
 	parent   *RouteDefinition
 	children []Definition
 
-	processor    func(*Exchange)
+	processor    func(api.Exchange)
 	processorRef string
 }
 
@@ -48,9 +50,9 @@ func (definition *ProcessDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) (Processor, Service, error) {
+func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
 	if definition.processor != nil {
-		p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
+		p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 			definition.processor(e)
 
 			out <- e
@@ -61,11 +63,11 @@ func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) 
 
 	if definition.processorRef != "" {
 		registry := context.Registry()
-		ifc, err := registry.Lookup(definition.processorRef)
+		ifc, found := registry.Lookup(definition.processorRef)
 
-		if ifc != nil && err == nil {
-			if processor, ok := ifc.(func(e *Exchange)); ok {
-				p := NewProcessorWithParent(parent, func(e *Exchange, out chan<- *Exchange) {
+		if ifc != nil && found {
+			if processor, ok := ifc.(func(e api.Exchange)); ok {
+				p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 					processor(e)
 
 					out <- e
@@ -75,7 +77,9 @@ func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) 
 			}
 		}
 
-		if err == nil {
+		var err error
+
+		if !found {
 			err = fmt.Errorf("Unsupported type for ref:%s, type=%T", definition.processorRef, ifc)
 		}
 
@@ -88,7 +92,7 @@ func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) 
 }
 
 // Fn --
-func (definition *ProcessDefinition) Fn(processor func(*Exchange)) *RouteDefinition {
+func (definition *ProcessDefinition) Fn(processor func(api.Exchange)) *RouteDefinition {
 	definition.processor = processor
 	return definition.parent
 }

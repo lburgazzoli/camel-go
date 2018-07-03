@@ -1,6 +1,9 @@
 package camel
 
-import "github.com/rs/zerolog/log"
+import (
+	"github.com/lburgazzoli/camel-go/api"
+	"github.com/rs/zerolog/log"
+)
 
 // FromDefinition --
 type FromDefinition struct {
@@ -21,7 +24,7 @@ func (definition *FromDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *FromDefinition) Unwrap(context *Context, parent Processor) (Processor, Service, error) {
+func (definition *FromDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
 	var err error
 	var consumer Consumer
 	var endpoint Endpoint

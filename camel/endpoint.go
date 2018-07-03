@@ -1,8 +1,10 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // Endpoint --
 type Endpoint interface {
-	Service
+	api.Service
 
 	Component() Component
 

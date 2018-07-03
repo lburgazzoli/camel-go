@@ -1,6 +1,7 @@
 package camel
 
 import (
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/module"
 	"github.com/mitchellh/mapstructure"
 	zlog "github.com/rs/zerolog/log"
@@ -32,7 +33,7 @@ func ProcessStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, er
 			return nil, err
 		}
 
-		return route.Process().Fn(symbol.(func(*Exchange))), nil
+		return route.Process().Fn(symbol.(func(api.Exchange))), nil
 	}
 
 	return route.Process().Ref(impl.Ref), nil

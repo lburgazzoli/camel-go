@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/types"
 	zlog "github.com/rs/zerolog/log"
 )
@@ -30,14 +31,14 @@ type ContextAware interface {
 
 // Context --
 type Context struct {
-	Service
+	api.Service
 
 	parent       *Context
 	name         string
-	registry     *Registry
+	registry     api.LoadingRegistry
 	routes       []*Route
 	converters   []types.TypeConverter
-	services     []Service
+	services     []api.Service
 	servicesLock sync.RWMutex
 }
 
@@ -72,7 +73,7 @@ func NewContextWithParentAndName(paretn *Context, name string) *Context {
 		name:       name,
 		routes:     make([]*Route, 0),
 		converters: make([]types.TypeConverter, 0),
-		services:   make([]Service, 0),
+		services:   make([]api.Service, 0),
 	}
 
 	// Type conversion
@@ -94,7 +95,7 @@ func NewContextWithParentAndName(paretn *Context, name string) *Context {
 // ==========================
 
 // Registry --
-func (context *Context) Registry() *Registry {
+func (context *Context) Registry() api.LoadingRegistry {
 	return context.registry
 }
 
@@ -139,31 +140,6 @@ func (context *Context) TypeConverter() types.TypeConverter {
 	return converter
 }
 
-// Component --
-func (context *Context) Component(name string) (Component, error) {
-	value, err := context.lookup(name)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if value != nil {
-		if component, ok := value.(Component); ok {
-			if added := context.addService(component); added {
-				zlog.Debug().Msgf("Component with scheme %s registered as service", name)
-			}
-
-			return component, nil
-		}
-	}
-
-	if context.parent != nil {
-		return context.parent.Component(name)
-	}
-
-	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
-}
-
 // AddRouteDefinition --
 func (context *Context) AddRouteDefinition(definition Definition) {
 	route := &Route{}
@@ -202,7 +178,7 @@ func (context *Context) CreateEndpointFromURI(uri string) (Endpoint, error) {
 		opts[k] = v[0]
 	}
 
-	if component, err = context.Component(scheme); err != nil {
+	if component, err = context.component(scheme); err != nil {
 		return nil, err
 	}
 
@@ -257,23 +233,42 @@ func (context *Context) Stop() {
 //
 // ==========================
 
-func (context *Context) lookup(name string) (interface{}, error) {
-	value, err := context.registry.Lookup(name)
+// Component --
+func (context *Context) component(name string) (Component, error) {
+	value, found := context.lookup(name)
 
-	if err != nil {
-		return nil, err
-	}
+	if found && value != nil {
+		if component, ok := value.(Component); ok {
+			if added := context.addService(component); added {
+				zlog.Debug().Msgf("Component with scheme %s registered as service", name)
+			}
 
-	if ca, ok := value.(ContextAware); ok {
-		if ca.Context() == nil {
-			ca.SetContext(context)
+			return component, nil
 		}
 	}
 
-	return value, err
+	if context.parent != nil {
+		return context.parent.component(name)
+	}
+
+	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
 }
 
-func (context *Context) addService(service Service) bool {
+func (context *Context) lookup(name string) (interface{}, bool) {
+	value, found := context.registry.Lookup(name)
+
+	if found {
+		if ca, ok := value.(ContextAware); ok {
+			if ca.Context() == nil {
+				ca.SetContext(context)
+			}
+		}
+	}
+
+	return value, found
+}
+
+func (context *Context) addService(service api.Service) bool {
 	context.servicesLock.Lock()
 	defer context.servicesLock.Unlock()
 
@@ -289,7 +284,7 @@ func (context *Context) addService(service Service) bool {
 }
 
 func (context *Context) addDefinitionsToRoute(route *Route, processor Processor, definition Definition) Processor {
-	var s Service
+	var s api.Service
 	var e error
 
 	p := processor
@@ -306,7 +301,7 @@ func (context *Context) addDefinitionsToRoute(route *Route, processor Processor,
 		}
 
 		if p != nil {
-			if s, ok := p.(Service); ok {
+			if s, ok := p.(api.Service); ok {
 				route.AddService(s)
 			}
 		} else {

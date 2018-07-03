@@ -38,8 +38,8 @@ func (consumer *timerConsumer) Start() {
 
 			counter++
 
-			exchange.SetHeader("timer.fire.time", t.UTC())
-			exchange.SetHeader("timer.fire.count", counter)
+			exchange.Headers().Bind("timer.fire.time", t.UTC())
+			exchange.Headers().Bind("timer.fire.count", counter)
 			exchange.SetBody(nil)
 
 			consumer.processor.Publish(exchange)

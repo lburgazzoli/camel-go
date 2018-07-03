@@ -3,6 +3,7 @@ package timer
 import (
 	"fmt"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/introspection"
 
@@ -20,11 +21,11 @@ import (
 func NewComponent() camel.Component {
 	component := &Component{
 		logger:         zlog.With().Str("logger", "timer.Component").Logger(),
-		serviceSupport: camel.NewServiceSupport(),
+		serviceSupport: api.NewServiceSupport(),
 	}
 
-	component.serviceSupport.Transition(camel.ServiceStatusSTOPPED, camel.ServiceStatusSTARTED, component.doStart)
-	component.serviceSupport.Transition(camel.ServiceStatusSTARTED, camel.ServiceStatusSTOPPED, component.doStop)
+	component.serviceSupport.Transition(api.ServiceStatusSTOPPED, api.ServiceStatusSTARTED, component.doStart)
+	component.serviceSupport.Transition(api.ServiceStatusSTARTED, api.ServiceStatusSTOPPED, component.doStop)
 
 	return component
 }
@@ -38,7 +39,7 @@ func NewComponent() camel.Component {
 // Component --
 type Component struct {
 	logger         zerolog.Logger
-	serviceSupport camel.ServiceSupport
+	serviceSupport api.ServiceSupport
 	context        *camel.Context
 }
 
@@ -54,12 +55,12 @@ func (component *Component) Context() *camel.Context {
 
 // Start --
 func (component *Component) Start() {
-	component.serviceSupport.To(camel.ServiceStatusSTARTED)
+	component.serviceSupport.To(api.ServiceStatusSTARTED)
 }
 
 // Stop --
 func (component *Component) Stop() {
-	component.serviceSupport.To(camel.ServiceStatusSTOPPED)
+	component.serviceSupport.To(api.ServiceStatusSTOPPED)
 }
 
 // CreateEndpoint --
