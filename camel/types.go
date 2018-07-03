@@ -1,4 +1,4 @@
-package types
+package camel
 
 import (
 	"reflect"
@@ -12,9 +12,6 @@ import (
 
 // EmptyStruct --
 var EmptyStruct = struct{}{}
-
-// Integer --
-type Integer int
 
 // ==========================
 //

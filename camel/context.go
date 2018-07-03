@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/types"
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -37,7 +36,7 @@ type Context struct {
 	name         string
 	registry     api.LoadingRegistry
 	routes       []*Route
-	converters   []types.TypeConverter
+	converters   []api.TypeConverter
 	services     []api.Service
 	servicesLock sync.RWMutex
 }
@@ -72,15 +71,9 @@ func NewContextWithParentAndName(paretn *Context, name string) *Context {
 		parent:     paretn,
 		name:       name,
 		routes:     make([]*Route, 0),
-		converters: make([]types.TypeConverter, 0),
+		converters: make([]api.TypeConverter, 0),
 		services:   make([]api.Service, 0),
 	}
-
-	// Type conversion
-	context.AddTypeConverter(types.ToIntConverter)
-	context.AddTypeConverter(types.ToDurationConverter)
-	context.AddTypeConverter(types.ToLogLevelConverter)
-	context.AddTypeConverter(types.ToBoolConverter)
 
 	// Set the registry
 	context.registry = NewRegistry(context.TypeConverter())
@@ -100,12 +93,12 @@ func (context *Context) Registry() api.LoadingRegistry {
 }
 
 // AddTypeConverter --
-func (context *Context) AddTypeConverter(converter types.TypeConverter) {
+func (context *Context) AddTypeConverter(converter api.TypeConverter) {
 	context.converters = append(context.converters, converter)
 }
 
 // TypeConverter --
-func (context *Context) TypeConverter() types.TypeConverter {
+func (context *Context) TypeConverter() api.TypeConverter {
 	converter := func(source interface{}, targetType reflect.Type) (interface{}, error) {
 		sourceType := reflect.TypeOf(source)
 
@@ -134,7 +127,7 @@ func (context *Context) TypeConverter() types.TypeConverter {
 	}
 
 	if context.parent != nil {
-		return types.NewConbinedTypeConverter(converter, context.parent.TypeConverter())
+		return api.NewConbinedTypeConverter(converter, context.parent.TypeConverter())
 	}
 
 	return converter
@@ -155,8 +148,34 @@ func (context *Context) AddRouteDefinition(definition Definition) {
 	context.addService(route)
 }
 
-// CreateEndpointFromURI --
-func (context *Context) CreateEndpointFromURI(uri string) (Endpoint, error) {
+// Component --
+func (context *Context) Component(name string) (Component, error) {
+	value, found := context.lookup(name)
+
+	if found && value != nil {
+		if ca, ok := value.(ContextAware); ok {
+			ca.SetContext(context)
+		}
+
+		if component, ok := value.(Component); ok {
+			added := context.addService(component)
+			if added {
+				zlog.Debug().Msgf("Component with scheme %s registered as service", name)
+			}
+
+			return component, nil
+		}
+	}
+
+	if context.parent != nil {
+		return context.parent.Component(name)
+	}
+
+	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
+}
+
+// Endpoint --
+func (context *Context) Endpoint(uri string) (Endpoint, error) {
 	var err error
 	var endpointURL *url.URL
 	var component Component
@@ -178,7 +197,7 @@ func (context *Context) CreateEndpointFromURI(uri string) (Endpoint, error) {
 		opts[k] = v[0]
 	}
 
-	if component, err = context.component(scheme); err != nil {
+	if component, err = context.Component(scheme); err != nil {
 		return nil, err
 	}
 
@@ -232,27 +251,6 @@ func (context *Context) Stop() {
 // Helpers
 //
 // ==========================
-
-// Component --
-func (context *Context) component(name string) (Component, error) {
-	value, found := context.lookup(name)
-
-	if found && value != nil {
-		if component, ok := value.(Component); ok {
-			if added := context.addService(component); added {
-				zlog.Debug().Msgf("Component with scheme %s registered as service", name)
-			}
-
-			return component, nil
-		}
-	}
-
-	if context.parent != nil {
-		return context.parent.component(name)
-	}
-
-	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
-}
 
 func (context *Context) lookup(name string) (interface{}, bool) {
 	value, found := context.registry.Lookup(name)

@@ -29,7 +29,7 @@ func (definition *FromDefinition) Unwrap(context *Context, parent Processor) (Pr
 	var consumer Consumer
 	var endpoint Endpoint
 
-	if endpoint, err = context.CreateEndpointFromURI(definition.URI); err != nil {
+	if endpoint, err = context.Endpoint(definition.URI); err != nil {
 		return parent, nil, nil
 	}
 

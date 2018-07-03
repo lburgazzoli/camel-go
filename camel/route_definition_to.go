@@ -51,7 +51,7 @@ func (definition *ToDefinition) Unwrap(context *Context, parent Processor) (Proc
 	var producer Producer
 	var endpoint Endpoint
 
-	if endpoint, err = context.CreateEndpointFromURI(definition.URI); err != nil {
+	if endpoint, err = context.Endpoint(definition.URI); err != nil {
 		return parent, nil, err
 	}
 

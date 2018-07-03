@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/types"
 )
 
 // ==========================
@@ -38,7 +37,7 @@ func NewExchange(context *Context) api.Exchange {
 // DefaultExchange --
 type DefaultExchange struct {
 	body       interface{}
-	converter  types.TypeConverter
+	converter  api.TypeConverter
 	headers    api.Headers
 	properties api.Properties
 }

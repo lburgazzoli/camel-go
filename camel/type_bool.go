@@ -1,4 +1,4 @@
-package types
+package camel
 
 import (
 	"errors"
@@ -7,6 +7,16 @@ import (
 
 	"github.com/spf13/cast"
 )
+
+// ==========================
+//
+// Init
+//
+// ==========================
+
+func init() {
+	RootContext.AddTypeConverter(ToBoolConverter)
+}
 
 // ==========================
 //

@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/types"
 )
 
 // ==========================
@@ -14,7 +13,7 @@ import (
 // ==========================
 
 // NewRegistry --
-func NewRegistry(converter types.TypeConverter) api.LoadingRegistry {
+func NewRegistry(converter api.TypeConverter) api.LoadingRegistry {
 	return &defaultRegistry{
 		converter: converter,
 		local:     api.NewInMemoryRegistry(converter),
@@ -30,7 +29,7 @@ func NewRegistry(converter types.TypeConverter) api.LoadingRegistry {
 
 // defaultRegistry --
 type defaultRegistry struct {
-	converter types.TypeConverter
+	converter api.TypeConverter
 	local     api.Registry
 	loaders   []api.RegistryLoader
 }

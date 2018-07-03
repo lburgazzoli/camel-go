@@ -3,8 +3,6 @@ package api
 import (
 	"reflect"
 	"sync"
-
-	"github.com/lburgazzoli/camel-go/types"
 )
 
 // ==========================
@@ -14,7 +12,7 @@ import (
 // ==========================
 
 // NewInMemoryRegistry --
-func NewInMemoryRegistry(typeConverter types.TypeConverter) Registry {
+func NewInMemoryRegistry(typeConverter TypeConverter) Registry {
 	r := InMemoryRegistry{
 		typeConverter: typeConverter,
 	}
@@ -24,7 +22,7 @@ func NewInMemoryRegistry(typeConverter types.TypeConverter) Registry {
 
 // InMemoryRegistry --
 type InMemoryRegistry struct {
-	typeConverter types.TypeConverter
+	typeConverter TypeConverter
 	data          sync.Map
 }
 

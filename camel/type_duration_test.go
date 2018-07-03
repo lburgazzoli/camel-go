@@ -1,4 +1,4 @@
-package types
+package camel
 
 import (
 	"reflect"
@@ -17,7 +17,7 @@ import (
 func testStringToDuration(t *testing.T, value string, expectedResult interface{}) {
 	expectedType := reflect.TypeOf(expectedResult)
 
-	r, e := ToDuratioinConverter(value, expectedType)
+	r, e := ToDurationConverter(value, expectedType)
 
 	assert.NoError(t, e)
 	assert.NotNil(t, r)

@@ -1,4 +1,4 @@
-package types
+package camel
 
 import (
 	"errors"
@@ -10,11 +10,22 @@ import (
 
 // ==========================
 //
+// Init
+//
+// ==========================
+
+func init() {
+	RootContext.AddTypeConverter(ToLogLevelConverter)
+}
+
+// ==========================
+//
 //
 //
 // ==========================
 
-var TypeLogLevel  = reflect.TypeOf(zerolog.InfoLevel)
+// TypeLogLevel --
+var TypeLogLevel = reflect.TypeOf(zerolog.InfoLevel)
 
 // ToLogLevelConverter --
 func ToLogLevelConverter(source interface{}, targetType reflect.Type) (interface{}, error) {
