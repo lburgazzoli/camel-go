@@ -1,5 +1,7 @@
 package camel
 
+import "github.com/lburgazzoli/camel-go/api"
+
 // ==========================
 //
 // Route Loader
@@ -8,5 +10,5 @@ package camel
 
 // RouteLoader --
 type RouteLoader interface {
-	Load() ([]Definition, error)
+	Load() ([]*api.Route, error)
 }

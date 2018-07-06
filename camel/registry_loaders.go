@@ -60,6 +60,10 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 			return nil, err
 		}
 
+		if symbol == nil {
+			return nil, nil
+		}
+
 		// Load the object from
 		result = symbol.(func() interface{})()
 

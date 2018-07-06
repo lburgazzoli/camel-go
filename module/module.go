@@ -24,7 +24,7 @@ func LoadSymbol(path string, symbol string) (interface{}, error) {
 	_, err := os.Stat(location)
 
 	if os.IsNotExist(err) {
-		return nil, err
+		return nil, nil
 	}
 
 	if err != nil {

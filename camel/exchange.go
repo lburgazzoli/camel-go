@@ -14,7 +14,7 @@ import (
 // ==========================
 
 // NewExchange --
-func NewExchange(context *Context) api.Exchange {
+func NewExchange(context api.Context) api.Exchange {
 	converter := context.TypeConverter()
 
 	return &DefaultExchange{

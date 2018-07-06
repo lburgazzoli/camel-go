@@ -16,26 +16,14 @@ import (
 //
 // ==========================
 
-// HasContext --
-type HasContext interface {
-	Context() *Context
-}
-
-// ContextAware --
-type ContextAware interface {
-	HasContext
-
-	SetContext(context *Context)
-}
-
 // Context --
-type Context struct {
-	api.Service
+type defaultContext struct {
+	api.Context
 
-	parent       *Context
+	parent       api.Context
 	name         string
 	registry     api.LoadingRegistry
-	routes       []*Route
+	routes       []*api.Route
 	converters   []api.TypeConverter
 	services     []api.Service
 	servicesLock sync.RWMutex
@@ -51,26 +39,26 @@ var RootContext = NewContextWithParentAndName(nil, "root")
 // ==========================
 
 // NewContext --
-func NewContext() *Context {
+func NewContext() api.Context {
 	return NewContextWithParentAndName(RootContext, "camel")
 }
 
 // NewContextWithParent --
-func NewContextWithParent(parent *Context) *Context {
+func NewContextWithParent(parent api.Context) api.Context {
 	return NewContextWithParentAndName(parent, "camel")
 }
 
 // NewContextWithName --
-func NewContextWithName(name string) *Context {
+func NewContextWithName(name string) api.Context {
 	return NewContextWithParentAndName(RootContext, name)
 }
 
 // NewContextWithParentAndName --
-func NewContextWithParentAndName(paretn *Context, name string) *Context {
-	context := Context{
+func NewContextWithParentAndName(paretn api.Context, name string) api.Context {
+	context := defaultContext{
 		parent:     paretn,
 		name:       name,
-		routes:     make([]*Route, 0),
+		routes:     make([]*api.Route, 0),
 		converters: make([]api.TypeConverter, 0),
 		services:   make([]api.Service, 0),
 	}
@@ -88,17 +76,17 @@ func NewContextWithParentAndName(paretn *Context, name string) *Context {
 // ==========================
 
 // Registry --
-func (context *Context) Registry() api.LoadingRegistry {
+func (context *defaultContext) Registry() api.LoadingRegistry {
 	return context.registry
 }
 
 // AddTypeConverter --
-func (context *Context) AddTypeConverter(converter api.TypeConverter) {
+func (context *defaultContext) AddTypeConverter(converter api.TypeConverter) {
 	context.converters = append(context.converters, converter)
 }
 
 // TypeConverter --
-func (context *Context) TypeConverter() api.TypeConverter {
+func (context *defaultContext) TypeConverter() api.TypeConverter {
 	converter := func(source interface{}, targetType reflect.Type) (interface{}, error) {
 		sourceType := reflect.TypeOf(source)
 
@@ -134,52 +122,73 @@ func (context *Context) TypeConverter() api.TypeConverter {
 }
 
 // AddRouteDefinition --
-func (context *Context) AddRouteDefinition(definition Definition) {
-	route := &Route{}
-
-	// Find the root
-	for definition.Parent() != nil {
-		definition = definition.Parent()
-	}
-
-	context.addDefinitionsToRoute(route, nil, definition)
+func (context *defaultContext) AddRoute(route *api.Route) {
 	context.routes = append(context.routes, route)
 
-	context.addService(route)
+	context.AddService(route)
 }
 
-// Component --
-func (context *Context) Component(name string) (Component, error) {
-	value, found := context.lookup(name)
+func (context *defaultContext) AddService(service api.Service) bool {
+	context.servicesLock.Lock()
+	defer context.servicesLock.Unlock()
 
-	if found && value != nil {
-		if ca, ok := value.(ContextAware); ok {
-			ca.SetContext(context)
+	for _, s := range context.services {
+		if s == service {
+			return false
 		}
+	}
 
-		if component, ok := value.(Component); ok {
-			added := context.addService(component)
-			if added {
-				zlog.Debug().Msgf("Component with scheme %s registered as service", name)
+	context.services = append(context.services, service)
+
+	return true
+}
+
+// ==========================
+//
+// Lyfecycle
+//
+// ==========================
+
+// Start --
+func (context *defaultContext) Start() {
+	for _, service := range context.services {
+		service.Start()
+	}
+}
+
+// Stop --
+func (context *defaultContext) Stop() {
+	for _, service := range context.services {
+		service.Stop()
+	}
+}
+
+// ==========================
+//
+// Helpers
+//
+// ==========================
+
+func (context *defaultContext) lookup(name string) (interface{}, bool) {
+	value, found := context.registry.Lookup(name)
+
+	if found {
+		if ca, ok := value.(api.ContextAware); ok {
+			if ca.Context() == nil {
+				ca.SetContext(context)
 			}
-
-			return component, nil
 		}
 	}
 
-	if context.parent != nil {
-		return context.parent.Component(name)
-	}
-
-	return nil, fmt.Errorf("unable to find component with scheme: %s", name)
+	return value, found
 }
 
-// Endpoint --
-func (context *Context) Endpoint(uri string) (Endpoint, error) {
+// NewEndpointFromURI --
+func NewEndpointFromURI(context api.Context, uri string) (api.Endpoint, error) {
 	var err error
 	var endpointURL *url.URL
-	var component Component
-	var endpoint Endpoint
+	var component api.Component
+	var endpoint api.Endpoint
 
 	if endpointURL, err = url.Parse(uri); err != nil {
 		return nil, err
@@ -197,119 +206,58 @@ func (context *Context) Endpoint(uri string) (Endpoint, error) {
 		opts[k] = v[0]
 	}
 
-	if component, err = context.Component(scheme); err != nil {
-		return nil, err
-	}
-
-	remaining := ""
-	if endpointURL.Opaque != "" {
-		if remaining, err = url.PathUnescape(endpointURL.Opaque); err != nil {
-			return nil, err
-		}
-	} else {
-		remaining = endpointURL.Host
-
-		if endpointURL.RawPath != "" {
-			path, err := url.PathUnescape(endpointURL.RawPath)
-			if err != nil {
+	if component, err = LookupComponent(context, scheme); err == nil {
+		remaining := ""
+		if endpointURL.Opaque != "" {
+			if remaining, err = url.PathUnescape(endpointURL.Opaque); err != nil {
 				return nil, err
 			}
-
-			remaining += path
-		}
-	}
-
-	if endpoint, err = component.CreateEndpoint(remaining, opts); err != nil {
-		return nil, err
-	}
-
-	return endpoint, nil
-}
-
-// ==========================
-//
-// Lyfecycle
-//
-// ==========================
-
-// Start --
-func (context *Context) Start() {
-	for _, service := range context.services {
-		service.Start()
-	}
-}
-
-// Stop --
-func (context *Context) Stop() {
-	for _, service := range context.services {
-		service.Stop()
-	}
-}
-
-// ==========================
-//
-// Helpers
-//
-// ==========================
-
-func (context *Context) lookup(name string) (interface{}, bool) {
-	value, found := context.registry.Lookup(name)
-
-	if found {
-		if ca, ok := value.(ContextAware); ok {
-			if ca.Context() == nil {
-				ca.SetContext(context)
-			}
-		}
-	}
-
-	return value, found
-}
-
-func (context *Context) addService(service api.Service) bool {
-	context.servicesLock.Lock()
-	defer context.servicesLock.Unlock()
-
-	for _, s := range context.services {
-		if s == service {
-			return false
-		}
-	}
-
-	context.services = append(context.services, service)
-
-	return true
-}
-
-func (context *Context) addDefinitionsToRoute(route *Route, processor Processor, definition Definition) Processor {
-	var s api.Service
-	var e error
-
-	p := processor
-
-	if u, ok := definition.(Unwrappable); ok {
-		p, s, e = u.Unwrap(context, p)
-
-		if e != nil {
-			zlog.Fatal().Msgf("unable to load processor %v (%s)", definition, e)
-		}
-
-		if e == nil && s != nil {
-			route.AddService(s)
-		}
-
-		if p != nil {
-			if s, ok := p.(api.Service); ok {
-				route.AddService(s)
-			}
 		} else {
-			p = processor
+			remaining = endpointURL.Host
+
+			if endpointURL.RawPath != "" {
+				path, err := url.PathUnescape(endpointURL.RawPath)
+				if err != nil {
+					return nil, err
+				}
+
+				remaining += path
+			}
+		}
+
+		endpoint, err = component.CreateEndpoint(remaining, opts)
+	}
+
+	if err != nil {
+		endpoint = nil
+	}
+
+	return endpoint, err
+}
+
+// LookupComponent --
+func LookupComponent(context api.Context, scheme string) (api.Component, error) {
+	var component api.Component
+	var err error
+
+	zlog.Info().Msgf("lookup component scheme: %s", scheme)
+
+	// Every component should be  context registry
+	if c, ok := context.Registry().Lookup(scheme); ok {
+		zlog.Info().Msgf("scheme: %s, component: %v, error: %v", scheme, c, err)
+
+		component, _ = c.(api.Component)
+	}
+
+	if component != nil {
+		if ca, ok := component.(api.ContextAware); ok {
+			ca.SetContext(context)
 		}
 	}
 
-	for _, c := range definition.Children() {
-		p = context.addDefinitionsToRoute(route, p, c)
+	if component == nil {
+		err = fmt.Errorf("unable to find component whit scheme: %s", scheme)
 	}
 
-	return p
+	return component, err
 }

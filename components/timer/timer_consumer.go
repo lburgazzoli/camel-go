@@ -3,6 +3,7 @@ package timer
 import (
 	"time"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
 )
 
@@ -15,7 +16,7 @@ import (
 func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 	c := timerConsumer{
 		endpoint:  endpoint,
-		processor: camel.NewProcessorSource(),
+		processor: api.NewProcessorSource(),
 	}
 
 	return &c
@@ -23,7 +24,7 @@ func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 
 type timerConsumer struct {
 	endpoint  *timerEndpoint
-	processor camel.Processor
+	processor api.Processor
 	ticker    *time.Ticker
 }
 
@@ -55,10 +56,10 @@ func (consumer *timerConsumer) Stop() {
 }
 
 // Endpoint --
-func (consumer *timerConsumer) Endpoint() camel.Endpoint {
+func (consumer *timerConsumer) Endpoint() api.Endpoint {
 	return consumer.endpoint
 }
 
-func (consumer *timerConsumer) Processor() camel.Processor {
+func (consumer *timerConsumer) Processor() api.Processor {
 	return consumer.processor
 }

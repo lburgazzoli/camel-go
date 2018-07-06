@@ -1,11 +1,9 @@
-package camel
-
-import "github.com/lburgazzoli/camel-go/api"
+package api
 
 // Component --
 type Component interface {
 	ContextAware
-	api.Service
+	Service
 
 	CreateEndpoint(remaining string, options map[string]interface{}) (Endpoint, error)
 }

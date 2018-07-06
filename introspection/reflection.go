@@ -5,11 +5,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/api"
 )
 
 // SetProperty --
-func SetProperty(context *camel.Context, target interface{}, name string, value interface{}) bool {
+func SetProperty(context api.Context, target interface{}, name string, value interface{}) bool {
 	var v reflect.Value
 	var t reflect.Value
 	var f reflect.Value
@@ -78,7 +78,7 @@ func SetProperty(context *camel.Context, target interface{}, name string, value 
 }
 
 // SetProperties --
-func SetProperties(context *camel.Context, target interface{}, options map[string]interface{}) int {
+func SetProperties(context api.Context, target interface{}, options map[string]interface{}) int {
 	count := 0
 
 	for k, v := range options {

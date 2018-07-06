@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/spf13/viper"
 
 	zlog "github.com/rs/zerolog/log"
@@ -18,7 +19,7 @@ import (
 
 // FlowLoader --
 type FlowLoader struct {
-	context  *Context
+	context  api.Context
 	flows    []Flow
 	handlers map[string]StepHandler
 }
@@ -30,7 +31,7 @@ type FlowLoader struct {
 // ==========================
 
 // NewFlowLoader --
-func NewFlowLoader(context *Context, flows []Flow) *FlowLoader {
+func NewFlowLoader(context api.Context, flows []Flow) *FlowLoader {
 	loader := FlowLoader{
 		context:  context,
 		flows:    flows,
@@ -45,17 +46,17 @@ func NewFlowLoader(context *Context, flows []Flow) *FlowLoader {
 }
 
 // Load --
-func (loader *FlowLoader) Load() ([]Definition, error) {
+func (loader *FlowLoader) Load() ([]*api.Route, error) {
 	zlog.Info().Msgf("flows: %v", loader.flows)
 
-	definitions := make([]Definition, 0)
+	routes := make([]*api.Route, 0)
 
 	for _, f := range loader.flows {
-		var route *RouteDefinition
+		var definition *RouteDefinition
 
 		for i, s := range f.Steps {
 			if i == 0 {
-				route = From(s["uri"].(string))
+				definition = From(s["uri"].(string))
 			} else {
 				if t, ok := s["type"]; ok {
 					h, e := findHandler(loader.handlers, t.(string))
@@ -63,8 +64,8 @@ func (loader *FlowLoader) Load() ([]Definition, error) {
 						return nil, e
 					}
 
-					if r, e := h(s, route); e == nil {
-						route = r
+					if r, e := h(s, definition); e == nil {
+						definition = r
 					} else {
 						return nil, fmt.Errorf("Error handling step: %s, error: %v", s, e)
 					}
@@ -74,10 +75,15 @@ func (loader *FlowLoader) Load() ([]Definition, error) {
 			}
 		}
 
-		definitions = append(definitions, route)
+		r, e := ToRoute(loader.context, definition)
+		if e != nil {
+			return nil, e
+		}
+
+		routes = append(routes, r)
 	}
 
-	return definitions, nil
+	return routes, nil
 }
 
 func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
@@ -104,7 +110,7 @@ func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
 // ==========================
 
 // LoadFlowFromYAMLFile --
-func LoadFlowFromYAMLFile(context *Context, path string) ([]Definition, error) {
+func LoadFlowFromYAMLFile(context api.Context, path string) ([]*api.Route, error) {
 	zlog.Debug().Msgf("Loading routes from:  %s", path)
 
 	var err error
@@ -126,7 +132,7 @@ func LoadFlowFromYAMLFile(context *Context, path string) ([]Definition, error) {
 }
 
 // LoadFlowFromViper --
-func LoadFlowFromViper(context *Context, v *viper.Viper) ([]Definition, error) {
+func LoadFlowFromViper(context api.Context, v *viper.Viper) ([]*api.Route, error) {
 	flows := make([]Flow, 0)
 	err := v.UnmarshalKey("flows", &flows)
 

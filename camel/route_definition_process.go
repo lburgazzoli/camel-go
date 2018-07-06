@@ -50,9 +50,9 @@ func (definition *ProcessDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
+func (definition *ProcessDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
 	if definition.processor != nil {
-		p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
+		p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 			definition.processor(e)
 
 			out <- e
@@ -67,7 +67,7 @@ func (definition *ProcessDefinition) Unwrap(context *Context, parent Processor) 
 
 		if ifc != nil && found {
 			if processor, ok := ifc.(func(e api.Exchange)); ok {
-				p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
+				p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 					processor(e)
 
 					out <- e

@@ -1,6 +1,4 @@
-package camel
-
-import "github.com/lburgazzoli/camel-go/api"
+package api
 
 // ==========================
 //
@@ -9,12 +7,12 @@ import "github.com/lburgazzoli/camel-go/api"
 // ==========================
 
 // ProcessorFn --
-type ProcessorFn func(api.Exchange, chan<- api.Exchange)
+type ProcessorFn func(Exchange, chan<- Exchange)
 
 // Processor --
 type Processor interface {
-	Publish(api.Exchange) Processor
-	Subscribe(consumer func(api.Exchange)) Processor
+	Publish(Exchange) Processor
+	Subscribe(consumer func(Exchange)) Processor
 	Parent(parent Processor) Processor
 }
 
@@ -27,8 +25,8 @@ type Processor interface {
 // NewProcessor --
 func NewProcessor(fn ProcessorFn) Processor {
 	p := defaultProcessor{
-		in:  make(chan api.Exchange),
-		out: make(chan api.Exchange),
+		in:  make(chan Exchange),
+		out: make(chan Exchange),
 		fn:  fn,
 	}
 
@@ -45,7 +43,7 @@ func NewProcessor(fn ProcessorFn) Processor {
 func NewProcessorWithParent(parent Processor, fn ProcessorFn) Processor {
 	p := NewProcessor(fn)
 
-	parent.Subscribe(func(e api.Exchange) {
+	parent.Subscribe(func(e Exchange) {
 		p.Publish(e)
 	})
 
@@ -54,20 +52,20 @@ func NewProcessorWithParent(parent Processor, fn ProcessorFn) Processor {
 
 // defaultProcessor --
 type defaultProcessor struct {
-	in  chan api.Exchange
-	out chan api.Exchange
+	in  chan Exchange
+	out chan Exchange
 	fn  ProcessorFn
 }
 
 // Publish --
-func (processor *defaultProcessor) Publish(exchange api.Exchange) Processor {
+func (processor *defaultProcessor) Publish(exchange Exchange) Processor {
 	processor.in <- exchange
 
 	return processor
 }
 
 // Subscribe --
-func (processor *defaultProcessor) Subscribe(consumer func(api.Exchange)) Processor {
+func (processor *defaultProcessor) Subscribe(consumer func(Exchange)) Processor {
 	go func() {
 		for exchange := range processor.out {
 			consumer(exchange)
@@ -79,7 +77,7 @@ func (processor *defaultProcessor) Subscribe(consumer func(api.Exchange)) Proces
 
 // Parent --
 func (processor *defaultProcessor) Parent(parent Processor) Processor {
-	parent.Subscribe(func(e api.Exchange) {
+	parent.Subscribe(func(e Exchange) {
 		processor.Publish(e)
 	})
 
@@ -95,7 +93,7 @@ func (processor *defaultProcessor) Parent(parent Processor) Processor {
 // NewProcessorSource --
 func NewProcessorSource() Processor {
 	p := sourceProcessor{
-		in: make(chan api.Exchange),
+		in: make(chan Exchange),
 	}
 
 	return &p
@@ -105,7 +103,7 @@ func NewProcessorSource() Processor {
 func NewProcessorSourceWithParent(parent Processor, fn ProcessorFn) Processor {
 	p := NewProcessorSource()
 
-	parent.Subscribe(func(e api.Exchange) {
+	parent.Subscribe(func(e Exchange) {
 		p.Publish(e)
 	})
 
@@ -114,18 +112,18 @@ func NewProcessorSourceWithParent(parent Processor, fn ProcessorFn) Processor {
 
 // defaultProcessor --
 type sourceProcessor struct {
-	in chan api.Exchange
+	in chan Exchange
 }
 
 // Publish --
-func (processor *sourceProcessor) Publish(exchange api.Exchange) Processor {
+func (processor *sourceProcessor) Publish(exchange Exchange) Processor {
 	processor.in <- exchange
 
 	return processor
 }
 
 // Subscribe --
-func (processor *sourceProcessor) Subscribe(consumer func(api.Exchange)) Processor {
+func (processor *sourceProcessor) Subscribe(consumer func(Exchange)) Processor {
 	go func() {
 		for exchange := range processor.in {
 			consumer(exchange)
@@ -137,7 +135,7 @@ func (processor *sourceProcessor) Subscribe(consumer func(api.Exchange)) Process
 
 // Parent --
 func (processor *sourceProcessor) Parent(parent Processor) Processor {
-	parent.Subscribe(func(e api.Exchange) {
+	parent.Subscribe(func(e Exchange) {
 		processor.Publish(e)
 	})
 

@@ -28,7 +28,7 @@ func init() {
 // ==========================
 
 // NewComponent --
-func NewComponent() camel.Component {
+func NewComponent() api.Component {
 	component := &Component{
 		logger:         zlog.With().Str("logger", "timer.Component").Logger(),
 		serviceSupport: api.NewServiceSupport(),
@@ -50,16 +50,16 @@ func NewComponent() camel.Component {
 type Component struct {
 	logger         zerolog.Logger
 	serviceSupport api.ServiceSupport
-	context        *camel.Context
+	context        api.Context
 }
 
 // SetContext --
-func (component *Component) SetContext(context *camel.Context) {
+func (component *Component) SetContext(context api.Context) {
 	component.context = context
 }
 
 // Context --
-func (component *Component) Context() *camel.Context {
+func (component *Component) Context() api.Context {
 	return component.context
 }
 
@@ -74,7 +74,7 @@ func (component *Component) Stop() {
 }
 
 // CreateEndpoint --
-func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (camel.Endpoint, error) {
+func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
 	// Create the endpoint and set default values
 	endpoint := timerEndpoint{}
 	endpoint.component = component

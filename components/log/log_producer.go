@@ -2,7 +2,6 @@ package log
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/rs/zerolog"
 )
 
@@ -16,7 +15,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 	p := logProducer{
 		endpoint:  endpoint,
 		logger:    logger,
-		processor: camel.NewProcessorSource(),
+		processor: api.NewProcessorSource(),
 	}
 
 	return &p
@@ -24,7 +23,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 
 type logProducer struct {
 	endpoint  *logEndpoint
-	processor camel.Processor
+	processor api.Processor
 	logger    *zerolog.Logger
 }
 
@@ -35,11 +34,11 @@ func (producer *logProducer) Start() {
 func (producer *logProducer) Stop() {
 }
 
-func (producer *logProducer) Endpoint() camel.Endpoint {
+func (producer *logProducer) Endpoint() api.Endpoint {
 	return producer.endpoint
 }
 
-func (producer *logProducer) Processor() camel.Processor {
+func (producer *logProducer) Processor() api.Processor {
 	return producer.processor
 }
 

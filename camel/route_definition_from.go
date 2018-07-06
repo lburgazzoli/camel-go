@@ -24,12 +24,12 @@ func (definition *FromDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *FromDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
+func (definition *FromDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
 	var err error
-	var consumer Consumer
-	var endpoint Endpoint
+	var consumer api.Consumer
+	var endpoint api.Endpoint
 
-	if endpoint, err = context.Endpoint(definition.URI); err != nil {
+	if endpoint, err = NewEndpointFromURI(context, definition.URI); err != nil {
 		return parent, nil, nil
 	}
 

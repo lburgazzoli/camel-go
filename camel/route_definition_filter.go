@@ -50,9 +50,9 @@ func (definition *FilterDefinition) Children() []Definition {
 }
 
 // Unwrap ---
-func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (Processor, api.Service, error) {
+func (definition *FilterDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
 	if definition.predicate != nil {
-		p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
+		p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 			if definition.predicate(e) {
 				out <- e
 			}
@@ -67,7 +67,7 @@ func (definition *FilterDefinition) Unwrap(context *Context, parent Processor) (
 
 		if ifc != nil && found {
 			if predicate, ok := ifc.(func(e api.Exchange) bool); ok {
-				p := NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
+				p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
 					if predicate(e) {
 						out <- e
 					}
