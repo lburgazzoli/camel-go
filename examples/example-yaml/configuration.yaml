@@ -1,0 +1,14 @@
+plugins: 
+  - ${GOPATH}/src/github.com/lburgazzoli/camel-go/examples/functions
+flows:
+  - name: "a flow"
+    id: "flow-1"
+    steps:
+      - type: endpoint
+        uri: timer:start?period=1s
+      - type: process
+        ref: "set_header"
+      - type: filter
+        ref: "filter4"
+      - type: endpoint
+        uri: log:test?logHeaders=true
