@@ -83,7 +83,7 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 
 	unwrapDefinition(context, route, nil, definition)
 
-	return nil, nil
+	return route, nil
 }
 
 func unwrapDefinition(context api.Context, route *api.Route, processor api.Processor, definition Definition) api.Processor {

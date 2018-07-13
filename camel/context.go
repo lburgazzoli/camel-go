@@ -54,17 +54,24 @@ func NewContextWithName(name string) api.Context {
 }
 
 // NewContextWithParentAndName --
-func NewContextWithParentAndName(paretn api.Context, name string) api.Context {
+func NewContextWithParentAndName(parent api.Context, name string) api.Context {
 	context := defaultContext{
-		parent:     paretn,
+		parent:     parent,
 		name:       name,
 		routes:     make([]*api.Route, 0),
 		converters: make([]api.TypeConverter, 0),
 		services:   make([]api.Service, 0),
 	}
 
-	// Set the registry
-	context.registry = NewRegistry(context.TypeConverter())
+	if parent != nil {
+		// Set the registry
+		context.registry = api.NewCombinedRegistry(
+			NewRegistry(context.TypeConverter()),
+			parent.Registry(),
+		)
+	} else {
+		context.registry = NewRegistry(context.TypeConverter())
+	}
 
 	return &context
 }

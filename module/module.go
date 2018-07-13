@@ -18,7 +18,7 @@ func LoadSymbol(path string, symbol string) (interface{}, error) {
 		return nil, fmt.Errorf("Symbol is empty")
 	}
 
-	zlog.Debug().Msgf("load symbol \"%s\" from plugin %s", symbol, path)
+	zlog.Debug().Msgf("try loading symbol \"%s\" from plugin %s", symbol, path)
 
 	location := os.ExpandEnv(path)
 	_, err := os.Stat(location)
