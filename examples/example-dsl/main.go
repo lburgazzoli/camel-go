@@ -6,10 +6,10 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/components/log"
 	"github.com/lburgazzoli/camel-go/components/timer"
-	"github.com/lburgazzoli/camel-go/types"
 	"github.com/spf13/viper"
 
 	zlog "github.com/rs/zerolog/log"
@@ -21,22 +21,34 @@ import (
 //
 // ==========================
 
-func simpleProcess(e *camel.Exchange) {
-	e.SetHeader("ref.header", rand.Int())
+func simpleProcess(e api.Exchange) {
+	e.Headers().Bind("ref.header", rand.Int())
 }
 
-func simpleFilter(e *camel.Exchange) bool {
-	count := e.HeaderAs("timer.fire.count", types.TypeInt).(int)
-	return count != 4
+func simpleFilter(e api.Exchange) bool {
+	c, ok := e.Headers().LookupAs("timer.fire.count", camel.TypeInt)
+	if ok {
+		if c, ok := c.(int); ok {
+			return c != 4
+		}
+	}
+
+	return true
 }
 
-func simpleProcessorFn(e *camel.Exchange) {
+func simpleProcessorFn(e api.Exchange) {
 	e.SetBody(fmt.Sprintf("random body: %d", rand.Int()))
 }
 
-func simpleFilterFn(e *camel.Exchange) bool {
-	count := e.HeaderAs("timer.fire.count", types.TypeInt).(int)
-	return count%2 == 0
+func simpleFilterFn(e api.Exchange) bool {
+	c, ok := e.Headers().LookupAs("timer.fire.count", camel.TypeInt)
+	if ok {
+		if c, ok := c.(int); ok {
+			return c%2 != 0
+		}
+	}
+
+	return true
 }
 
 // ==========================
@@ -84,7 +96,12 @@ func main() {
 		Filter().Ref("refFilter").
 		To("log:test?logHeaders=true")
 
-	context.AddRouteDefinition(def)
+	route, err := camel.ToRoute(context, def)
+	if err != nil {
+		zlog.Panic().Msg("Unable to load route")
+	}
+
+	context.AddRoute(route)
 
 	zlog.Info().Msg("Start context")
 	context.Start()
