@@ -1,0 +1,2 @@
+plugins: 
+  - ${GOPATH}/src/github.com/lburgazzoli/camel-go-examples/functions
