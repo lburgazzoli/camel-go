@@ -6,13 +6,38 @@ package api
 //
 // ==========================
 
+// Subscription --
+type Subscription interface {
+	Cancel()
+}
+
+func newdefaultSubcription() *defaultSubcription {
+	return &defaultSubcription{
+		signal: make(chan bool),
+	}
+}
+
+type defaultSubcription struct {
+	signal chan bool
+}
+
+func (subscription *defaultSubcription) Cancel() {
+	subscription.signal <- true
+}
+
+// ==========================
+//
+//
+//
+// ==========================
+
 // ProcessorFn --
 type ProcessorFn func(Exchange, chan<- Exchange)
 
 // Processor --
 type Processor interface {
 	Publish(Exchange) Processor
-	Subscribe(consumer func(Exchange)) Processor
+	Subscribe(consumer func(Exchange)) Subscription
 	Parent(parent Processor) Processor
 }
 
@@ -65,14 +90,22 @@ func (processor *defaultProcessor) Publish(exchange Exchange) Processor {
 }
 
 // Subscribe --
-func (processor *defaultProcessor) Subscribe(consumer func(Exchange)) Processor {
+func (processor *defaultProcessor) Subscribe(consumer func(Exchange)) Subscription {
+	subscription := newdefaultSubcription()
+
 	go func() {
-		for exchange := range processor.out {
-			consumer(exchange)
+		for {
+			select {
+			case exchange := <-processor.out:
+				consumer(exchange)
+			case _ = <-subscription.signal:
+				return
+			default:
+			}
 		}
 	}()
 
-	return processor
+	return subscription
 }
 
 // Parent --
@@ -123,14 +156,22 @@ func (processor *sourceProcessor) Publish(exchange Exchange) Processor {
 }
 
 // Subscribe --
-func (processor *sourceProcessor) Subscribe(consumer func(Exchange)) Processor {
+func (processor *sourceProcessor) Subscribe(consumer func(Exchange)) Subscription {
+	subscription := newdefaultSubcription()
+
 	go func() {
-		for exchange := range processor.in {
-			consumer(exchange)
+		for {
+			select {
+			case exchange := <-processor.in:
+				consumer(exchange)
+			case _ = <-subscription.signal:
+				return
+			default:
+			}
 		}
 	}()
 
-	return processor
+	return subscription
 }
 
 // Parent --
