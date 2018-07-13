@@ -32,11 +32,25 @@ func (definition *RouteDefinition) Filter() *FilterDefinition {
 
 // FilterDefinition --
 type FilterDefinition struct {
+	api.ContextAware
+	ProcessingNode
+
+	context  api.Context
 	parent   *RouteDefinition
 	children []Definition
 
 	predicate    func(api.Exchange) bool
 	predicateRef string
+}
+
+// SetContext --
+func (definition *FilterDefinition) SetContext(context api.Context) {
+	definition.context = context
+}
+
+// Context --
+func (definition *FilterDefinition) Context() api.Context {
+	return definition.context
 }
 
 // Parent --
@@ -49,31 +63,19 @@ func (definition *FilterDefinition) Children() []Definition {
 	return definition.children
 }
 
-// Unwrap ---
-func (definition *FilterDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
+// Processor ---
+func (definition *FilterDefinition) Processor() (api.Processor, error) {
 	if definition.predicate != nil {
-		p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
-			if definition.predicate(e) {
-				out <- e
-			}
-		})
-
-		return p, nil, nil
+		return api.NewFilteringPipeline(definition.predicate), nil
 	}
 
 	if definition.predicateRef != "" {
-		registry := context.Registry()
+		registry := definition.context.Registry()
 		ifc, found := registry.Lookup(definition.predicateRef)
 
 		if ifc != nil && found {
-			if predicate, ok := ifc.(func(e api.Exchange) bool); ok {
-				p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
-					if predicate(e) {
-						out <- e
-					}
-				})
-
-				return p, nil, nil
+			if p, ok := ifc.(func(e api.Exchange) bool); ok {
+				return api.NewFilteringPipeline(p), nil
 			}
 		}
 
@@ -84,11 +86,10 @@ func (definition *FilterDefinition) Unwrap(context api.Context, parent api.Proce
 		}
 
 		// TODO: error handling
-		return nil, nil, err
+		return nil, err
 	}
 
-	return nil, nil, nil
-
+	return nil, nil
 }
 
 // Fn --

@@ -32,11 +32,25 @@ func (definition *RouteDefinition) Process() *ProcessDefinition {
 
 // ProcessDefinition --
 type ProcessDefinition struct {
+	api.ContextAware
+	ProcessingNode
+
 	parent   *RouteDefinition
 	children []Definition
 
+	context      api.Context
 	processor    func(api.Exchange)
 	processorRef string
+}
+
+// SetContext --
+func (definition *ProcessDefinition) SetContext(context api.Context) {
+	definition.context = context
+}
+
+// Context --
+func (definition *ProcessDefinition) Context() api.Context {
+	return definition.context
 }
 
 // Parent --
@@ -49,31 +63,19 @@ func (definition *ProcessDefinition) Children() []Definition {
 	return definition.children
 }
 
-// Unwrap ---
-func (definition *ProcessDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
+// Processor ---
+func (definition *ProcessDefinition) Processor() (api.Processor, error) {
 	if definition.processor != nil {
-		p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
-			definition.processor(e)
-
-			out <- e
-		})
-
-		return p, nil, nil
+		return api.NewProcessingPipeline(definition.processor), nil
 	}
 
 	if definition.processorRef != "" {
-		registry := context.Registry()
+		registry := definition.context.Registry()
 		ifc, found := registry.Lookup(definition.processorRef)
 
 		if ifc != nil && found {
-			if processor, ok := ifc.(func(e api.Exchange)); ok {
-				p := api.NewProcessorWithParent(parent, func(e api.Exchange, out chan<- api.Exchange) {
-					processor(e)
-
-					out <- e
-				})
-
-				return p, nil, nil
+			if p, ok := ifc.(func(e api.Exchange)); ok {
+				return api.NewProcessingPipeline(p), nil
 			}
 		}
 
@@ -84,11 +86,10 @@ func (definition *ProcessDefinition) Unwrap(context api.Context, parent api.Proc
 		}
 
 		// TODO: error handling
-		return nil, nil, err
+		return nil, err
 	}
 
-	return nil, nil, nil
-
+	return nil, nil
 }
 
 // Fn --

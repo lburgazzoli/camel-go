@@ -6,11 +6,6 @@ package api
 //
 // ==========================
 
-// Unwrappable --
-type Unwrappable interface {
-	Unwrap(context Context, parent Processor) (Processor, Service, error)
-}
-
 // Route --
 type Route struct {
 	Service

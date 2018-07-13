@@ -11,6 +11,17 @@ import (
 //
 // ==========================
 
+// ProcessingNode --
+type ProcessingNode interface {
+	Processor() (api.Processor, error)
+}
+
+// ServiceNode --
+type ServiceNode interface {
+	// TODO: refactor
+	Service() (api.Processor, api.Service, error)
+}
+
 // Definition --
 type Definition interface {
 	Parent() Definition
@@ -87,25 +98,48 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 }
 
 func unwrapDefinition(context api.Context, route *api.Route, processor api.Processor, definition Definition) api.Processor {
+	var p api.Processor
 	var s api.Service
 	var e error
 
-	p := processor
+	p = processor
 
-	if u, ok := definition.(api.Unwrappable); ok {
-		p, s, e = u.Unwrap(context, p)
+	if node, ok := definition.(api.ContextAware); ok {
+		node.SetContext(context)
+	}
+
+	if node, ok := definition.(ProcessingNode); ok {
+		p, e = node.Processor()
 
 		if e != nil {
-			zlog.Fatal().Msgf("unable to load processor %v (%s)", definition, e)
+			zlog.Fatal().Msgf("unable to load processing node %v (%s)", definition, e)
 		}
 
-		if e == nil && s != nil {
+		if p != nil {
+			if processor != nil {
+				zlog.Info().Msgf("connect %+v", definition)
+				api.Connect(processor, p)
+			}
+		} else {
+			p = processor
+		}
+	}
+
+	if node, ok := definition.(ServiceNode); ok {
+		p, s, e = node.Service()
+
+		if e != nil {
+			zlog.Fatal().Msgf("unable to load service node %v (%s)", definition, e)
+		}
+
+		if s != nil {
 			route.AddService(s)
 		}
 
 		if p != nil {
-			if s, ok := p.(api.Service); ok {
-				route.AddService(s)
+			if processor != nil {
+				zlog.Info().Msgf("connect %+v, %+v", processor, definition)
+				api.Connect(processor, p)
 			}
 		} else {
 			p = processor

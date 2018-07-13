@@ -13,10 +13,11 @@ import (
 
 func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer {
 	p := logProducer{
-		endpoint:  endpoint,
-		logger:    logger,
-		processor: api.NewProcessorSource(),
+		endpoint: endpoint,
+		logger:   logger,
 	}
+
+	p.processor = api.NewProcessingPipeline(p.process)
 
 	return &p
 }
@@ -28,7 +29,6 @@ type logProducer struct {
 }
 
 func (producer *logProducer) Start() {
-	producer.processor.Subscribe(producer.process)
 }
 
 func (producer *logProducer) Stop() {

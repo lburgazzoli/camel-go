@@ -15,8 +15,9 @@ import (
 
 func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 	c := timerConsumer{
-		endpoint:  endpoint,
-		processor: api.NewProcessorSource(),
+		endpoint: endpoint,
+		// TODO: this is ugly
+		processor: api.NewProcessingPipeline(func(api.Exchange) {}),
 	}
 
 	return &c

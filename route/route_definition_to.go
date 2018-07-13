@@ -32,10 +32,24 @@ func (definition *RouteDefinition) To(uri string) *RouteDefinition {
 
 // ToDefinition --
 type ToDefinition struct {
+	api.ContextAware
+	ServiceNode
+
+	context  api.Context
 	parent   *RouteDefinition
 	children []Definition
 
 	URI string
+}
+
+// SetContext --
+func (definition *ToDefinition) SetContext(context api.Context) {
+	definition.context = context
+}
+
+// Context --
+func (definition *ToDefinition) Context() api.Context {
+	return definition.context
 }
 
 // Parent --
@@ -48,24 +62,19 @@ func (definition *ToDefinition) Children() []Definition {
 	return definition.children
 }
 
-// Unwrap ---
-func (definition *ToDefinition) Unwrap(context api.Context, parent api.Processor) (api.Processor, api.Service, error) {
+// Service ---
+func (definition *ToDefinition) Service() (api.Processor, api.Service, error) {
 	var err error
 	var producer api.Producer
 	var endpoint api.Endpoint
 
-	if endpoint, err = camel.NewEndpointFromURI(context, definition.URI); err != nil {
-		return parent, nil, err
+	if endpoint, err = camel.NewEndpointFromURI(definition.context, definition.URI); err != nil {
+		return nil, nil, err
 	}
 
 	if producer, err = endpoint.CreateProducer(); err != nil {
-		return parent, nil, err
+		return nil, nil, err
 	}
-	p := producer.Processor()
-
-	parent.Subscribe(func(e api.Exchange) {
-		p.Publish(e)
-	})
 
 	return producer.Processor(), producer, nil
 }
