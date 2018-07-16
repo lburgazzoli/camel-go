@@ -92,7 +92,11 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 		definition = definition.Parent()
 	}
 
-	unwrapDefinition(context, route, nil, definition)
+	if p := unwrapDefinition(context, route, nil, definition); p != nil {
+		p.Subscribe(func(_ api.Exchange) {
+			// processing end
+		})
+	}
 
 	return route, nil
 }
@@ -117,7 +121,7 @@ func unwrapDefinition(context api.Context, route *api.Route, processor api.Proce
 
 		if p != nil {
 			if processor != nil {
-				zlog.Info().Msgf("connect %+v", definition)
+				zlog.Debug().Msgf("connect %+v", definition)
 				api.Connect(processor, p)
 			}
 		} else {
@@ -138,7 +142,7 @@ func unwrapDefinition(context api.Context, route *api.Route, processor api.Proce
 
 		if p != nil {
 			if processor != nil {
-				zlog.Info().Msgf("connect %+v, %+v", processor, definition)
+				zlog.Debug().Msgf("connect %+v, %+v", processor, definition)
 				api.Connect(processor, p)
 			}
 		} else {

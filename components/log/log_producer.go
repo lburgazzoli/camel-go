@@ -2,6 +2,7 @@ package log
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/rs/zerolog"
 )
 
@@ -25,6 +26,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 type logProducer struct {
 	endpoint  *logEndpoint
 	processor api.Processor
+	converter api.TypeConverter
 	logger    *zerolog.Logger
 }
 
@@ -43,17 +45,33 @@ func (producer *logProducer) Processor() api.Processor {
 }
 
 func (producer *logProducer) process(exchange api.Exchange) {
+	lg := producer.logger.WithLevel(producer.endpoint.level)
+	tc := producer.endpoint.component.context.TypeConverter()
+	body := exchange.Body()
+
 	if producer.endpoint.logHeaders {
-		l := producer.logger.WithLevel(producer.endpoint.level)
 		d := zerolog.Dict()
 
 		exchange.Headers().Range(func(key string, val interface{}) bool {
-			d.Interface(key, val)
+			if str, err := tc(val, camel.TypeString); str != nil && err != nil {
+				d.Str(key, str.(string))
+			} else {
+				d.Interface(key, val)
+			}
+
 			return true
 		})
 
-		l.Dict("headers", d).Msgf("%+v", exchange.Body())
+		if str, err := tc(body, camel.TypeString); str != nil && err != nil && body != nil {
+			lg.Dict("headers", d).Msgf("body: %s", str)
+		} else {
+			lg.Dict("headers", d).Msgf("body: %+v", body)
+		}
 	} else {
-		producer.logger.WithLevel(producer.endpoint.level).Msgf("%+v", exchange.Body())
+		if str, err := tc(body, camel.TypeString); str != nil && err != nil && body != nil {
+			lg.Msgf("body: %s", body)
+		} else {
+			lg.Msgf("body: %+v", body)
+		}
 	}
 }

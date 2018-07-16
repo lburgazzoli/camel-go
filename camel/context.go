@@ -25,6 +25,7 @@ type defaultContext struct {
 	registry     api.LoadingRegistry
 	routes       []*api.Route
 	converters   []api.TypeConverter
+	converter    api.TypeConverter
 	services     []api.Service
 	servicesLock sync.RWMutex
 }
@@ -63,38 +64,11 @@ func NewContextWithParentAndName(parent api.Context, name string) api.Context {
 		services:   make([]api.Service, 0),
 	}
 
-	if parent != nil {
-		// Set the registry
-		context.registry = api.NewCombinedRegistry(
-			NewRegistry(context.TypeConverter()),
-			parent.Registry(),
-		)
-	} else {
-		context.registry = NewRegistry(context.TypeConverter())
-	}
+	context.converter = func(source interface{}, targetType reflect.Type) (interface{}, error) {
+		if source == nil {
+			return nil, fmt.Errorf("unsupported type conversion (source:nil, target:%v", targetType)
+		}
 
-	return &context
-}
-
-// ==========================
-//
-//
-//
-// ==========================
-
-// Registry --
-func (context *defaultContext) Registry() api.LoadingRegistry {
-	return context.registry
-}
-
-// AddTypeConverter --
-func (context *defaultContext) AddTypeConverter(converter api.TypeConverter) {
-	context.converters = append(context.converters, converter)
-}
-
-// TypeConverter --
-func (context *defaultContext) TypeConverter() api.TypeConverter {
-	converter := func(source interface{}, targetType reflect.Type) (interface{}, error) {
 		sourceType := reflect.TypeOf(source)
 
 		// Don't convert same type
@@ -121,11 +95,40 @@ func (context *defaultContext) TypeConverter() api.TypeConverter {
 		return nil, fmt.Errorf("unsupported type conversion (source:%v, target:%v", sourceType, targetType)
 	}
 
-	if context.parent != nil {
-		return api.NewConbinedTypeConverter(converter, context.parent.TypeConverter())
+	if parent != nil {
+		// Set the registry
+		context.registry = api.NewCombinedRegistry(
+			NewRegistry(context.TypeConverter()),
+			parent.Registry(),
+		)
+
+		context.converter = api.NewConbinedTypeConverter(context.converter, parent.TypeConverter())
+	} else {
+		context.registry = NewRegistry(context.TypeConverter())
 	}
 
-	return converter
+	return &context
+}
+
+// ==========================
+//
+//
+//
+// ==========================
+
+// Registry --
+func (context *defaultContext) Registry() api.LoadingRegistry {
+	return context.registry
+}
+
+// AddTypeConverter --
+func (context *defaultContext) AddTypeConverter(converter api.TypeConverter) {
+	context.converters = append(context.converters, converter)
+}
+
+// TypeConverter --
+func (context *defaultContext) TypeConverter() api.TypeConverter {
+	return context.converter
 }
 
 // AddRouteDefinition --
