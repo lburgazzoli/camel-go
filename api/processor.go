@@ -32,3 +32,15 @@ type Processor interface {
 	Publisher
 	Subscriber
 }
+
+// ==========================
+//
+//
+//
+// ==========================
+
+// ProcessingService --
+type ProcessingService interface {
+	Service
+	Processor
+}

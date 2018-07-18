@@ -70,6 +70,11 @@ func (component *Component) Stop() {
 	component.serviceSupport.To(api.ServiceStatusSTOPPED)
 }
 
+// Stage --
+func (component *Component) Stage() api.ServiceStage {
+	return api.ServiceStageComponent
+}
+
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
 	// Create the endpoint and set default values

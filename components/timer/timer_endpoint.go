@@ -28,6 +28,10 @@ func (endpoint *timerEndpoint) Start() {
 func (endpoint *timerEndpoint) Stop() {
 }
 
+func (endpoint *timerEndpoint) Stage() api.ServiceStage {
+	return api.ServiceStageEndpoint
+}
+
 func (endpoint *timerEndpoint) Component() api.Component {
 	return endpoint.component
 }

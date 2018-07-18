@@ -3,6 +3,7 @@ package route
 import (
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/processor"
 )
 
 // ==========================
@@ -33,7 +34,7 @@ func (definition *RouteDefinition) To(uri string) *RouteDefinition {
 // ToDefinition --
 type ToDefinition struct {
 	api.ContextAware
-	ServiceNode
+	ProcessingNode
 
 	context  api.Context
 	parent   *RouteDefinition
@@ -62,19 +63,19 @@ func (definition *ToDefinition) Children() []Definition {
 	return definition.children
 }
 
-// Service ---
-func (definition *ToDefinition) Service() (api.Processor, api.Service, error) {
+// Processor ---
+func (definition *ToDefinition) Processor() (api.Processor, error) {
 	var err error
 	var producer api.Producer
 	var endpoint api.Endpoint
 
 	if endpoint, err = camel.NewEndpointFromURI(definition.context, definition.URI); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if producer, err = endpoint.CreateProducer(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return producer.Processor(), producer, nil
+	return processor.NewProcessingService(producer, producer.Processor()), nil
 }

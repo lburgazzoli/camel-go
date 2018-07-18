@@ -31,7 +31,6 @@ type timerConsumer struct {
 	ticker    *time.Ticker
 }
 
-// Start --
 func (consumer *timerConsumer) Start() {
 	consumer.ticker = time.NewTicker(consumer.endpoint.period)
 	go func() {
@@ -51,14 +50,16 @@ func (consumer *timerConsumer) Start() {
 	}()
 }
 
-// Stop
 func (consumer *timerConsumer) Stop() {
 	if consumer.ticker != nil {
 		consumer.ticker.Stop()
 	}
 }
 
-// Endpoint --
+func (consumer *timerConsumer) Stage() api.ServiceStage {
+	return api.ServiceStageConsumer
+}
+
 func (consumer *timerConsumer) Endpoint() api.Endpoint {
 	return consumer.endpoint
 }

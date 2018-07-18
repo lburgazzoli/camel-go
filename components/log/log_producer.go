@@ -37,6 +37,10 @@ func (producer *logProducer) Start() {
 func (producer *logProducer) Stop() {
 }
 
+func (producer *logProducer) Stage() api.ServiceStage {
+	return api.ServiceStageProducer
+}
+
 func (producer *logProducer) Endpoint() api.Endpoint {
 	return producer.endpoint
 }

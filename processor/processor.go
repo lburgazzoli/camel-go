@@ -95,6 +95,24 @@ func NewFilteringPipeline(consumer func(api.Exchange) bool, consumers ...func(ap
 	return New(fn)
 }
 
+// NewProcessingService --
+func NewProcessingService(service api.Service, processor api.Processor) api.ProcessingService {
+	answer := defaultProcessingService{}
+	answer.processor = processor
+	answer.startFn = service.Start
+	answer.stopFn = service.Stop
+
+	if staged, ok := service.(api.StagedService); ok {
+		answer.stageFn = staged.Stage
+	} else {
+		answer.stageFn = func() api.ServiceStage {
+			return api.ServiceStageOther
+		}
+	}
+
+	return &answer
+}
+
 // ==========================
 //
 //
@@ -153,4 +171,37 @@ func (processor *defaultProcessor) Subscribe(consumer func(api.Exchange)) api.Su
 	}()
 
 	return subscription
+}
+
+// ==========================
+//
+//
+//
+// ==========================
+
+type defaultProcessingService struct {
+	startFn   func()
+	stopFn    func()
+	stageFn   func() api.ServiceStage
+	processor api.Processor
+}
+
+func (target *defaultProcessingService) Publish(exchange api.Exchange) {
+	target.processor.Publish(exchange)
+}
+
+func (target *defaultProcessingService) Subscribe(consumer func(api.Exchange)) api.Subscription {
+	return target.processor.Subscribe(consumer)
+}
+
+func (target *defaultProcessingService) Start() {
+	target.startFn()
+}
+
+func (target *defaultProcessingService) Stop() {
+	target.stopFn()
+}
+
+func (target *defaultProcessingService) Stage() api.ServiceStage {
+	return target.stageFn()
 }

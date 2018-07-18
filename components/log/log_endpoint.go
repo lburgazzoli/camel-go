@@ -27,6 +27,10 @@ func (endpoint *logEndpoint) Start() {
 func (endpoint *logEndpoint) Stop() {
 }
 
+func (endpoint *logEndpoint) Stage() api.ServiceStage {
+	return api.ServiceStageEndpoint
+}
+
 func (endpoint *logEndpoint) Component() api.Component {
 	return endpoint.component
 }

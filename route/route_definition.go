@@ -17,12 +17,6 @@ type ProcessingNode interface {
 	Processor() (api.Processor, error)
 }
 
-// ServiceNode --
-type ServiceNode interface {
-	// TODO: refactor
-	Service() (api.Processor, api.Service, error)
-}
-
 // Definition --
 type Definition interface {
 	Parent() Definition
@@ -104,7 +98,6 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 
 func unwrapDefinition(context api.Context, route *api.Route, parent api.Processor, definition Definition) api.Processor {
 	var p api.Processor
-	var s api.Service
 	var e error
 
 	p = parent
@@ -125,26 +118,9 @@ func unwrapDefinition(context api.Context, route *api.Route, parent api.Processo
 				zlog.Debug().Msgf("connect %+v", definition)
 				processor.Connect(parent, p)
 			}
-		} else {
-			p = parent
-		}
-	}
 
-	if node, ok := definition.(ServiceNode); ok {
-		p, s, e = node.Service()
-
-		if e != nil {
-			zlog.Fatal().Msgf("unable to load service node %v (%s)", definition, e)
-		}
-
-		if s != nil {
-			route.AddService(s)
-		}
-
-		if p != nil {
-			if parent != nil {
-				zlog.Debug().Msgf("connect %+v, %+v", parent, definition)
-				processor.Connect(parent, p)
+			if s, ok := p.(api.Service); ok {
+				route.AddService(s)
 			}
 		} else {
 			p = parent

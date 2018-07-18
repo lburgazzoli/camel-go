@@ -1,6 +1,9 @@
 package api
 
-import "sync/atomic"
+import (
+	"sort"
+	"sync/atomic"
+)
 
 // ==========================
 //
@@ -56,16 +59,22 @@ type ServiceStage uint32
 
 const (
 	// ServiceStageContext --
-	ServiceStageContext ServiceStage = iota
+	ServiceStageContext ServiceStage = 0
 
 	// ServiceStageComponent --
-	ServiceStageComponent
+	ServiceStageComponent ServiceStage = 10
 
 	// ServiceStageEndpoint --
-	ServiceStageEndpoint
+	ServiceStageEndpoint ServiceStage = 20
 
-	// ServiceStageMisc --
-	ServiceStageMisc
+	// ServiceStageProducer --
+	ServiceStageProducer ServiceStage = 30
+
+	// ServiceStageConsumer --
+	ServiceStageConsumer ServiceStage = 40
+
+	// ServiceStageOther --
+	ServiceStageOther ServiceStage = 50
 )
 
 // ==========================
@@ -80,16 +89,57 @@ type Service interface {
 	Stop()
 }
 
+// StagedService --
+type StagedService interface {
+	Service
+
+	Stage() ServiceStage
+}
+
 // StartServices --
 func StartServices(services []Service) {
-	for _, service := range services {
+	svcs := make([]Service, len(services))
+	copy(svcs, services)
+
+	sort.SliceStable(svcs, func(i int, j int) bool {
+		istage := ServiceStageOther
+		jstage := ServiceStageOther
+
+		if stage, ok := svcs[i].(StagedService); ok {
+			istage = stage.Stage()
+		}
+		if stage, ok := svcs[j].(StagedService); ok {
+			jstage = stage.Stage()
+		}
+
+		return istage < jstage
+	})
+
+	for _, service := range svcs {
 		service.Start()
 	}
 }
 
 // StopServices --
 func StopServices(services []Service) {
-	for _, service := range services {
+	svcs := make([]Service, len(services))
+	copy(svcs, services)
+
+	sort.SliceStable(svcs, func(i int, j int) bool {
+		istage := ServiceStageOther
+		jstage := ServiceStageOther
+
+		if stage, ok := svcs[i].(StagedService); ok {
+			istage = stage.Stage()
+		}
+		if stage, ok := svcs[j].(StagedService); ok {
+			jstage = stage.Stage()
+		}
+
+		return istage > jstage
+	})
+
+	for _, service := range svcs {
 		service.Stop()
 	}
 }
