@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/processor"
 )
 
 // ==========================
@@ -66,7 +67,7 @@ func (definition *ProcessDefinition) Children() []Definition {
 // Processor ---
 func (definition *ProcessDefinition) Processor() (api.Processor, error) {
 	if definition.processor != nil {
-		return api.NewProcessingPipeline(definition.processor), nil
+		return processor.NewProcessingPipeline(definition.processor), nil
 	}
 
 	if definition.processorRef != "" {
@@ -75,7 +76,7 @@ func (definition *ProcessDefinition) Processor() (api.Processor, error) {
 
 		if ifc != nil && found {
 			if p, ok := ifc.(func(e api.Exchange)); ok {
-				return api.NewProcessingPipeline(p), nil
+				return processor.NewProcessingPipeline(p), nil
 			}
 		}
 

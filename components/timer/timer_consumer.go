@@ -5,6 +5,7 @@ import (
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/processor"
 )
 
 // ==========================
@@ -17,7 +18,7 @@ func newTimerConsumer(endpoint *timerEndpoint) *timerConsumer {
 	c := timerConsumer{
 		endpoint: endpoint,
 		// TODO: this is ugly
-		processor: api.NewProcessingPipeline(func(api.Exchange) {
+		processor: processor.NewProcessingPipeline(func(api.Exchange) {
 		}),
 	}
 

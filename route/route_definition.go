@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/processor"
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -101,12 +102,12 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 	return route, nil
 }
 
-func unwrapDefinition(context api.Context, route *api.Route, processor api.Processor, definition Definition) api.Processor {
+func unwrapDefinition(context api.Context, route *api.Route, parent api.Processor, definition Definition) api.Processor {
 	var p api.Processor
 	var s api.Service
 	var e error
 
-	p = processor
+	p = parent
 
 	if node, ok := definition.(api.ContextAware); ok {
 		node.SetContext(context)
@@ -120,12 +121,12 @@ func unwrapDefinition(context api.Context, route *api.Route, processor api.Proce
 		}
 
 		if p != nil {
-			if processor != nil {
+			if parent != nil {
 				zlog.Debug().Msgf("connect %+v", definition)
-				api.Connect(processor, p)
+				processor.Connect(parent, p)
 			}
 		} else {
-			p = processor
+			p = parent
 		}
 	}
 
@@ -141,12 +142,12 @@ func unwrapDefinition(context api.Context, route *api.Route, processor api.Proce
 		}
 
 		if p != nil {
-			if processor != nil {
-				zlog.Debug().Msgf("connect %+v, %+v", processor, definition)
-				api.Connect(processor, p)
+			if parent != nil {
+				zlog.Debug().Msgf("connect %+v, %+v", parent, definition)
+				processor.Connect(parent, p)
 			}
 		} else {
-			p = processor
+			p = parent
 		}
 	}
 

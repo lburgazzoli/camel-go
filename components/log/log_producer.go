@@ -3,6 +3,7 @@ package log
 import (
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/processor"
 	"github.com/rs/zerolog"
 )
 
@@ -18,7 +19,7 @@ func newLogProducer(endpoint *logEndpoint, logger *zerolog.Logger) *logProducer 
 		logger:   logger,
 	}
 
-	p.processor = api.NewProcessingPipeline(p.process)
+	p.processor = processor.NewProcessingPipeline(p.process)
 
 	return &p
 }
@@ -63,15 +64,15 @@ func (producer *logProducer) process(exchange api.Exchange) {
 		})
 
 		if str, err := tc(body, camel.TypeString); str != nil && err != nil && body != nil {
-			lg.Dict("headers", d).Msgf("body: %s", str)
+			lg.Dict("headers", d).Msgf("%s", str)
 		} else {
-			lg.Dict("headers", d).Msgf("body: %+v", body)
+			lg.Dict("headers", d).Msgf("%+v", body)
 		}
 	} else {
 		if str, err := tc(body, camel.TypeString); str != nil && err != nil && body != nil {
-			lg.Msgf("body: %s", body)
+			lg.Msgf("%s", body)
 		} else {
-			lg.Msgf("body: %+v", body)
+			lg.Msgf("%+v", body)
 		}
 	}
 }
