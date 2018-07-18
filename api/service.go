@@ -3,6 +3,8 @@ package api
 import (
 	"sort"
 	"sync/atomic"
+
+	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -101,6 +103,7 @@ func StartServices(services []Service) {
 	svcs := make([]Service, len(services))
 	copy(svcs, services)
 
+	// Sort the
 	sort.SliceStable(svcs, func(i int, j int) bool {
 		istage := ServiceStageOther
 		jstage := ServiceStageOther
@@ -116,6 +119,10 @@ func StartServices(services []Service) {
 	})
 
 	for _, service := range svcs {
+		if stage, ok := service.(StagedService); ok {
+			zlog.Debug().Msgf("Starting service at stage: %d", stage.Stage())
+		}
+
 		service.Start()
 	}
 }
@@ -140,6 +147,10 @@ func StopServices(services []Service) {
 	})
 
 	for _, service := range svcs {
+		if stage, ok := service.(StagedService); ok {
+			zlog.Debug().Msgf("Stopping service at stage: %d", stage.Stage())
+		}
+
 		service.Stop()
 	}
 }

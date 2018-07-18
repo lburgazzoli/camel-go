@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"os"
+	"os/signal"
 
 	"github.com/lburgazzoli/camel-go/camel"
 	_ "github.com/lburgazzoli/camel-go/components/log"
@@ -19,6 +19,13 @@ import (
 // Main
 //
 // ==========================
+
+// WaitForCtrlC --
+func WaitForCtrlC() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+}
 
 // ConfigureViper --
 func ConfigureViper() *viper.Viper {
@@ -53,8 +60,7 @@ func main() {
 		zlog.Info().Msg("Start context")
 		context.Start()
 
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
+		WaitForCtrlC()
 
 		zlog.Info().Msg("Stop context")
 		context.Stop()
