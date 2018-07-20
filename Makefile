@@ -1,6 +1,6 @@
 all: clean build
 build: 
-		go build -o camel-go
+		go build -o desertship
 clean: 
 		go clean
-		rm -f camel-go
+		rm -f desertship
