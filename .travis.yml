@@ -12,8 +12,6 @@ after_success:
 
 deploy:
   provider: script
-  script:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker push lburgazzoli/camel-go
+  script: bash deploy-docker-hub.sh
   on:
     branch: master

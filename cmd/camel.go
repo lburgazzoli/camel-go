@@ -5,7 +5,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "desertship",
+	Use: "camel-go",
 }
 
 // Execute --
