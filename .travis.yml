@@ -7,7 +7,7 @@ language: go
 go:
   - "1.10.x"
 
-after_install:
+after_success:
   - make docker
 
 deploy:
