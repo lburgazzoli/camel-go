@@ -9,7 +9,7 @@ docker:
 		docker build --tag="lburgazzoli/camel-go" .
 
 dockerdeploy:
-		docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+		echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin 
 		docker push lburgazzoli/camel-go
 
 dokerrun:
