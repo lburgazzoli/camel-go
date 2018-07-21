@@ -1,0 +1,8 @@
+flows:
+  - name: "a flow"
+    id: "flow-1"
+    steps:
+      - type: endpoint
+        uri: timer:start?period=1s
+      - type: endpoint
+        uri: log:test?logHeaders=true
