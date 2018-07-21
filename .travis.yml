@@ -1,5 +1,16 @@
-sudo: false
+sudo: required
+
+services:
+  - docker
 
 language: go
 go:
   - "1.10.x"
+
+after_install:
+  - make docker
+
+deploy:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push lburgazzoli/camel-go
+  
