@@ -67,10 +67,9 @@ func configureViper() *viper.Viper {
 	v := viper.New()
 
 	if flow != "" {
-		zlog.Debug().Msgf("flow file is: %s", flow)
 		v.SetConfigFile(flow)
 	} else {
-		v.SetConfigName("configuration")
+		v.SetConfigName("flow")
 		v.SetConfigType("yaml")
 
 		if wd, err := os.Getwd(); err == nil {
@@ -81,6 +80,8 @@ func configureViper() *viper.Viper {
 	if err := v.ReadInConfig(); err != nil {
 		zlog.Panic().Msgf("fatal error config file: %s", err)
 	}
+
+	zlog.Debug().Msgf("flow file is: %s", v.ConfigFileUsed())
 
 	return v
 }
