@@ -8,6 +8,10 @@ clean:
 docker:
 		docker build --tag="lburgazzoli/camel-go" .
 
+dockerdeploy:
+		echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+		docker push lburgazzoli/camel-go
+
 dokerrun:
 		docker run \
 			--rm \

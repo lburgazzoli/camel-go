@@ -3,6 +3,10 @@ sudo: required
 services:
   - docker
 
+git:
+  depth: 1
+  quiet: true
+
 language: go
 go:
   - "1.10.x"
@@ -12,6 +16,6 @@ after_success:
 
 deploy:
   provider: script
-  script: bash deploy-docker-hub.sh
+  script: make dockerdeploy
   on:
     branch: master
