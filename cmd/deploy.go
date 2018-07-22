@@ -13,6 +13,9 @@
 package cmd
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 
 	"k8s.io/client-go/kubernetes"
@@ -34,7 +37,13 @@ var deployCmd = &cobra.Command{
 	Short: "deploy",
 	Long:  `deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+		conf := kubeconfig
+
+		if conf == "" {
+			conf = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		}
+
+		config, err := clientcmd.BuildConfigFromFlags("", conf)
 		if err != nil {
 			zlog.Fatal().Msg(err.Error())
 		}
