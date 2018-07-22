@@ -10,21 +10,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: clean build
-build: 
-		CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o camel-go
-clean: 
-		go clean
-		rm -f camel-go
+GOCMD=go
+GOBUILD=$(GOCMD) build
+GOCLEAN=$(GOCMD) clean
+GOTEST=$(GOCMD) test
+GOGET=$(GOCMD) get
+BINARY_NAME=camel-go
 
-docker:
+#CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o camel-go
+
+all: test build
+
+build: 
+		$(GOBUILD) -o $(BINARY_NAME) -v
+test: 
+		#exclude examples
+		$(GOTEST) -v `go list ./... | grep -v examples`
+		
+clean: 
+		$(GOCLEAN)
+		rm -f $(BINARY_NAME)
+
+docker-build:
 		docker build --tag="lburgazzoli/camel-go" .
 
-dockerdeploy:
+docker-push:
 		echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin 
 		docker push lburgazzoli/camel-go
 
-dokerrun:
+docker-run:
 		docker run \
 			--rm \
 			-ti \

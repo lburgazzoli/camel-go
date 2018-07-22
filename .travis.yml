@@ -12,10 +12,10 @@ go:
   - "1.10.x"
 
 after_success:
-  - make docker
+  - make docker-build
 
 deploy:
   provider: script
-  script: make dockerdeploy
+  script: make docker-push
   on:
     branch: master

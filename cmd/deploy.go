@@ -13,46 +13,19 @@
 package cmd
 
 import (
-	"os"
-	"os/signal"
-
 	"github.com/spf13/cobra"
-
-	zlog "github.com/rs/zerolog/log"
-
-	// import components
-	"github.com/lburgazzoli/camel-go/app"
-
-	// load camel component
-	_ "github.com/lburgazzoli/camel-go/components/log"
-	_ "github.com/lburgazzoli/camel-go/components/timer"
 )
 
-var flow string
-
 func init() {
-	runCmd.Flags().StringVarP(&flow, "flow", "f", "", "flow to run")
+	//deployCmd.Flags().StringVarP(&flow, "flow", "f", "", "flow to run")
 
 	rootCmd.AddCommand(runCmd)
 }
 
-var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "run",
-	Long:  `run`,
+var deployCmd = &cobra.Command{
+	Use:   "deploy",
+	Short: "deploy",
+	Long:  `deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app, err := app.New(flow)
-
-		if err != nil {
-			zlog.Fatal().Msgf("%s", err)
-		}
-
-		app.Start()
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt)
-		<-c
-
-		app.Stop()
 	},
 }

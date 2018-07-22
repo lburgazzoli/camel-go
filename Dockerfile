@@ -12,7 +12,7 @@
 
 FROM alpine:3.7  
 
-RUN apk --no-cache add ca-certificates \
+RUN apk --no-cache add ca-certificates libc6-compat \
     && addgroup -S camel \
     && adduser -S -g app camel
 

@@ -16,7 +16,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lburgazzoli/camel-go/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,7 +45,7 @@ func TestStringToIntConverter(t *testing.T) {
 }
 
 func TestStringToIntConverterWithInvalidType(t *testing.T) {
-	r, e := ToIntConverter("1", api.TypeString)
+	r, e := ToIntConverter("1", TypeString)
 
 	assert.Nil(t, r)
 	assert.Error(t, e)
