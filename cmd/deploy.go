@@ -14,10 +14,17 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+
+	zlog "github.com/rs/zerolog/log"
 )
 
+var kubeconfig string
+
 func init() {
-	//deployCmd.Flags().StringVarP(&flow, "flow", "f", "", "flow to run")
+	deployCmd.Flags().StringVarP(&kubeconfig, "config", "c", "", "k8s configuration")
 
 	rootCmd.AddCommand(runCmd)
 }
@@ -27,5 +34,17 @@ var deployCmd = &cobra.Command{
 	Short: "deploy",
 	Long:  `deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
+		config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			zlog.Fatal().Msg(err.Error())
+		}
+
+		client, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			zlog.Fatal().Msg(err.Error())
+		}
+
+		if client != nil {
+		}
 	},
 }
