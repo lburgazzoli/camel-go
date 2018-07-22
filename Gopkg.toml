@@ -64,7 +64,7 @@
 [[override]]
   name = "k8s.io/client-go"
   version = "kubernetes-1.9.3"
-
+  
 [prune]
   go-tests = true
   unused-packages = true
