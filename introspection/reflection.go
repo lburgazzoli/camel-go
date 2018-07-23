@@ -17,6 +17,8 @@ import (
 	"reflect"
 	"strings"
 
+	zlog "github.com/rs/zerolog/log"
+
 	"github.com/lburgazzoli/camel-go/api"
 )
 
@@ -76,14 +78,14 @@ func SetProperty(context api.Context, target interface{}, name string, value int
 				return true
 			}
 
-			log.Fatalf("unable to set field through method call (name=%s, target=%v, error=%v)",
+			zlog.Fatal().Msgf("unable to set field through method call (name=%s, target=%v, error=%v)",
 				name,
 				target,
 				err,
 			)
 		}
 	} else {
-		log.Fatalf("unable to set field %s on %v as it is not a pointer", name, target)
+		zlog.Fatal().Msgf("unable to set field %s on %v as it is not a pointer", name, target)
 	}
 
 	return false
@@ -93,7 +95,21 @@ func SetProperty(context api.Context, target interface{}, name string, value int
 func SetProperties(context api.Context, target interface{}, options map[string]interface{}) int {
 	count := 0
 
-	for k, v := range options {
+	var k string
+	var v interface{}
+	var ok bool
+
+	for k, v = range options {
+		// check if it is a reference
+		if len(k) > 1 && k[0] == '#' {
+			k := k[1:]
+
+			// try to lookup value from registry
+			if v, ok = context.Registry().Lookup(k); !ok {
+				zlog.Fatal().Msgf("unable to find %s from registr", k)
+			}
+		}
+
 		if SetProperty(context, target, k, v) {
 			count++
 

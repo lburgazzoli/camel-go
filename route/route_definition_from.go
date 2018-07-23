@@ -14,7 +14,6 @@ package route
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/processor"
 )
 
@@ -56,9 +55,12 @@ func (definition *FromDefinition) Processor() (api.Processor, error) {
 	var consumer api.Consumer
 	var endpoint api.Endpoint
 
-	if endpoint, err = camel.NewEndpointFromURI(definition.context, definition.URI); err != nil {
+	if endpoint, err = api.NewEndpointFromURI(definition.context, definition.URI); err != nil {
 		return nil, nil
 	}
+
+	// TODO: re-engine
+	endpoint.Start()
 
 	if consumer, err = endpoint.CreateConsumer(); err != nil {
 		return nil, nil

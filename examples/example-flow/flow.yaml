@@ -18,9 +18,9 @@ flows:
     steps:
       - type: endpoint
         uri: timer:start?period=1s
-      - type: process
-        ref: "trace"
-      - type: filter
-        ref: "filter4"
+      #- type: process
+      #  ref: "trace"
+      #- type: filter
+      #  ref: "filter4"
       - type: endpoint
         uri: log:test?logHeaders=true

@@ -24,6 +24,7 @@ import (
 	"github.com/lburgazzoli/camel-go/app"
 
 	// load camel component
+	_ "github.com/lburgazzoli/camel-go/components/http"
 	_ "github.com/lburgazzoli/camel-go/components/log"
 	_ "github.com/lburgazzoli/camel-go/components/timer"
 )

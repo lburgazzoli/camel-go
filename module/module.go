@@ -12,46 +12,44 @@
 
 package module
 
-import (
-	"fmt"
-	"os"
-	"plugin"
-
-	zlog "github.com/rs/zerolog/log"
-)
-
 // LoadSymbol --
+// disabled as debug does not work if plugin package is imported
+// see: https://github.com/golang/go/issues/23733
 func LoadSymbol(path string, symbol string) (interface{}, error) {
-	if path == "" {
-		return nil, fmt.Errorf("Path is empty")
-	}
+	return nil, nil
 
-	if symbol == "" {
-		return nil, fmt.Errorf("Symbol is empty")
-	}
+	/*
+		if path == "" {
+			return nil, fmt.Errorf("Path is empty")
+		}
 
-	zlog.Debug().Msgf("try loading symbol \"%s\" from plugin %s", symbol, path)
+		if symbol == "" {
+			return nil, fmt.Errorf("Symbol is empty")
+		}
 
-	location := os.ExpandEnv(path)
-	_, err := os.Stat(location)
+		zlog.Debug().Msgf("try loading symbol \"%s\" from plugin %s", symbol, path)
 
-	if os.IsNotExist(err) {
-		return nil, nil
-	}
+		location := os.ExpandEnv(path)
+		_, err := os.Stat(location)
 
-	if err != nil {
-		return nil, err
-	}
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 
-	plug, err := plugin.Open(location)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open plugin %s: %v", location, err)
-	}
+		if err != nil {
+			return nil, err
+		}
 
-	answer, err := plug.Lookup(symbol)
-	if err != nil {
-		return nil, fmt.Errorf("plugin %s does not export symbol \"%s\"", location, symbol)
-	}
+		plug, err := plugin.Open(location)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open plugin %s: %v", location, err)
+		}
 
-	return answer, nil
+		answer, err := plug.Lookup(symbol)
+		if err != nil {
+			return nil, fmt.Errorf("plugin %s does not export symbol \"%s\"", location, symbol)
+		}
+
+		return answer, nil
+	*/
 }

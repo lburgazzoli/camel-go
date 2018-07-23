@@ -59,6 +59,12 @@ func (endpoint *logEndpoint) CreateConsumer() (api.Consumer, error) {
 	return nil, errors.New("log is Producer only")
 }
 
+// ==========================
+//
+// Options
+//
+// ==========================
+
 func (endpoint *logEndpoint) SetLogger(logger string) {
 	endpoint.logger = logger
 }
