@@ -13,9 +13,11 @@
 package http
 
 import (
+	"io/ioutil"
 	ghttp "net/http"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/processor"
 )
 
@@ -48,34 +50,23 @@ func (consumer *httpConsumer) Start() {
 	}
 
 	mux := ghttp.NewServeMux()
-	mux.HandleFunc(consumer.endpoint.path, func(writer ghttp.ResponseWriter, request *ghttp.Request) {
+	mux.HandleFunc(consumer.endpoint.path, func(w ghttp.ResponseWriter, r *ghttp.Request) {
+		w.WriteHeader(ghttp.StatusOK)
 
+		defer r.Body.Close()
+
+		body, _ := ioutil.ReadAll(r.Body)
+
+		exchange := camel.NewExchange(consumer.endpoint.component.context)
+		exchange.SetBody(string(body))
+
+		consumer.processor.Publish(exchange)
 	})
 
-	server := &ghttp.Server{Addr: "", Handler: mux}
-
+	consumer.server = &ghttp.Server{Addr: "", Handler: mux}
 	go func() {
-		server.ListenAndServe()
+		consumer.server.ListenAndServe()
 	}()
-
-	/*
-		consumer.ticker = time.NewTicker(consumer.endpoint.period)
-		go func() {
-			var counter uint64
-
-			for t := range consumer.ticker.C {
-				exchange := camel.NewExchange(consumer.endpoint.component.context)
-
-				counter++
-
-				exchange.Headers().Bind("timer.fire.time", t.UTC())
-				exchange.Headers().Bind("timer.fire.count", counter)
-				exchange.SetBody(nil)
-
-				consumer.processor.Publish(exchange)
-			}
-		}()
-	*/
 }
 
 func (consumer *httpConsumer) Stop() {
