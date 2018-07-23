@@ -15,8 +15,10 @@ flows:
     id: "flow-1"
     steps:
       - type: endpoint
-        uri: timer:start?period=1s
+        uri: http:0.0.0.0:8080/in
+      - type: endpoint
+        uri: log:in?logHeaders=true
       - type: endpoint
         uri: http:www.google.com
       - type: endpoint
-        uri: log:test?logHeaders=true
+        uri: log:out?logHeaders=true

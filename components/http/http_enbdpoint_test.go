@@ -42,7 +42,10 @@ func TestNewEndpoint(t *testing.T) {
 
 	assert.NotEqual(t, ok, false)
 	assert.NotNil(t, httpe)
-	assert.Equal(t, "http://www.google.com/search", httpe.url)
+	assert.Equal(t, "http", httpe.scheme)
+	assert.Equal(t, "www.google.com", httpe.host)
+	assert.Equal(t, 80, httpe.port)
+	assert.Equal(t, "/search", httpe.path)
 	assert.Equal(t, 10*time.Second, httpe.connectionTimeout)
 	assert.Equal(t, 25*time.Second, httpe.requestTimeout)
 	assert.Nil(t, httpe.transport)

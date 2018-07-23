@@ -13,7 +13,6 @@
 package http
 
 import (
-	"errors"
 	ghttp "net/http"
 	"time"
 
@@ -28,6 +27,9 @@ import (
 
 type httpEndpoint struct {
 	component         *Component
+	scheme            string
+	host              string
+	port              int
 	path              string
 	method            string
 	connectionTimeout time.Duration
@@ -55,7 +57,7 @@ func (endpoint *httpEndpoint) CreateProducer() (api.Producer, error) {
 }
 
 func (endpoint *httpEndpoint) CreateConsumer() (api.Consumer, error) {
-	return nil, errors.New("not implemented yet")
+	return newHTTPConsumer(endpoint), nil
 }
 
 // ==========================

@@ -13,6 +13,7 @@
 package http
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net"
 	ghttp "net/http"
@@ -82,7 +83,10 @@ func (producer *httpProducer) Processor() api.Processor {
 
 //TODO: error handling
 func (producer *httpProducer) process(exchange api.Exchange) {
-	req, err := ghttp.NewRequest(producer.endpoint.method, "http://"+producer.endpoint.path, nil)
+	// compute the url
+	url := fmt.Sprintf("%s://%s:%d", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port)
+
+	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
 	if err != nil {
 		// do nothing here for the moment, we should fail tyhe exchange
 		zlog.Error().Msg(err.Error())

@@ -13,12 +13,15 @@
 package http
 
 import (
+	"fmt"
 	"io/ioutil"
 	ghttp "net/http"
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/processor"
+
+	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -49,6 +52,9 @@ func (consumer *httpConsumer) Start() {
 		return
 	}
 
+	// compute the url
+	url := fmt.Sprintf("%s:%d", consumer.endpoint.host, consumer.endpoint.port)
+
 	mux := ghttp.NewServeMux()
 	mux.HandleFunc(consumer.endpoint.path, func(w ghttp.ResponseWriter, r *ghttp.Request) {
 		w.WriteHeader(ghttp.StatusOK)
@@ -58,14 +64,21 @@ func (consumer *httpConsumer) Start() {
 		body, _ := ioutil.ReadAll(r.Body)
 
 		exchange := camel.NewExchange(consumer.endpoint.component.context)
+		exchange.Headers().Bind("HttpRequestPath", r.URL.Path)
+		exchange.Headers().Bind("HttpMethod", r.Method)
 		exchange.SetBody(string(body))
 
 		consumer.processor.Publish(exchange)
 	})
 
-	consumer.server = &ghttp.Server{Addr: "", Handler: mux}
+	consumer.server = &ghttp.Server{Addr: url, Handler: mux}
+
 	go func() {
-		consumer.server.ListenAndServe()
+		zlog.Debug().Msgf("Star listening on address: %+v", consumer.server.Addr)
+		if err := consumer.server.ListenAndServe(); err != nil {
+			zlog.Fatal().Msg(err.Error())
+		}
+		zlog.Debug().Msgf("Stop serving %s", consumer.server.Addr)
 	}()
 }
 

@@ -13,9 +13,11 @@
 package http
 
 import (
+	"strconv"
 	"time"
 
 	ghttp "net/http"
+	"net/url"
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
@@ -94,13 +96,41 @@ func (component *Component) Stage() api.ServiceStage {
 
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
+	var url *url.URL
+	var err error
+
+	if url, err = url.Parse("http://" + remaining); err != nil {
+		return nil, err
+	}
+
 	// Create the endpoint and set default values
 	endpoint := httpEndpoint{}
 	endpoint.component = component
-	endpoint.path = remaining
 	endpoint.method = ghttp.MethodGet
 	endpoint.connectionTimeout = 10 * time.Second
 	endpoint.requestTimeout = 60 * time.Second
+	endpoint.path = url.Path
+	endpoint.port = 80
+
+	if url.Hostname() != "" {
+		endpoint.host = url.Hostname()
+	}
+
+	if url.Port() != "" {
+		endpoint.port, err = strconv.Atoi(url.Port())
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if endpoint.port == 443 && endpoint.scheme == "" {
+		endpoint.scheme = "https"
+	}
+
+	if endpoint.scheme == "" {
+		endpoint.scheme = "http"
+	}
 
 	// bind options to endpoint
 	introspection.SetProperties(component.context, &endpoint, options)
