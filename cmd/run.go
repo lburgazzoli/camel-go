@@ -29,11 +29,7 @@ import (
 	_ "github.com/lburgazzoli/camel-go/components/timer"
 )
 
-var flow string
-
 func init() {
-	runCmd.Flags().StringVarP(&flow, "flow", "f", "", "flow to run")
-
 	rootCmd.AddCommand(runCmd)
 }
 

@@ -24,12 +24,10 @@ import (
 )
 
 var kubeconfig string
-var flow string
 var runtime string
 
 func init() {
 	deployCmd.Flags().StringVarP(&kubeconfig, "config", "c", "", "k8s configuration")
-	deployCmd.Flags().StringVarP(&flow, "flow", "f", "", "flow to deploy")
 	deployCmd.Flags().StringVarP(&runtime, "runtime", "r", "", "the runtime to use")
 
 	rootCmd.AddCommand(runCmd)
