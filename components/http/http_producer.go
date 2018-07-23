@@ -82,7 +82,7 @@ func (producer *httpProducer) Processor() api.Processor {
 
 //TODO: error handling
 func (producer *httpProducer) process(exchange api.Exchange) {
-	req, err := ghttp.NewRequest(producer.endpoint.method, producer.endpoint.url, nil)
+	req, err := ghttp.NewRequest(producer.endpoint.method, "http://"+producer.endpoint.path, nil)
 	if err != nil {
 		// do nothing here for the moment, we should fail tyhe exchange
 		zlog.Error().Msg(err.Error())

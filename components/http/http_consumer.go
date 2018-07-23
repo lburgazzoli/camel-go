@@ -13,6 +13,8 @@
 package http
 
 import (
+	ghttp "net/http"
+
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/processor"
 )
@@ -37,9 +39,25 @@ func newHTTPConsumer(endpoint *httpEndpoint) *httpConsumer {
 type httpConsumer struct {
 	endpoint  *httpEndpoint
 	processor api.Processor
+	server    *ghttp.Server
 }
 
 func (consumer *httpConsumer) Start() {
+	if consumer.server != nil {
+		return
+	}
+
+	mux := ghttp.NewServeMux()
+	mux.HandleFunc(consumer.endpoint.path, func(writer ghttp.ResponseWriter, request *ghttp.Request) {
+
+	})
+
+	server := &ghttp.Server{Addr: "", Handler: mux}
+
+	go func() {
+		server.ListenAndServe()
+	}()
+
 	/*
 		consumer.ticker = time.NewTicker(consumer.endpoint.period)
 		go func() {
@@ -61,6 +79,9 @@ func (consumer *httpConsumer) Start() {
 }
 
 func (consumer *httpConsumer) Stop() {
+	if consumer.server != nil {
+		consumer.server.Close()
+	}
 }
 
 func (consumer *httpConsumer) Stage() api.ServiceStage {

@@ -97,7 +97,7 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 	// Create the endpoint and set default values
 	endpoint := httpEndpoint{}
 	endpoint.component = component
-	endpoint.url = "http://" + remaining
+	endpoint.path = remaining
 	endpoint.method = ghttp.MethodGet
 	endpoint.connectionTimeout = 10 * time.Second
 	endpoint.requestTimeout = 60 * time.Second

@@ -28,7 +28,7 @@ import (
 
 type httpEndpoint struct {
 	component         *Component
-	url               string
+	path              string
 	method            string
 	connectionTimeout time.Duration
 	requestTimeout    time.Duration
