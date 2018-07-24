@@ -27,11 +27,26 @@ var kubeconfig string
 var runtime string
 
 func init() {
-	deployCmd.Flags().StringVarP(&kubeconfig, "config", "c", "", "k8s configuration")
-	deployCmd.Flags().StringVarP(&runtime, "runtime", "r", "", "the runtime to use")
+	deployCmd.Flags().StringVarP(&deployCmdFlags.flow, "flow", "f", "", "flow to run")
+	deployCmd.Flags().StringVarP(&deployCmdFlags.kubeconfig, "config", "c", "", "k8s configuration")
+	deployCmd.Flags().StringVarP(&deployCmdFlags.runtime, "runtime", "r", "", "the runtime to use")
 
-	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(deployCmd)
 }
+
+// ==========================
+//
+// Run
+//
+// ==========================
+
+type deployCmdFlagsType struct {
+	kubeconfig string
+	runtime    string
+	flow       string
+}
+
+var deployCmdFlags deployCmdFlagsType
 
 var deployCmd = &cobra.Command{
 	Use:   "deploy",

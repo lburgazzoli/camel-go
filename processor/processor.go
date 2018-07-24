@@ -12,7 +12,9 @@
 
 package processor
 
-import "github.com/lburgazzoli/camel-go/api"
+import (
+	"github.com/lburgazzoli/camel-go/api"
+)
 
 // Fn --
 type Fn func(api.Exchange, chan<- api.Exchange)
@@ -45,8 +47,11 @@ func New(fn Fn) api.Processor {
 	}
 
 	go func() {
-		for exchange := range p.in {
-			p.fn(exchange, p.out)
+		for {
+			select {
+			case exchange := <-p.in:
+				p.fn(exchange, p.out)
+			}
 		}
 	}()
 
@@ -177,7 +182,6 @@ func (processor *defaultProcessor) Subscribe(consumer func(api.Exchange)) api.Su
 				consumer(exchange)
 			case _ = <-signal:
 				return
-			default:
 			}
 		}
 	}()

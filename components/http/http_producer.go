@@ -83,8 +83,15 @@ func (producer *httpProducer) Processor() api.Processor {
 
 //TODO: error handling
 func (producer *httpProducer) process(exchange api.Exchange) {
+
+	var url string
+
 	// compute the url
-	url := fmt.Sprintf("%s://%s:%d", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port)
+	if producer.endpoint.path == "" {
+		url = fmt.Sprintf("%s://%s:%d", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port)
+	} else {
+		url = fmt.Sprintf("%s://%s:%d/%s", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port, producer.endpoint.path)
+	}
 
 	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
 	if err != nil {
@@ -102,6 +109,10 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 
 		exchange.Headers().Bind("HttpStatusCode", response.StatusCode)
 		exchange.Headers().Bind("HttpContentLength", response.ContentLength)
+
+		for k, v := range response.Header {
+			exchange.Headers().Bind(k, v)
+		}
 
 		// we should handle status code, set headers & so on here.
 		if response.StatusCode == ghttp.StatusOK {

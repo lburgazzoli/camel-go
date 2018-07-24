@@ -13,6 +13,7 @@
 package http
 
 import (
+	ghttp "net/http"
 	"testing"
 	"time"
 
@@ -48,6 +49,7 @@ func TestNewEndpoint(t *testing.T) {
 	assert.Equal(t, "/search", httpe.path)
 	assert.Equal(t, 10*time.Second, httpe.connectionTimeout)
 	assert.Equal(t, 25*time.Second, httpe.requestTimeout)
+	assert.Equal(t, ghttp.MethodGet, httpe.method)
 	assert.Nil(t, httpe.transport)
 	assert.Nil(t, httpe.client)
 }

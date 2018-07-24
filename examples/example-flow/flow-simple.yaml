@@ -19,6 +19,6 @@ flows:
       - type: endpoint
         uri: log:in?logHeaders=true
       - type: endpoint
-        uri: http:www.google.com
+        uri: http:httpbin.org/get?contentType=application/json
       - type: endpoint
         uri: log:out?logHeaders=true

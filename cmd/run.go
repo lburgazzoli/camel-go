@@ -30,15 +30,29 @@ import (
 )
 
 func init() {
+	runCmd.Flags().StringVarP(&runCmdFlags.flow, "flow", "f", "", "flow to run")
+
 	rootCmd.AddCommand(runCmd)
 }
+
+// ==========================
+//
+// Run
+//
+// ==========================
+
+type runCmdFlagsType struct {
+	flow string
+}
+
+var runCmdFlags runCmdFlagsType
 
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run",
 	Long:  `run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app, err := app.New(flow)
+		app, err := app.New(runCmdFlags.flow)
 
 		if err != nil {
 			zlog.Fatal().Msgf("%s", err)

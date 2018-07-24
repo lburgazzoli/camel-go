@@ -20,12 +20,6 @@ var rootCmd = &cobra.Command{
 	Use: "camel-go",
 }
 
-var flow string
-
-func init() {
-	runCmd.PersistentFlags().StringVarP(&flow, "flow", "f", "", "flow to run")
-}
-
 // Execute --
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
