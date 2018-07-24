@@ -18,7 +18,10 @@ flows:
         uri: http:0.0.0.0:8080/in
       - type: endpoint
         uri: log:in?logHeaders=true
+      - type: header
+        key: http.Content-Type
+        val: application/json
       - type: endpoint
-        uri: http:httpbin.org/get?contentType=application/json
+        uri: http:httpbin.org/get
       - type: endpoint
         uri: log:out?logHeaders=true

@@ -71,3 +71,12 @@ func (registry *InMemoryRegistry) Range(f func(key string, value interface{}) bo
 		return f(key.(string), value)
 	})
 }
+
+// ForEach --
+func (registry *InMemoryRegistry) ForEach(f func(key string, value interface{})) {
+	registry.data.Range(func(key, value interface{}) bool {
+		f(key.(string), value)
+
+		return true
+	})
+}

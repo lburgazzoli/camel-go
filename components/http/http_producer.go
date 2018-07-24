@@ -17,6 +17,9 @@ import (
 	"io/ioutil"
 	"net"
 	ghttp "net/http"
+	"strings"
+
+	"github.com/lburgazzoli/camel-go/camel"
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/processor"
@@ -35,6 +38,7 @@ func newHTTPProducer(endpoint *httpEndpoint) *httpProducer {
 		endpoint:  endpoint,
 		transport: endpoint.transport,
 		client:    endpoint.client,
+		converter: endpoint.component.context.TypeConverter(),
 	}
 
 	p.processor = processor.NewProcessingPipeline(p.process)
@@ -44,6 +48,7 @@ func newHTTPProducer(endpoint *httpEndpoint) *httpProducer {
 
 type httpProducer struct {
 	endpoint  *httpEndpoint
+	converter api.TypeConverter
 	processor api.Processor
 	transport *ghttp.Transport
 	client    *ghttp.Client
@@ -98,6 +103,16 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 		// do nothing here for the moment, we should fail tyhe exchange
 		zlog.Error().Msg(err.Error())
 	} else {
+		exchange.Headers().ForEach(func(key string, val interface{}) {
+			if strings.HasPrefix(key, HTTPHeaderPrefix) && len(key) > HTTPHeaderPrefixLen {
+				key = key[HTTPHeaderPrefixLen:]
+
+				if v, err := producer.converter(val, camel.TypeString); err == nil {
+					req.Header.Set(key, v.(string))
+				}
+			}
+		})
+
 		response, err := producer.client.Do(req)
 
 		if err != nil {
@@ -107,11 +122,13 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 
 		defer response.Body.Close()
 
-		exchange.Headers().Bind("HttpStatusCode", response.StatusCode)
-		exchange.Headers().Bind("HttpContentLength", response.ContentLength)
+		exchange.Headers().Bind("http.StatusCode", response.StatusCode)
+		exchange.Headers().Bind("http.ContentLength", response.ContentLength)
 
 		for k, v := range response.Header {
-			exchange.Headers().Bind(k, v)
+			if len(v) >= 1 {
+				exchange.Headers().Bind("http."+k, v[0])
+			}
 		}
 
 		// we should handle status code, set headers & so on here.

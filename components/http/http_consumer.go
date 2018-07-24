@@ -64,8 +64,8 @@ func (consumer *httpConsumer) Start() {
 		body, _ := ioutil.ReadAll(r.Body)
 
 		exchange := camel.NewExchange(consumer.endpoint.component.context)
-		exchange.Headers().Bind("HttpRequestPath", r.URL.Path)
-		exchange.Headers().Bind("HttpMethod", r.Method)
+		exchange.Headers().Bind("http.RequestPath", r.URL.Path)
+		exchange.Headers().Bind("http.Method", r.Method)
 		exchange.SetBody(string(body))
 
 		consumer.processor.Publish(exchange)

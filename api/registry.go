@@ -29,7 +29,10 @@ type Registry interface {
 	Lookup(name string) (interface{}, bool)
 	LookupAs(name string, expectedType reflect.Type) (interface{}, bool)
 
+	// Range calls f sequentially for each key and value present in the registry.
+	// If f returns false, range stops the iteration.
 	Range(func(key string, value interface{}) bool)
+	ForEach(func(key string, value interface{}))
 	//LookupByType(expectedType reflect.Type) ([]interface{}, error)
 }
 

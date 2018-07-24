@@ -109,3 +109,12 @@ func (registry *defaultRegistry) LookupAs(name string, expectedType reflect.Type
 func (registry *defaultRegistry) Range(f func(key string, value interface{}) bool) {
 	registry.local.Range(f)
 }
+
+// Range --
+func (registry *defaultRegistry) ForEach(f func(key string, value interface{})) {
+	registry.local.Range(func(key string, value interface{}) bool {
+		f(key, value)
+
+		return true
+	})
+}

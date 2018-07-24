@@ -93,3 +93,21 @@ func (registry *CombinedRegistry) Range(f func(key string, value interface{}) bo
 		r.Range(f)
 	}
 }
+
+// ForEach --
+func (registry *CombinedRegistry) ForEach(f func(key string, value interface{})) {
+	registry.root.Range(func(key string, value interface{}) bool {
+		f(key, value)
+
+		return true
+	})
+
+	// TODO: need to be revisited
+	for _, r := range registry.parents {
+		r.Range(func(key string, value interface{}) bool {
+			f(key, value)
+
+			return true
+		})
+	}
+}

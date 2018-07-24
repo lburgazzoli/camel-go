@@ -53,6 +53,7 @@ func NewFlowLoader(context api.Context, flows []Flow) *FlowLoader {
 	loader.handlers["endpoint"] = EndpointStepHandler
 	loader.handlers["process"] = ProcessStepHandler
 	loader.handlers["filter"] = FilterStepHandler
+	loader.handlers["header"] = SetHeaderStepHandler
 
 	return &loader
 }

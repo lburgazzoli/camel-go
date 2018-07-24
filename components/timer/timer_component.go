@@ -16,22 +16,11 @@ import (
 	"fmt"
 
 	"github.com/lburgazzoli/camel-go/api"
-	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/introspection"
 
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 )
-
-// ==========================
-//
-// Init
-//
-// ==========================
-
-func init() {
-	camel.RootContext.Registry().Bind("timer", NewComponent())
-}
 
 // ==========================
 //
