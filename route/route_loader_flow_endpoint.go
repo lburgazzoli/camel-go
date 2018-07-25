@@ -26,7 +26,11 @@ type EndpointStep struct {
 
 // EndpointStepHandler --
 func EndpointStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
-	var impl EndpointStep
+	impl := struct {
+		TypedStep
+
+		URI string `yaml:"uri"`
+	}{}
 
 	// not really needed, added for testing purpose
 	err := mapstructure.Decode(step, &impl)

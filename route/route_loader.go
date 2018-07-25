@@ -20,7 +20,7 @@ import "github.com/lburgazzoli/camel-go/api"
 //
 // ==========================
 
-// RouteLoader --
-type RouteLoader interface {
+// Loader --
+type Loader interface {
 	Load() ([]*api.Route, error)
 }

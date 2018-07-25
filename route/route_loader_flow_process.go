@@ -19,17 +19,14 @@ import (
 	zlog "github.com/rs/zerolog/log"
 )
 
-// ProcessStep --
-type ProcessStep struct {
-	TypedStep
-
-	Ref      string `yaml:"ref"`
-	Location string `yaml:"location"`
-}
-
 // ProcessStepHandler --
 func ProcessStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
-	var impl ProcessStep
+	impl := struct {
+		TypedStep
+
+		Ref      string `yaml:"ref"`
+		Location string `yaml:"location"`
+	}{}
 
 	// not really needed, added for testing purpose
 	err := mapstructure.Decode(step, &impl)

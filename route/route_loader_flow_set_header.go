@@ -18,17 +18,14 @@ import (
 	zlog "github.com/rs/zerolog/log"
 )
 
-// SetHeaderStep --
-type SetHeaderStep struct {
-	TypedStep
-
-	Key string `yaml:"key"`
-	Val string `yaml:"val"`
-}
-
 // SetHeaderStepHandler --
 func SetHeaderStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
-	var impl SetHeaderStep
+	impl := struct {
+		TypedStep
+
+		Key string `yaml:"key"`
+		Val string `yaml:"val"`
+	}{}
 
 	err := mapstructure.Decode(step, &impl)
 	if err != nil {

@@ -19,17 +19,14 @@ import (
 	zlog "github.com/rs/zerolog/log"
 )
 
-// FilterStep --
-type FilterStep struct {
-	TypedStep
-
-	Ref      string `yaml:"ref"`
-	Location string `yaml:"location"`
-}
-
 // FilterStepHandler --
 func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
-	var impl FilterStep
+	impl := struct {
+		TypedStep
+
+		Ref      string `yaml:"ref"`
+		Location string `yaml:"location"`
+	}{}
 
 	// not really needed, added for testing purpose
 	err := mapstructure.Decode(step, &impl)
