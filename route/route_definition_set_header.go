@@ -15,8 +15,6 @@ package route
 import (
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/processor"
-
-	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -27,11 +25,23 @@ import (
 
 // SetHeader --
 func (definition *RouteDefinition) SetHeader(key string, val interface{}) *RouteDefinition {
-	d := SetHeaderDefinition{
+	d := SetHeadersDefinition{
 		parent:   definition,
 		children: nil,
-		key:      key,
-		val:      val,
+		headers:  map[string]interface{}{key: val},
+	}
+
+	definition.AddChild(&d)
+
+	return definition
+}
+
+// SetHeaders --
+func (definition *RouteDefinition) SetHeaders(headers map[string]interface{}) *RouteDefinition {
+	d := SetHeadersDefinition{
+		parent:   definition,
+		children: nil,
+		headers:  headers,
 	}
 
 	definition.AddChild(&d)
@@ -45,8 +55,8 @@ func (definition *RouteDefinition) SetHeader(key string, val interface{}) *Route
 //
 // ==========================
 
-// SetHeaderDefinition --
-type SetHeaderDefinition struct {
+// SetHeadersDefinition --
+type SetHeadersDefinition struct {
 	api.ContextAware
 	ProcessingNode
 
@@ -54,36 +64,36 @@ type SetHeaderDefinition struct {
 	parent   *RouteDefinition
 	children []Definition
 
-	key string
-	val interface{}
+	headers map[string]interface{}
 }
 
 // SetContext --
-func (definition *SetHeaderDefinition) SetContext(context api.Context) {
+func (definition *SetHeadersDefinition) SetContext(context api.Context) {
 	definition.context = context
 }
 
 // Context --
-func (definition *SetHeaderDefinition) Context() api.Context {
+func (definition *SetHeadersDefinition) Context() api.Context {
 	return definition.context
 }
 
 // Parent --
-func (definition *SetHeaderDefinition) Parent() Definition {
+func (definition *SetHeadersDefinition) Parent() Definition {
 	return definition.parent
 }
 
 // Children --
-func (definition *SetHeaderDefinition) Children() []Definition {
+func (definition *SetHeadersDefinition) Children() []Definition {
 	return definition.children
 }
 
 // Processor ---
-func (definition *SetHeaderDefinition) Processor() (api.Processor, error) {
-	if definition.key != "" && definition.val != nil {
+func (definition *SetHeadersDefinition) Processor() (api.Processor, error) {
+	if definition.headers != nil {
 		p := processor.NewProcessingPipeline(func(exchange api.Exchange) {
-			zlog.Info().Msgf("SetHeader: %s=%v", definition.key, definition.val)
-			exchange.Headers().Bind(definition.key, definition.val)
+			for k, v := range definition.headers {
+				exchange.Headers().Bind(k, v)
+			}
 		})
 
 		return p, nil

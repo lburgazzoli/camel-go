@@ -54,6 +54,7 @@ func NewFlowLoader(context api.Context, flows []Flow) *FlowLoader {
 	loader.handlers["process"] = ProcessStepHandler
 	loader.handlers["filter"] = FilterStepHandler
 	loader.handlers["header"] = SetHeaderStepHandler
+	loader.handlers["headers"] = SetHeadersStepHandler
 
 	return &loader
 }

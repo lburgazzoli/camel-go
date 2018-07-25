@@ -38,3 +38,16 @@ func SetHeaderStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, 
 	zlog.Debug().Msgf("handle setheader: step=<%v>, impl=<%+v>", step, impl)
 	return route.SetHeader(impl.Key, impl.Val), nil
 }
+
+// SetHeadersStepHandler --
+func SetHeadersStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
+	headers := make(map[string]interface{})
+	for k, v := range step {
+		if k != "type" {
+			headers[k] = v
+		}
+	}
+
+	zlog.Debug().Msgf("handle setheaders: step=<%v>", step)
+	return route.SetHeaders(headers), nil
+}
