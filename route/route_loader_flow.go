@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 
 	zlog "github.com/rs/zerolog/log"
@@ -119,7 +120,23 @@ func (loader *FlowLoader) findHandler(stepType string) (StepHandler, error) {
 
 // ==========================
 //
-// Helpers
+// Helpers - steps
+//
+// ==========================
+
+func decodeStep(stepType string, input interface{}, output interface{}) error {
+	if err := mapstructure.Decode(input, output); err != nil {
+		return err
+	}
+
+	zlog.Debug().Msgf("handle %s: step=<%v>, impl=<%+v>", stepType, input, output)
+
+	return nil
+}
+
+// ==========================
+//
+// Helpers - flow
 //
 // ==========================
 

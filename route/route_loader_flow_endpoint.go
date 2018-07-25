@@ -12,11 +12,6 @@
 
 package route
 
-import (
-	"github.com/mitchellh/mapstructure"
-	zlog "github.com/rs/zerolog/log"
-)
-
 // EndpointStep --
 type EndpointStep struct {
 	TypedStep
@@ -32,12 +27,10 @@ func EndpointStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, e
 		URI string `yaml:"uri"`
 	}{}
 
-	// not really needed, added for testing purpose
-	err := mapstructure.Decode(step, &impl)
+	err := decodeStep("filter", step, &impl)
 	if err != nil {
 		return nil, err
 	}
 
-	zlog.Debug().Msgf("handle endpoint: step=<%v>, impl=<%+v>", step, impl)
 	return route.To(impl.URI), nil
 }

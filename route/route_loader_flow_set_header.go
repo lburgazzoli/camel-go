@@ -13,8 +13,6 @@
 package route
 
 import (
-	"github.com/mitchellh/mapstructure"
-
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -27,12 +25,11 @@ func SetHeaderStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, 
 		Val string `yaml:"val"`
 	}{}
 
-	err := mapstructure.Decode(step, &impl)
+	err := decodeStep("setheader", step, &impl)
 	if err != nil {
 		return nil, err
 	}
 
-	zlog.Debug().Msgf("handle setheader: step=<%v>, impl=<%+v>", step, impl)
 	return route.SetHeader(impl.Key, impl.Val), nil
 }
 
