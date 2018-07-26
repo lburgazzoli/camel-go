@@ -18,9 +18,21 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Logger --
+type Logger struct {
+	Name   string `yaml:"name"`
+	Level  string `yaml:"level"`
+	Target string `yaml:"level"`
+}
+
+// Configuration --
+type Configuration struct {
+	Loggers []Logger
+}
+
 // New --
-func New(logger string) zerolog.Logger {
-	return zerolog.New(os.Stdout).With().Timestamp().Str("logger", logger).Logger()
+func New(name string) zerolog.Logger {
+	return zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
 }
 
 // ==========================
@@ -29,11 +41,12 @@ func New(logger string) zerolog.Logger {
 //
 // ==========================
 
-var rootLogger zerolog.Logger
+// RootLogger --
+var RootLogger zerolog.Logger
 
 // Log --
 func Log(level zerolog.Level, format string, args ...interface{}) {
-	rootLogger.WithLevel(level).Msgf(format, args)
+	RootLogger.WithLevel(level).Msgf(format, args)
 }
 
 // ==========================
@@ -43,5 +56,5 @@ func Log(level zerolog.Level, format string, args ...interface{}) {
 // ==========================
 
 func init() {
-	rootLogger = New("root")
+	RootLogger = New("root")
 }
