@@ -56,3 +56,12 @@ type ProcessingService interface {
 	Service
 	Processor
 }
+
+// ==========================
+//
+//
+//
+// ==========================
+
+// ProcessingFnSupplier --
+type ProcessingFnSupplier func() (func(Exchange), error)

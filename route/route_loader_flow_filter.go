@@ -13,6 +13,8 @@
 package route
 
 import (
+	"strings"
+
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/module"
 )
@@ -31,8 +33,10 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 		return nil, err
 	}
 
-	if impl.Location != "" {
-		symbol, err := module.LoadSymbol(impl.Location, impl.Ref)
+	if strings.HasPrefix(impl.Location, "file:") {
+		location := strings.TrimPrefix(impl.Location, "file:")
+		symbol, err := module.LoadSymbol(location, impl.Ref)
+
 		if err != nil {
 			return nil, err
 		}

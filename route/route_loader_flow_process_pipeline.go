@@ -19,30 +19,44 @@ import (
 	"github.com/lburgazzoli/camel-go/module"
 )
 
-// ProcessStepHandler --
-func ProcessStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
+// ProcessPipelineStepHandler --
+func ProcessPipelineStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, error) {
 	impl := struct {
 		TypedStep
 
-		Ref      string `yaml:"ref"`
-		Location string `yaml:"location"`
+		Processors []struct {
+			Ref      string `yaml:"ref"`
+			Location string `yaml:"location"`
+		}
 	}{}
 
-	err := decodeStep("process", step, &impl)
+	err := decodeStep("pipeline", step, &impl)
 	if err != nil {
 		return nil, err
 	}
 
-	if strings.HasPrefix(impl.Location, "file:") {
-		location := strings.TrimPrefix(impl.Location, "file:")
-		symbol, err := module.LoadSymbol(location, impl.Ref)
+	pipeline := route.Pipeline()
 
-		if err != nil {
-			return nil, err
+	for _, p := range impl.Processors {
+		if strings.HasPrefix(p.Location, "file:") {
+			location := strings.TrimPrefix(p.Location, "file:")
+			name := p.Ref
+
+			if name == "" {
+				name = "Create"
+			}
+
+			symbol, err := module.LoadSymbol(location, p.Ref)
+
+			if err != nil {
+				return nil, err
+			}
+
+			pipeline.Fn(symbol.(func(api.Exchange)))
+		} else if p.Ref != "" {
+			pipeline.Ref(p.Ref)
 		}
-
-		return route.Process().Fn(symbol.(func(api.Exchange))), nil
 	}
 
-	return route.Process().Ref(impl.Ref), nil
+	return pipeline.End(), nil
 }
