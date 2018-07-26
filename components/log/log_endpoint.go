@@ -26,25 +26,25 @@ import (
 //
 // ==========================
 
-// Options --
-type Options struct {
+// EndpointOptions --
+type EndpointOptions struct {
 	logger     string
 	level      zerolog.Level
 	logHeaders bool
 }
 
 // SetLogger --
-func (options *Options) SetLogger(logger string) {
+func (options *EndpointOptions) SetLogger(logger string) {
 	options.logger = logger
 }
 
 // SetLevel --
-func (options *Options) SetLevel(level zerolog.Level) {
+func (options *EndpointOptions) SetLevel(level zerolog.Level) {
 	options.level = level
 }
 
 // SetLogHeaders --
-func (options *Options) SetLogHeaders(logHeaders bool) {
+func (options *EndpointOptions) SetLogHeaders(logHeaders bool) {
 	options.logHeaders = logHeaders
 }
 
@@ -54,26 +54,26 @@ func (options *Options) SetLogHeaders(logHeaders bool) {
 //
 // ==========================
 
-// Option --
-type Option func(*Options)
+// EndpointOption --
+type EndpointOption func(*EndpointOptions)
 
 // Logger --
-func Logger(value string) Option {
-	return func(args *Options) {
+func Logger(value string) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.logger = value
 	}
 }
 
 // Level --
-func Level(value zerolog.Level) Option {
-	return func(args *Options) {
+func Level(value zerolog.Level) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.level = value
 	}
 }
 
 // Headers --
-func Headers(value bool) Option {
-	return func(args *Options) {
+func Headers(value bool) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.logHeaders = value
 	}
 }
@@ -84,7 +84,7 @@ func Headers(value bool) Option {
 //
 // ==========================
 
-func newEndpoint(component *Component, logger string, setters ...Option) (*logEndpoint, error) {
+func newEndpoint(component *Component, logger string, setters ...EndpointOption) (*logEndpoint, error) {
 	endpoint := logEndpoint{}
 	endpoint.component = component
 	endpoint.logger = logger
@@ -92,14 +92,14 @@ func newEndpoint(component *Component, logger string, setters ...Option) (*logEn
 
 	// Apply options
 	for _, setter := range setters {
-		setter(&endpoint.Options)
+		setter(&endpoint.EndpointOptions)
 	}
 
 	return &endpoint, nil
 }
 
 type logEndpoint struct {
-	Options
+	EndpointOptions
 	component *Component
 }
 

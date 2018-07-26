@@ -28,7 +28,7 @@ import (
 // ==========================
 
 // Options --
-type Options struct {
+type EndpointOptions struct {
 	scheme            string
 	host              string
 	port              int
@@ -41,27 +41,27 @@ type Options struct {
 }
 
 // SetMethod --
-func (options *Options) SetMethod(method string) {
+func (options *EndpointOptions) SetMethod(method string) {
 	options.method = method
 }
 
 // SetConnectionTimeout --
-func (options *Options) SetConnectionTimeout(timeout time.Duration) {
+func (options *EndpointOptions) SetConnectionTimeout(timeout time.Duration) {
 	options.connectionTimeout = timeout
 }
 
 // SetRequestTimeout --
-func (options *Options) SetRequestTimeout(timeout time.Duration) {
+func (options *EndpointOptions) SetRequestTimeout(timeout time.Duration) {
 	options.requestTimeout = timeout
 }
 
 // SetTransport --
-func (options *Options) SetTransport(transport *ghttp.Transport) {
+func (options *EndpointOptions) SetTransport(transport *ghttp.Transport) {
 	options.transport = transport
 }
 
 // SetClient --
-func (options *Options) SetClient(client *ghttp.Client) {
+func (options *EndpointOptions) SetClient(client *ghttp.Client) {
 	options.client = client
 }
 
@@ -71,40 +71,40 @@ func (options *Options) SetClient(client *ghttp.Client) {
 //
 // ==========================
 
-// Option --
-type Option func(*Options)
+// EndpointOption --
+type EndpointOption func(*EndpointOptions)
 
 // Method --
-func Method(value string) Option {
-	return func(args *Options) {
+func Method(value string) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.method = value
 	}
 }
 
 // ConnectionTimeout --
-func ConnectionTimeout(value time.Duration) Option {
-	return func(args *Options) {
+func ConnectionTimeout(value time.Duration) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.connectionTimeout = value
 	}
 }
 
 // RequestTimeout --
-func RequestTimeout(value time.Duration) Option {
-	return func(args *Options) {
+func RequestTimeout(value time.Duration) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.requestTimeout = value
 	}
 }
 
 // Transport --
-func Transport(value *ghttp.Transport) Option {
-	return func(args *Options) {
+func Transport(value *ghttp.Transport) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.transport = value
 	}
 }
 
 // Client --
-func Client(value *ghttp.Client) Option {
-	return func(args *Options) {
+func Client(value *ghttp.Client) EndpointOption {
+	return func(args *EndpointOptions) {
 		args.client = value
 	}
 }
@@ -115,7 +115,7 @@ func Client(value *ghttp.Client) Option {
 //
 // ==========================
 
-func newEndpoint(component *Component, url url.URL, setters ...Option) (*httpEndpoint, error) {
+func newEndpoint(component *Component, url url.URL, setters ...EndpointOption) (*httpEndpoint, error) {
 	endpoint := httpEndpoint{}
 	endpoint.component = component
 	endpoint.method = ghttp.MethodGet
@@ -147,14 +147,14 @@ func newEndpoint(component *Component, url url.URL, setters ...Option) (*httpEnd
 
 	// Apply options
 	for _, setter := range setters {
-		setter(&endpoint.Options)
+		setter(&endpoint.EndpointOptions)
 	}
 
 	return &endpoint, nil
 }
 
 type httpEndpoint struct {
-	Options
+	EndpointOptions
 
 	component *Component
 }
