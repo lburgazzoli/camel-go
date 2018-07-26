@@ -30,7 +30,7 @@ import (
 
 // NewComponent --
 func NewComponent() api.Component {
-	component := &Component{
+	component := Component{
 		logger:         logger.New("timer.Component"),
 		serviceSupport: api.NewServiceSupport(),
 	}
@@ -38,7 +38,7 @@ func NewComponent() api.Component {
 	component.serviceSupport.Transition(api.ServiceStatusSTOPPED, api.ServiceStatusSTARTED, component.doStart)
 	component.serviceSupport.Transition(api.ServiceStatusSTARTED, api.ServiceStatusSTOPPED, component.doStop)
 
-	return component
+	return &component
 }
 
 // ==========================
@@ -81,7 +81,6 @@ func (component *Component) Stage() api.ServiceStage {
 
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
-
 	// endpoint option validation
 	if _, ok := options["period"]; !ok {
 		return nil, fmt.Errorf("missing mandatory option: period")

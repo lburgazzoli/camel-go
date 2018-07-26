@@ -29,7 +29,7 @@ import (
 
 // NewComponent --
 func NewComponent() api.Component {
-	component := &Component{
+	component := Component{
 		logger:         logger.New("http.Component"),
 		serviceSupport: api.NewServiceSupport(),
 	}
@@ -37,7 +37,7 @@ func NewComponent() api.Component {
 	component.serviceSupport.Transition(api.ServiceStatusSTOPPED, api.ServiceStatusSTARTED, component.doStart)
 	component.serviceSupport.Transition(api.ServiceStatusSTARTED, api.ServiceStatusSTOPPED, component.doStop)
 
-	return component
+	return &component
 }
 
 // ==========================
