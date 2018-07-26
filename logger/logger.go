@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+/*
 // Logger --
 type Logger struct {
 	Name   string `yaml:"name"`
@@ -29,6 +30,7 @@ type Logger struct {
 type Configuration struct {
 	Loggers []Logger
 }
+*/
 
 // New --
 func New(name string) zerolog.Logger {
