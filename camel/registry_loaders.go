@@ -18,9 +18,9 @@ import (
 	"path"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/module"
-
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -68,7 +68,7 @@ func (loader *pluginRegistryLoader) Load(name string) (interface{}, error) {
 		symbol, err := module.LoadSymbol(pluginPath, "Create")
 
 		if err != nil {
-			zlog.Warn().Msgf("plugin %s does not export symbol \"Create\"", name)
+			logger.Log(zerolog.WarnLevel, "plugin %s does not export symbol \"Create\"", name)
 			return nil, err
 		}
 

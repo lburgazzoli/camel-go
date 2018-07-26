@@ -16,9 +16,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lburgazzoli/camel-go/logger"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 
-	zlog "github.com/rs/zerolog/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -61,12 +62,12 @@ var deployCmd = &cobra.Command{
 
 		config, err := clientcmd.BuildConfigFromFlags("", conf)
 		if err != nil {
-			zlog.Fatal().Msg(err.Error())
+			logger.Log(zerolog.FatalLevel, err.Error())
 		}
 
 		client, err := kubernetes.NewForConfig(config)
 		if err != nil {
-			zlog.Fatal().Msg(err.Error())
+			logger.Log(zerolog.FatalLevel, err.Error())
 		}
 
 		if client != nil {

@@ -17,11 +17,12 @@ import (
 	"io/ioutil"
 	ghttp "net/http"
 
+	"github.com/rs/zerolog"
+
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/processor"
-
-	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -32,6 +33,7 @@ import (
 
 func newHTTPConsumer(endpoint *httpEndpoint) *httpConsumer {
 	c := httpConsumer{
+		logger:   logger.New("http.Consumer"),
 		endpoint: endpoint,
 		// TODO: this is ugly
 		processor: processor.NewProcessingPipeline(func(api.Exchange) {
@@ -42,6 +44,7 @@ func newHTTPConsumer(endpoint *httpEndpoint) *httpConsumer {
 }
 
 type httpConsumer struct {
+	logger    zerolog.Logger
 	endpoint  *httpEndpoint
 	processor api.Processor
 	server    *ghttp.Server
@@ -74,11 +77,11 @@ func (consumer *httpConsumer) Start() {
 	consumer.server = &ghttp.Server{Addr: url, Handler: mux}
 
 	go func() {
-		zlog.Debug().Msgf("Star listening on address: %+v", consumer.server.Addr)
+		consumer.logger.Debug().Msgf("Star listening on address: %+v", consumer.server.Addr)
 		if err := consumer.server.ListenAndServe(); err != nil {
-			zlog.Fatal().Msg(err.Error())
+			consumer.logger.Fatal().Msg(err.Error())
 		}
-		zlog.Debug().Msgf("Stop serving %s", consumer.server.Addr)
+		consumer.logger.Debug().Msgf("Stop serving %s", consumer.server.Addr)
 	}()
 }
 

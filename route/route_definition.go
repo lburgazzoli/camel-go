@@ -14,8 +14,9 @@ package route
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/processor"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -122,12 +123,12 @@ func unwrapDefinition(context api.Context, route *api.Route, parent api.Processo
 		p, e = node.Processor()
 
 		if e != nil {
-			zlog.Fatal().Msgf("unable to load processing node %v (%s)", definition, e)
+			logger.Log(zerolog.FatalLevel, "unable to load processing node %v (%s)", definition, e)
 		}
 
 		if p != nil {
 			if parent != nil {
-				zlog.Debug().Msgf("connect %+v", definition)
+				logger.Log(zerolog.DebugLevel, "connect %+v", definition)
 				processor.Connect(parent, p)
 			}
 

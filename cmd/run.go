@@ -16,12 +16,12 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
-
-	zlog "github.com/rs/zerolog/log"
 
 	// import components
 	"github.com/lburgazzoli/camel-go/app"
+	"github.com/lburgazzoli/camel-go/logger"
 
 	// load camel component
 	_ "github.com/lburgazzoli/camel-go/components/http"
@@ -55,7 +55,7 @@ var runCmd = &cobra.Command{
 		app, err := app.New(runCmdFlags.flow)
 
 		if err != nil {
-			zlog.Fatal().Msgf("%s", err)
+			logger.Log(zerolog.FatalLevel, err.Error())
 		}
 
 		app.Start()

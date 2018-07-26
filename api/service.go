@@ -16,7 +16,8 @@ import (
 	"sort"
 	"sync/atomic"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/lburgazzoli/camel-go/logger"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -132,7 +133,7 @@ func StartServices(services []Service) {
 
 	for _, service := range svcs {
 		if stage, ok := service.(StagedService); ok {
-			zlog.Debug().Msgf("Starting service at stage: %d", stage.Stage())
+			logger.Log(zerolog.DebugLevel, "Starting service at stage: %d", stage.Stage())
 		}
 
 		service.Start()
@@ -160,7 +161,7 @@ func StopServices(services []Service) {
 
 	for _, service := range svcs {
 		if stage, ok := service.(StagedService); ok {
-			zlog.Debug().Msgf("Stopping service at stage: %d", stage.Stage())
+			logger.Log(zerolog.DebugLevel, "Stopping service at stage: %d", stage.Stage())
 		}
 
 		service.Stop()

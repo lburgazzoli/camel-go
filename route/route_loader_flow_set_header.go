@@ -13,7 +13,8 @@
 package route
 
 import (
-	zlog "github.com/rs/zerolog/log"
+	"github.com/lburgazzoli/camel-go/logger"
+	"github.com/rs/zerolog"
 )
 
 // SetHeaderStepHandler --
@@ -42,6 +43,6 @@ func SetHeadersStepHandler(step Step, route *RouteDefinition) (*RouteDefinition,
 		}
 	}
 
-	zlog.Debug().Msgf("handle setheaders: step=<%v>", step)
+	logger.Log(zerolog.DebugLevel, "handle setheaders: step=<%v>", step)
 	return route.SetHeaders(headers), nil
 }

@@ -13,13 +13,13 @@
 package introspection
 
 import (
-	"log"
 	"reflect"
 	"strings"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
 )
 
 // SetProperty --
@@ -49,7 +49,7 @@ func SetProperty(context api.Context, target interface{}, name string, value int
 				return true
 			}
 
-			log.Fatalf("unable to set field (name=%s, target=%v, error=%v)",
+			logger.Log(zerolog.FatalLevel, "unable to set field (name=%s, target=%v, error=%v)",
 				name,
 				target,
 				err,
@@ -78,14 +78,14 @@ func SetProperty(context api.Context, target interface{}, name string, value int
 				return true
 			}
 
-			zlog.Fatal().Msgf("unable to set field through method call (name=%s, target=%v, error=%v)",
+			logger.Log(zerolog.FatalLevel, "unable to set field through method call (name=%s, target=%v, error=%v)",
 				name,
 				target,
 				err,
 			)
 		}
 	} else {
-		zlog.Fatal().Msgf("unable to set field %s on %v as it is not a pointer", name, target)
+		logger.Log(zerolog.FatalLevel, "unable to set field %s on %v as it is not a pointer", name, target)
 	}
 
 	return false
@@ -106,7 +106,7 @@ func SetProperties(context api.Context, target interface{}, options map[string]i
 
 			// try to lookup value from registry
 			if v, ok = context.Registry().Lookup(k); !ok {
-				zlog.Fatal().Msgf("unable to find %s from registr", k)
+				logger.Log(zerolog.FatalLevel, "unable to find %s from registr", k)
 			}
 		}
 

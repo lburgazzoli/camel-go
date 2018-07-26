@@ -15,8 +15,8 @@ package log
 import (
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/introspection"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -28,7 +28,7 @@ import (
 // NewComponent --
 func NewComponent() api.Component {
 	component := &Component{
-		logger:         zlog.With().Str("logger", "log.Component").Logger(),
+		logger:         logger.New("log.Component"),
 		serviceSupport: api.NewServiceSupport(),
 	}
 
@@ -79,15 +79,15 @@ func (component *Component) Stage() api.ServiceStage {
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
 	// Create the endpoint and set default values
-	endpoint := logEndpoint{}
-	endpoint.component = component
-	endpoint.logger = remaining
-	endpoint.level = zerolog.InfoLevel
+	endpoint, err := newEndpoint(component, remaining)
+	if err != nil {
+		return nil, err
+	}
 
 	// bind options to endpoint
-	introspection.SetProperties(component.context, &endpoint, options)
+	introspection.SetProperties(component.context, endpoint, options)
 
-	return &endpoint, nil
+	return endpoint, nil
 }
 
 // ==========================

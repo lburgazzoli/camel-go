@@ -17,10 +17,11 @@ import (
 	"io/ioutil"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	yaml "gopkg.in/yaml.v1"
 )
 
@@ -33,6 +34,7 @@ import (
 // FlowLoader --
 type FlowLoader struct {
 	context  api.Context
+	logger   zerolog.Logger
 	flows    []Flow
 	handlers map[string]StepHandler
 }
@@ -47,6 +49,7 @@ type FlowLoader struct {
 func NewFlowLoader(context api.Context, flows []Flow) *FlowLoader {
 	loader := FlowLoader{
 		context:  context,
+		logger:   logger.New("flowloader"),
 		flows:    flows,
 		handlers: make(map[string]StepHandler, 0),
 	}
@@ -62,7 +65,7 @@ func NewFlowLoader(context api.Context, flows []Flow) *FlowLoader {
 
 // Load --
 func (loader *FlowLoader) Load() ([]*api.Route, error) {
-	zlog.Info().Msgf("flows: %v", loader.flows)
+	loader.logger.Info().Msgf("flows: %v", loader.flows)
 
 	routes := make([]*api.Route, 0)
 
@@ -129,7 +132,7 @@ func decodeStep(stepType string, input interface{}, output interface{}) error {
 		return err
 	}
 
-	zlog.Debug().Msgf("handle %s: step=<%v>, impl=<%+v>", stepType, input, output)
+	logger.Log(zerolog.DebugLevel, "handle %s: step=<%v>, impl=<%+v>", stepType, input, output)
 
 	return nil
 }
@@ -142,7 +145,7 @@ func decodeStep(stepType string, input interface{}, output interface{}) error {
 
 // LoadFlowFromYAMLFile --
 func LoadFlowFromYAMLFile(context api.Context, path string) ([]*api.Route, error) {
-	zlog.Debug().Msgf("Loading routes from:  %s", path)
+	logger.Log(zerolog.DebugLevel, "Loading routes from:  %s", path)
 
 	var err error
 	var data []byte

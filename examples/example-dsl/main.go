@@ -22,10 +22,11 @@ import (
 	"github.com/lburgazzoli/camel-go/camel"
 	"github.com/lburgazzoli/camel-go/components/log"
 	"github.com/lburgazzoli/camel-go/components/timer"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/route"
 	"github.com/spf13/viper"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -41,12 +42,12 @@ func simpleProcess(e api.Exchange) {
 func simpleFilter(e api.Exchange) bool {
 	c, ok := e.Headers().LookupAs("timer.fire.count", camel.TypeInt)
 	if !ok {
-		zlog.Panic().Msg("Unable to convert header")
+		logger.Log(zerolog.PanicLevel, "Unable to convert header")
 	}
 
 	count, ok := c.(int)
 	if !ok {
-		zlog.Panic().Msg("Unable to convert header")
+		logger.Log(zerolog.PanicLevel, "Unable to convert header")
 	}
 
 	return count != 4
@@ -59,12 +60,12 @@ func simpleProcessorFn(e api.Exchange) {
 func simpleFilterFn(e api.Exchange) bool {
 	c, ok := e.Headers().LookupAs("timer.fire.count", camel.TypeInt)
 	if !ok {
-		zlog.Panic().Msg("Unable to convert header")
+		logger.Log(zerolog.PanicLevel, "Unable to convert header")
 	}
 
 	count, ok := c.(int)
 	if !ok {
-		zlog.Panic().Msg("Unable to convert header")
+		logger.Log(zerolog.PanicLevel, "Unable to convert header")
 	}
 
 	return count%2 == 0
@@ -87,7 +88,7 @@ func ConfigureViper() *viper.Viper {
 	}
 
 	if err := v.ReadInConfig(); err != nil {
-		zlog.Panic().Msgf("fatal error config file: %s", err)
+		logger.Log(zerolog.PanicLevel, "fatal error config file: %s", err)
 	}
 
 	return v
@@ -117,17 +118,17 @@ func main() {
 
 	r, err := route.ToRoute(context, def)
 	if err != nil {
-		zlog.Panic().Msg("Unable to load route")
+		logger.Log(zerolog.PanicLevel, "Unable to load route")
 	}
 
 	context.AddRoute(r)
 
-	zlog.Info().Msg("Start context")
+	logger.Log(zerolog.InfoLevel, "Start context")
 	context.Start()
 
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 
-	zlog.Info().Msg("Stop context")
+	logger.Log(zerolog.InfoLevel, "Stop context")
 	context.Stop()
 }

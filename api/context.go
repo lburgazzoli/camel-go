@@ -16,7 +16,8 @@ import (
 	"fmt"
 	"net/url"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/lburgazzoli/camel-go/logger"
+	"github.com/rs/zerolog"
 )
 
 // HasContext --
@@ -109,11 +110,11 @@ func LookupComponent(context Context, scheme string) (Component, error) {
 	var component Component
 	var err error
 
-	zlog.Info().Msgf("lookup component scheme: %s", scheme)
+	logger.Log(zerolog.InfoLevel, "lookup component scheme: %s", scheme)
 
-	// Every component should be  context registry
+	// Every component should be on context registry
 	if c, ok := context.Registry().Lookup(scheme); ok {
-		zlog.Info().Msgf("scheme: %s, component: %v, error: %v", scheme, c, err)
+		logger.Log(zerolog.InfoLevel, "scheme: %s, component: %+v, error: %s", scheme, c, err)
 
 		component, _ = c.(Component)
 	}

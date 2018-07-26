@@ -17,9 +17,9 @@ import (
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/introspection"
+	"github.com/lburgazzoli/camel-go/logger"
 
 	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
 )
 
 // ==========================
@@ -31,7 +31,7 @@ import (
 // NewComponent --
 func NewComponent() api.Component {
 	component := &Component{
-		logger:         zlog.With().Str("logger", "timer.Component").Logger(),
+		logger:         logger.New("timer.Component"),
 		serviceSupport: api.NewServiceSupport(),
 	}
 
@@ -81,19 +81,22 @@ func (component *Component) Stage() api.ServiceStage {
 
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
-	// Create the endpoint and set default values
-	endpoint := timerEndpoint{}
-	endpoint.component = component
 
 	// endpoint option validation
 	if _, ok := options["period"]; !ok {
 		return nil, fmt.Errorf("missing mandatory option: period")
 	}
 
-	// bind options to endpoint
-	introspection.SetProperties(component.context, &endpoint, options)
+	// Create the endpoint and set default values
+	endpoint, err := newEndpoint(component)
+	if err != nil {
+		return nil, err
+	}
 
-	return &endpoint, nil
+	// bind options to endpoint
+	introspection.SetProperties(component.context, endpoint, options)
+
+	return endpoint, nil
 }
 
 // ==========================
@@ -103,11 +106,9 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 // ==========================
 
 func (component *Component) doStart() {
-	logger := zlog.With().Str("logger", "timer.Component").Logger()
-	logger.Info().Msg("Started")
+	component.logger.Info().Msg("Started")
 }
 
 func (component *Component) doStop() {
-	logger := zlog.With().Str("logger", "timer.Component").Logger()
-	logger.Info().Msg("Stopped")
+	component.logger.Info().Msg("Stopped")
 }

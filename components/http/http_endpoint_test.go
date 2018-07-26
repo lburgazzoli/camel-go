@@ -22,12 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// ==========================
-//
-// Duration converter
-//
-// ==========================
-
 func TestNewEndpoint(t *testing.T) {
 	ctx := camel.NewContextWithParent(nil)
 	ctx.AddTypeConverter(camel.ToIntConverter)

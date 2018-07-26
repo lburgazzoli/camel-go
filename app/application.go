@@ -5,10 +5,10 @@ import (
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/route"
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
-
-	zlog "github.com/rs/zerolog/log"
 )
 
 // New --
@@ -30,9 +30,10 @@ func New(config string) (*Application, error) {
 		return nil, err
 	}
 
-	zlog.Debug().Msgf("flow file is: %s", v.ConfigFileUsed())
+	logger.Log(zerolog.DebugLevel, "flow file is: %s", v.ConfigFileUsed())
 
 	app := Application{}
+	app.logger = logger.New("app")
 	app.context = camel.NewContext()
 
 	for _, p := range v.GetStringSlice("plugins") {
@@ -53,16 +54,17 @@ func New(config string) (*Application, error) {
 // Application --
 type Application struct {
 	context api.Context
+	logger  zerolog.Logger
 }
 
 // Start --
 func (app *Application) Start() {
-	zlog.Info().Msg("Start context")
+	app.logger.Info().Msg("Start context")
 	app.context.Start()
 }
 
 // Stop --
 func (app *Application) Stop() {
-	zlog.Info().Msg("Stop context")
+	app.logger.Info().Msg("Stop context")
 	app.context.Stop()
 }

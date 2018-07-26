@@ -22,15 +22,85 @@ import (
 
 // ==========================
 //
+// Options
+//
+// ==========================
+
+// Options --
+type Options struct {
+	logger     string
+	level      zerolog.Level
+	logHeaders bool
+}
+
+// SetLogger --
+func (options *Options) SetLogger(logger string) {
+	options.logger = logger
+}
+
+// SetLevel --
+func (options *Options) SetLevel(level zerolog.Level) {
+	options.level = level
+}
+
+// SetLogHeaders --
+func (options *Options) SetLogHeaders(logHeaders bool) {
+	options.logHeaders = logHeaders
+}
+
+// ==========================
+//
+// Functional Options
+//
+// ==========================
+
+// Option --
+type Option func(*Options)
+
+// Logger --
+func Logger(value string) Option {
+	return func(args *Options) {
+		args.logger = value
+	}
+}
+
+// Level --
+func Level(value zerolog.Level) Option {
+	return func(args *Options) {
+		args.level = value
+	}
+}
+
+// Headers --
+func Headers(value bool) Option {
+	return func(args *Options) {
+		args.logHeaders = value
+	}
+}
+
+// ==========================
+//
 // Endpoint
 //
 // ==========================
 
+func newEndpoint(component *Component, logger string, setters ...Option) (*logEndpoint, error) {
+	endpoint := logEndpoint{}
+	endpoint.component = component
+	endpoint.logger = logger
+	endpoint.level = zerolog.InfoLevel
+
+	// Apply options
+	for _, setter := range setters {
+		setter(&endpoint.Options)
+	}
+
+	return &endpoint, nil
+}
+
 type logEndpoint struct {
-	component  *Component
-	logger     string
-	level      zerolog.Level
-	logHeaders bool
+	Options
+	component *Component
 }
 
 func (endpoint *logEndpoint) Start() {
@@ -57,22 +127,4 @@ func (endpoint *logEndpoint) CreateProducer() (api.Producer, error) {
 
 func (endpoint *logEndpoint) CreateConsumer() (api.Consumer, error) {
 	return nil, errors.New("log is Producer only")
-}
-
-// ==========================
-//
-// Options
-//
-// ==========================
-
-func (endpoint *logEndpoint) SetLogger(logger string) {
-	endpoint.logger = logger
-}
-
-func (endpoint *logEndpoint) SetLevel(level zerolog.Level) {
-	endpoint.level = level
-}
-
-func (endpoint *logEndpoint) SetLogHeaders(logHeaders bool) {
-	endpoint.logHeaders = logHeaders
 }

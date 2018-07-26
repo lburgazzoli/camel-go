@@ -20,11 +20,12 @@ import (
 	"strings"
 
 	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/logger"
 
 	"github.com/lburgazzoli/camel-go/api"
 	"github.com/lburgazzoli/camel-go/processor"
 
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -35,6 +36,7 @@ import (
 
 func newHTTPProducer(endpoint *httpEndpoint) *httpProducer {
 	p := httpProducer{
+		logger:    logger.New("http.Producer"),
 		endpoint:  endpoint,
 		transport: endpoint.transport,
 		client:    endpoint.client,
@@ -47,6 +49,7 @@ func newHTTPProducer(endpoint *httpEndpoint) *httpProducer {
 }
 
 type httpProducer struct {
+	logger    zerolog.Logger
 	endpoint  *httpEndpoint
 	converter api.TypeConverter
 	processor api.Processor
@@ -101,7 +104,7 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
 	if err != nil {
 		// do nothing here for the moment, we should fail tyhe exchange
-		zlog.Error().Msg(err.Error())
+		producer.logger.Error().Msg(err.Error())
 	} else {
 		exchange.Headers().ForEach(func(key string, val interface{}) {
 			if strings.HasPrefix(key, HTTPHeaderPrefix) && len(key) > HTTPHeaderPrefixLen {
@@ -117,7 +120,7 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 
 		if err != nil {
 			// do nothing here for the moment, we should fail tyhe exchange
-			zlog.Error().Msg(err.Error())
+			producer.logger.Error().Msg(err.Error())
 		}
 
 		defer response.Body.Close()

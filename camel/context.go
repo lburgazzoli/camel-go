@@ -18,6 +18,8 @@ import (
 	"sync"
 
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -32,6 +34,7 @@ type defaultContext struct {
 
 	parent       api.Context
 	name         string
+	logger       zerolog.Logger
 	registry     api.LoadingRegistry
 	routes       []*api.Route
 	converters   []api.TypeConverter
@@ -69,6 +72,7 @@ func NewContextWithParentAndName(parent api.Context, name string) api.Context {
 	context := defaultContext{
 		parent:     parent,
 		name:       name,
+		logger:     logger.New("context:" + name),
 		routes:     make([]*api.Route, 0),
 		converters: make([]api.TypeConverter, 0),
 		services:   make([]api.Service, 0),

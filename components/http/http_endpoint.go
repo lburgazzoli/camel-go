@@ -14,6 +14,8 @@ package http
 
 import (
 	ghttp "net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/lburgazzoli/camel-go/api"
@@ -21,12 +23,12 @@ import (
 
 // ==========================
 //
-// Endpoint
+// Options
 //
 // ==========================
 
-type httpEndpoint struct {
-	component         *Component
+// Options --
+type Options struct {
 	scheme            string
 	host              string
 	port              int
@@ -36,6 +38,125 @@ type httpEndpoint struct {
 	requestTimeout    time.Duration
 	transport         *ghttp.Transport
 	client            *ghttp.Client
+}
+
+// SetMethod --
+func (options *Options) SetMethod(method string) {
+	options.method = method
+}
+
+// SetConnectionTimeout --
+func (options *Options) SetConnectionTimeout(timeout time.Duration) {
+	options.connectionTimeout = timeout
+}
+
+// SetRequestTimeout --
+func (options *Options) SetRequestTimeout(timeout time.Duration) {
+	options.requestTimeout = timeout
+}
+
+// SetTransport --
+func (options *Options) SetTransport(transport *ghttp.Transport) {
+	options.transport = transport
+}
+
+// SetClient --
+func (options *Options) SetClient(client *ghttp.Client) {
+	options.client = client
+}
+
+// ==========================
+//
+// Functional Options
+//
+// ==========================
+
+// Option --
+type Option func(*Options)
+
+// Method --
+func Method(value string) Option {
+	return func(args *Options) {
+		args.method = value
+	}
+}
+
+// ConnectionTimeout --
+func ConnectionTimeout(value time.Duration) Option {
+	return func(args *Options) {
+		args.connectionTimeout = value
+	}
+}
+
+// RequestTimeout --
+func RequestTimeout(value time.Duration) Option {
+	return func(args *Options) {
+		args.requestTimeout = value
+	}
+}
+
+// Transport --
+func Transport(value *ghttp.Transport) Option {
+	return func(args *Options) {
+		args.transport = value
+	}
+}
+
+// Client --
+func Client(value *ghttp.Client) Option {
+	return func(args *Options) {
+		args.client = value
+	}
+}
+
+// ==========================
+//
+// Endpoint
+//
+// ==========================
+
+func newEndpoint(component *Component, url url.URL, setters ...Option) (*httpEndpoint, error) {
+	endpoint := httpEndpoint{}
+	endpoint.component = component
+	endpoint.method = ghttp.MethodGet
+	endpoint.connectionTimeout = 10 * time.Second
+	endpoint.requestTimeout = 60 * time.Second
+	endpoint.path = url.Path
+	endpoint.port = 80
+
+	if url.Hostname() != "" {
+		endpoint.host = url.Hostname()
+	}
+
+	if url.Port() != "" {
+		port, err := strconv.Atoi(url.Port())
+		if err != nil {
+			return nil, err
+		}
+
+		endpoint.port = port
+	}
+
+	if endpoint.port == 443 && endpoint.scheme == "" {
+		endpoint.scheme = "https"
+	}
+
+	if endpoint.scheme == "" {
+		endpoint.scheme = "http"
+	}
+
+	// Apply options
+	for _, setter := range setters {
+		setter(&endpoint.Options)
+	}
+
+	return &endpoint, nil
+}
+
+type httpEndpoint struct {
+	Options
+
+	component *Component
 }
 
 func (endpoint *httpEndpoint) Start() {
@@ -58,30 +179,4 @@ func (endpoint *httpEndpoint) CreateProducer() (api.Producer, error) {
 
 func (endpoint *httpEndpoint) CreateConsumer() (api.Consumer, error) {
 	return newHTTPConsumer(endpoint), nil
-}
-
-// ==========================
-//
-// Options
-//
-// ==========================
-
-func (endpoint *httpEndpoint) SetMethod(method string) {
-	endpoint.method = method
-}
-
-func (endpoint *httpEndpoint) SetConnectionTimeout(timeout time.Duration) {
-	endpoint.connectionTimeout = timeout
-}
-
-func (endpoint *httpEndpoint) SetRequestTimeout(timeout time.Duration) {
-	endpoint.requestTimeout = timeout
-}
-
-func (endpoint *httpEndpoint) SetTransport(transport *ghttp.Transport) {
-	endpoint.transport = transport
-}
-
-func (endpoint *httpEndpoint) SetClient(client *ghttp.Client) {
-	endpoint.client = client
 }

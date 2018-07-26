@@ -21,17 +21,58 @@ import (
 
 // ==========================
 //
+// Options
+//
+// ==========================
+
+// Options --
+type Options struct {
+	period time.Duration
+}
+
+// SetPeriod --
+func (options *Options) SetPeriod(period time.Duration) {
+	options.period = period
+}
+
+// ==========================
+//
+// Functional Options
+//
+// ==========================
+
+// Option --
+type Option func(*Options)
+
+// Period --
+func Period(value time.Duration) Option {
+	return func(args *Options) {
+		args.period = value
+	}
+}
+
+// ==========================
+//
 // Endpoint
 //
 // ==========================
 
-type timerEndpoint struct {
-	component *Component
-	period    time.Duration
+func newEndpoint(component *Component, setters ...Option) (*timerEndpoint, error) {
+	endpoint := timerEndpoint{}
+	endpoint.component = component
+
+	// Apply options
+	for _, setter := range setters {
+		setter(&endpoint.Options)
+	}
+
+	return &endpoint, nil
 }
 
-func (endpoint *timerEndpoint) SetPeriod(period time.Duration) {
-	endpoint.period = period
+type timerEndpoint struct {
+	Options
+
+	component *Component
 }
 
 func (endpoint *timerEndpoint) Start() {
