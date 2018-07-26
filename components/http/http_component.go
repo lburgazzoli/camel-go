@@ -23,15 +23,39 @@ import (
 
 // ==========================
 //
+// Options
 //
+// ==========================
+
+// ComponentOptions --
+type ComponentOptions struct {
+}
+
+// ==========================
+//
+// Functional Options
+//
+// ==========================
+
+// ComponentOption --
+type ComponentOption func(*ComponentOptions)
+
+// ==========================
+//
+// Component
 //
 // ==========================
 
 // NewComponent --
-func NewComponent() api.Component {
+func NewComponent(setters ...ComponentOption) api.Component {
 	component := Component{
 		logger:         logger.New("http.Component"),
 		serviceSupport: api.NewServiceSupport(),
+	}
+
+	// Apply options
+	for _, setter := range setters {
+		setter(&component.ComponentOptions)
 	}
 
 	component.serviceSupport.Transition(api.ServiceStatusSTOPPED, api.ServiceStatusSTARTED, component.doStart)
@@ -40,14 +64,10 @@ func NewComponent() api.Component {
 	return &component
 }
 
-// ==========================
-//
-// Component
-//
-// ==========================
-
 // Component --
 type Component struct {
+	ComponentOptions
+
 	logger         zerolog.Logger
 	serviceSupport api.ServiceSupport
 	context        api.Context

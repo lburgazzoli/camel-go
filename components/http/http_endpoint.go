@@ -27,7 +27,7 @@ import (
 //
 // ==========================
 
-// Options --
+// EndpointOptions --
 type EndpointOptions struct {
 	scheme            string
 	host              string
