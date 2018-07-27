@@ -204,6 +204,12 @@
   version = "1.0.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/oliveagle/jsonpath"
+  packages = ["."]
+  revision = "2e52cf6e685269ed8aefec6390f3cac3ef74e730"
+
+[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
@@ -488,6 +494,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "28670c5a1ebeb05824e4a859e1fa998a1e19771a13779bbb62e619690b137d46"
+  inputs-digest = "0097d510416da9e03037f68acc4a9bdb74c7a24ce38ff7d6f35ca5d4fb460d94"
   solver-name = "gps-cdcl"
   solver-version = 1

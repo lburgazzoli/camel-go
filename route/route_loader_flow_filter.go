@@ -13,6 +13,7 @@
 package route
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/lburgazzoli/camel-go/api"
@@ -24,8 +25,9 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 	impl := struct {
 		TypedStep
 
-		Ref      string `yaml:"ref"`
+		Function string `yaml:"function"`
 		Location string `yaml:"location"`
+		Language string `yaml:"language"`
 	}{}
 
 	err := decodeStep("filter", step, &impl)
@@ -33,16 +35,32 @@ func FilterStepHandler(step Step, route *RouteDefinition) (*RouteDefinition, err
 		return nil, err
 	}
 
-	if strings.HasPrefix(impl.Location, "file:") {
-		location := strings.TrimPrefix(impl.Location, "file:")
-		symbol, err := module.LoadSymbol(location, impl.Ref)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return route.Filter().Fn(symbol.(func(api.Exchange) bool)), nil
+	if impl.Function == "" {
+		return nil, fmt.Errorf("missing function: %s", impl.Function)
 	}
 
-	return route.Filter().Ref(impl.Ref), nil
+	// if the language is not set, we assume it is "ref"
+	if impl.Language == "" || impl.Language == "ref" {
+
+		// check if the function is defined in an external
+		// plugin
+		if strings.HasPrefix(impl.Location, "file:") {
+			location := strings.TrimPrefix(impl.Location, "file:")
+			symbol, err := module.LoadSymbol(location, impl.Function)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return route.Filter().Fn(symbol.(func(api.Exchange) bool)), nil
+		}
+
+		return route.Filter().Ref(impl.Function), nil
+	}
+
+	if impl.Language == "jsonpath" {
+		return route.Filter().JSONPath(impl.Function), nil
+	}
+
+	return nil, fmt.Errorf("unsupported language: %s", impl.Language)
 }

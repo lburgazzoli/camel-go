@@ -13,10 +13,16 @@
 package route
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/rs/zerolog"
+
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/camel"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/processor"
+	"github.com/oliveagle/jsonpath"
 )
 
 // ==========================
@@ -114,5 +120,41 @@ func (definition *FilterDefinition) Fn(predicate func(api.Exchange) bool) *Route
 // Ref --
 func (definition *FilterDefinition) Ref(ref string) *RouteDefinition {
 	definition.predicateRef = ref
+	return definition.parent
+}
+
+// JSONPath --
+func (definition *FilterDefinition) JSONPath(expression string) *RouteDefinition {
+	path, err := jsonpath.Compile(expression)
+	if err != nil {
+		logger.Log(zerolog.FatalLevel, "unable to compile expression: %s", expression)
+	}
+
+	definition.predicate = func(e api.Exchange) bool {
+		if b := e.BodyAs(camel.TypeString); b != nil {
+			var body string
+			var data interface{}
+
+			// if we are here, checking the type conversion
+			// is not needed as BodyAs would fail if the
+			// conversion is not possible
+			body = b.(string)
+
+			// need to define a type and relate conversion
+			// for arrays
+			json.Unmarshal([]byte(body), &data)
+
+			res, err := path.Lookup(data)
+			if err != nil {
+				return false
+			}
+
+			//
+			return res != nil
+		}
+
+		return false
+	}
+
 	return definition.parent
 }

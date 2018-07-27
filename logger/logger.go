@@ -13,28 +13,23 @@
 package logger
 
 import (
+	"io"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 )
 
-/*
 // Logger --
 type Logger struct {
-	Name   string `yaml:"name"`
 	Level  string `yaml:"level"`
-	Target string `yaml:"level"`
+	Writer string `yaml:"writer"`
 }
 
-// Configuration --
-type Configuration struct {
-	Loggers []Logger
-}
-*/
-
-// New --
-func New(name string) zerolog.Logger {
-	return zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
+// LogConfiguration --
+type LogConfiguration struct {
+	Loggers map[string]Logger
 }
 
 // ==========================
@@ -42,6 +37,9 @@ func New(name string) zerolog.Logger {
 // Global
 //
 // ==========================
+
+// Configuration --
+var Configuration LogConfiguration
 
 // RootLogger --
 var RootLogger zerolog.Logger
@@ -53,10 +51,97 @@ func Log(level zerolog.Level, format string, args ...interface{}) {
 
 // ==========================
 //
+//
+//
+// ==========================
+
+// New --
+func New(name string) zerolog.Logger {
+	if cfg, ok := Configuration.Loggers[name]; ok {
+		level := toLevel(cfg.Level)
+		writer := toWriter(cfg.Writer)
+
+		if level == zerolog.Disabled {
+			return zerolog.Nop()
+		}
+
+		l := zerolog.New(writer).With().Timestamp().Str("logger", name).Logger()
+		l.Hook(discardHook{threshold: level})
+
+		return l
+	}
+
+	return zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
+}
+
+// ==========================
+//
+// Helpers
+//
+// ==========================
+
+func toLevel(level string) zerolog.Level {
+	if strings.EqualFold("debug", level) {
+		return zerolog.DebugLevel
+	}
+	if strings.EqualFold("info", level) {
+		return zerolog.InfoLevel
+	}
+	if strings.EqualFold("warn", level) {
+		return zerolog.WarnLevel
+	}
+	if strings.EqualFold("error", level) {
+		return zerolog.ErrorLevel
+	}
+	if strings.EqualFold("fatal", level) {
+		return zerolog.FatalLevel
+	}
+	if strings.EqualFold("panic", level) {
+		return zerolog.PanicLevel
+	}
+	if strings.EqualFold("disabled", level) {
+		return zerolog.Disabled
+	}
+
+	return zerolog.NoLevel
+}
+
+func toWriter(writer string) io.Writer {
+	if strings.EqualFold("stdout", writer) {
+		return os.Stdout
+	}
+	if strings.EqualFold("stderr", writer) {
+		return os.Stderr
+	}
+	if strings.EqualFold("disabled", writer) {
+		return ioutil.Discard
+	}
+
+	// TODO: files
+	return os.Stdout
+}
+
+type discardHook struct {
+	threshold zerolog.Level
+}
+
+func (h discardHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	if level < h.threshold || h.threshold >= zerolog.NoLevel {
+		e.Discard()
+	}
+}
+
+// ==========================
+//
 // Initialization
 //
 // ==========================
 
 func init() {
 	RootLogger = New("root")
+
+	// default configuration
+	Configuration = LogConfiguration{
+		Loggers: make(map[string]Logger),
+	}
 }
