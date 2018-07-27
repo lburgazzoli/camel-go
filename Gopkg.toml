@@ -31,7 +31,8 @@
 
 [[constraint]]
   name = "github.com/rs/zerolog"
-  version = "1.8.0"
+  branch = "master"
+  #version = "1.8.0"
 
 [[constraint]]
   name = "github.com/spf13/cast"

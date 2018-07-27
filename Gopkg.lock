@@ -228,6 +228,7 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/rs/zerolog"
   packages = [
     ".",
@@ -235,8 +236,7 @@
     "internal/json",
     "log"
   ]
-  revision = "77db4b4f350e31be66a57c332acb7721cf9ff9bb"
-  version = "v1.8.0"
+  revision = "71e1f5e052d017a22320883199723057e89f3ec8"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -488,6 +488,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2b130fb50695d028e438742eb8e6fc10dc420ee1b58c3ea4c9d076162523ad46"
+  inputs-digest = "28670c5a1ebeb05824e4a859e1fa998a1e19771a13779bbb62e619690b137d46"
   solver-name = "gps-cdcl"
   solver-version = 1
