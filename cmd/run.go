@@ -71,11 +71,11 @@ var runCmd = &cobra.Command{
 			ca, err = app.NewJS(string(b))
 		}
 
-		if ca == nil {
-			logger.Log(zerolog.FatalLevel, "Unable to build Application")
-		}
 		if err != nil {
 			logger.Log(zerolog.FatalLevel, err.Error())
+		}
+		if ca == nil {
+			logger.Log(zerolog.FatalLevel, "Unable to build Application")
 		}
 
 		ca.Start()

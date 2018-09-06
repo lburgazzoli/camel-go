@@ -22,10 +22,10 @@ BINARY_NAME=camel-go
 all: test build
 
 build: 
-		$(GOBUILD) -o $(BINARY_NAME) -v
+		$(GOBUILD) -o $(BINARY_NAME) 
 test: 
 		#exclude examples
-		$(GOTEST) -v `go list ./... | grep -v examples`
+		$(GOTEST) `go list ./... | grep -v examples`
 		
 clean: 
 		$(GOCLEAN)
