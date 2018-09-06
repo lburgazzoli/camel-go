@@ -63,6 +63,23 @@ func New(config string) (*Application, error) {
 	return &app, nil
 }
 
+// NewJS --
+func NewJS(rd string) (*Application, error) {
+	app := Application{}
+	app.logger = logger.New("app")
+	app.context = camel.NewContext()
+
+	if routes, err := route.LoadFromJS(app.context, rd); err == nil {
+		for _, r := range routes {
+			app.context.AddRoute(r)
+		}
+	} else {
+		return nil, err
+	}
+
+	return &app, nil
+}
+
 // Application --
 type Application struct {
 	context api.Context

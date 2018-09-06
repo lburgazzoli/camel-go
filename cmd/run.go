@@ -13,6 +13,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
 
@@ -31,6 +33,7 @@ import (
 
 func init() {
 	runCmd.Flags().StringVarP(&runCmdFlags.flow, "flow", "f", "", "flow to run")
+	runCmd.Flags().StringVarP(&runCmdFlags.route, "route", "r", "", "route to run")
 
 	rootCmd.AddCommand(runCmd)
 }
@@ -42,7 +45,8 @@ func init() {
 // ==========================
 
 type runCmdFlagsType struct {
-	flow string
+	flow  string
+	route string
 }
 
 var runCmdFlags runCmdFlagsType
@@ -52,18 +56,34 @@ var runCmd = &cobra.Command{
 	Short: "run",
 	Long:  `run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app, err := app.New(runCmdFlags.flow)
+		var ca *app.Application
+		var err error
 
+		if runCmdFlags.flow != "" {
+			ca, err = app.New(runCmdFlags.flow)
+		}
+		if runCmdFlags.route != "" {
+			b, err := ioutil.ReadFile(runCmdFlags.route)
+			if err != nil {
+				fmt.Print(err)
+			}
+
+			ca, err = app.NewJS(string(b))
+		}
+
+		if ca == nil {
+			logger.Log(zerolog.FatalLevel, "Unable to build Application")
+		}
 		if err != nil {
 			logger.Log(zerolog.FatalLevel, err.Error())
 		}
 
-		app.Start()
+		ca.Start()
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		<-c
 
-		app.Stop()
+		ca.Stop()
 	},
 }

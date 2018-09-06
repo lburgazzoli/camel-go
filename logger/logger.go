@@ -46,7 +46,7 @@ var RootLogger zerolog.Logger
 
 // Log --
 func Log(level zerolog.Level, format string, args ...interface{}) {
-	RootLogger.WithLevel(level).Msgf(format, args)
+	RootLogger.WithLevel(level).Msgf(format, args...)
 }
 
 // ==========================
