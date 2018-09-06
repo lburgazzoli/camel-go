@@ -36,13 +36,11 @@ func LoadFromJS(context api.Context, js string) ([]*api.Route, error) {
 	dw := new(definitionWrapper)
 	dw.definitions = make([]*RouteDefinition, 0)
 
-	err := vm.Set("From", dw.from)
-	if err != nil {
+	if err := vm.Set("From", dw.from); err != nil {
 		return nil, err
 	}
 
-	_, err = vm.Run(js)
-	if err != nil {
+	if _, err := vm.Run(js); err != nil {
 		return nil, err
 	}
 
