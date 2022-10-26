@@ -92,14 +92,8 @@ func (producer *httpProducer) Processor() api.Processor {
 //TODO: error handling
 func (producer *httpProducer) process(exchange api.Exchange) {
 
-	var url string
-
 	// compute the url
-	if producer.endpoint.path == "" {
-		url = fmt.Sprintf("%s://%s:%d", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port)
-	} else {
-		url = fmt.Sprintf("%s://%s:%d/%s", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port, producer.endpoint.path)
-	}
+	url := fmt.Sprintf("%s://%s:%d%s", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port, producer.endpoint.path)
 
 	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
 	if err != nil {

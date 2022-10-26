@@ -13,6 +13,8 @@
 package http
 
 import (
+	"fmt"
+	ghttp "net/http"
 	"net/url"
 
 	"github.com/lburgazzoli/camel-go/api"
@@ -113,6 +115,21 @@ func (component *Component) CreateEndpoint(remaining string, options map[string]
 
 	// bind options to endpoint
 	introspection.SetProperties(component.context, endpoint, options)
+
+	// Check if method option was valid
+	if endpoint.method != "" {
+		if endpoint.method != ghttp.MethodGet &&
+			endpoint.method != ghttp.MethodPost &&
+			endpoint.method != ghttp.MethodPut &&
+			endpoint.method != ghttp.MethodDelete &&
+			endpoint.method != ghttp.MethodOptions &&
+			endpoint.method != ghttp.MethodConnect &&
+			endpoint.method != ghttp.MethodHead &&
+			endpoint.method != ghttp.MethodPatch &&
+			endpoint.method != ghttp.MethodTrace {
+			return nil, fmt.Errorf("invalid HTTP method")
+		}
+	}
 
 	return endpoint, nil
 }
