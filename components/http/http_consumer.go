@@ -61,6 +61,13 @@ func (consumer *httpConsumer) Start() {
 
 	mux := ghttp.NewServeMux()
 	mux.HandleFunc(consumer.endpoint.path, func(w ghttp.ResponseWriter, r *ghttp.Request) {
+
+		// check method
+		if consumer.endpoint.method != "" && r.Method != consumer.endpoint.method {
+			w.WriteHeader(ghttp.StatusMethodNotAllowed)
+			return
+		}
+
 		w.WriteHeader(ghttp.StatusOK)
 
 		defer r.Body.Close()
@@ -94,7 +101,7 @@ func (consumer *httpConsumer) Start() {
 	consumer.server = &ghttp.Server{Addr: url, Handler: mux}
 
 	go func() {
-		consumer.logger.Debug().Msgf("Star listening on address: %+v", consumer.server.Addr)
+		consumer.logger.Debug().Msgf("Start listening %+v requests on address: %+v", consumer.endpoint.method, consumer.server.Addr)
 		if err := consumer.server.ListenAndServe(); err != nil {
 			consumer.logger.Fatal().Msg(err.Error())
 		}
