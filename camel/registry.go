@@ -105,6 +105,11 @@ func (registry *defaultRegistry) LookupAs(name string, expectedType reflect.Type
 	return value, value != nil
 }
 
+// Remove --
+func (registry *defaultRegistry) Remove(name string) {
+	registry.local.Remove(name)
+}
+
 // Range --
 func (registry *defaultRegistry) Range(f func(key string, value interface{}) bool) {
 	registry.local.Range(f)

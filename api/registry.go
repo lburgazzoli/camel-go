@@ -29,6 +29,8 @@ type Registry interface {
 	Lookup(name string) (interface{}, bool)
 	LookupAs(name string, expectedType reflect.Type) (interface{}, bool)
 
+	Remove(name string)
+
 	// Range calls f sequentially for each key and value present in the registry.
 	// If f returns false, range stops the iteration.
 	Range(func(key string, value interface{}) bool)
