@@ -90,3 +90,13 @@ func (exchange *DefaultExchange) Headers() *api.Headers {
 func (exchange *DefaultExchange) Properties() *api.Properties {
 	return &exchange.properties
 }
+
+// ==========================
+//
+// this is where constant
+// should be set
+//
+// ==========================
+
+// Camel Header Prefix
+const CAMEL_HEADER = "camel."

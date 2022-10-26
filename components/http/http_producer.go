@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"net"
 	ghttp "net/http"
+	gurl "net/url"
 	"strings"
 
 	"github.com/lburgazzoli/camel-go/camel"
@@ -95,36 +96,85 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 	// compute the url
 	url := fmt.Sprintf("%s://%s:%d%s", producer.endpoint.scheme, producer.endpoint.host, producer.endpoint.port, producer.endpoint.path)
 
+	// Check if a method is set on the endpoint or on the exchange header
+	if producer.endpoint.method == "" {
+		headerMethod, found := exchange.Headers().Lookup(HTTP_METHOD)
+		if found {
+			// Check if method is valid
+			if headerMethod != ghttp.MethodGet &&
+				headerMethod != ghttp.MethodPost &&
+				headerMethod != ghttp.MethodPut &&
+				headerMethod != ghttp.MethodDelete &&
+				headerMethod != ghttp.MethodOptions &&
+				headerMethod != ghttp.MethodConnect &&
+				headerMethod != ghttp.MethodHead &&
+				headerMethod != ghttp.MethodPatch &&
+				headerMethod != ghttp.MethodTrace {
+				// do nothing here for the moment, we should fail the exchange
+				producer.logger.Error().Msg("invalid HTTP method")
+				return
+			}
+			producer.endpoint.method = headerMethod.(string)
+		} else {
+			// Default to GET
+			producer.endpoint.method = "GET"
+		}
+	}
+
+	// Create the request
 	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
 	if err != nil {
-		// do nothing here for the moment, we should fail tyhe exchange
+		// do nothing here for the moment, we should fail the exchange
 		producer.logger.Error().Msg(err.Error())
 	} else {
-		exchange.Headers().ForEach(func(key string, val interface{}) {
-			if strings.HasPrefix(key, HTTPHeaderPrefix) && len(key) > HTTPHeaderPrefixLen {
-				key = key[HTTPHeaderPrefixLen:]
 
-				if v, err := producer.converter(val, camel.TypeString); err == nil {
-					req.Header.Set(key, v.(string))
+		// Set the query parameters
+		if query, found := exchange.Headers().Lookup(HTTP_QUERY); found {
+			if queryVal, ok := query.(gurl.Values); ok {
+				req.URL.RawQuery = queryVal.Encode()
+			} else {
+				if strQuery, ok := query.(string); ok {
+					// Parse the query string
+					if queryVal, err := gurl.ParseQuery(strQuery); err == nil {
+						req.URL.RawQuery = queryVal.Encode()
+					}
 				}
 			}
+		}
+
+		// Set the headers
+		exchange.Headers().ForEach(func(key string, val interface{}) {
+			// Skip Camel internal headers
+			if !strings.HasPrefix(key, camel.CAMEL_HEADER) {
+
+				if values, ok := val.([]string); ok {
+					for _, v := range values {
+						req.Header.Add(key, v)
+					}
+				} else {
+					if v, err := producer.converter(val, camel.TypeString); err == nil {
+						req.Header.Set(key, v.(string))
+					}
+				}
+			}
+
 		})
 
 		response, err := producer.client.Do(req)
 
 		if err != nil {
-			// do nothing here for the moment, we should fail tyhe exchange
+			// do nothing here for the moment, we should fail the exchange
 			producer.logger.Error().Msg(err.Error())
 		}
 
 		defer response.Body.Close()
 
-		exchange.Headers().Bind("http.StatusCode", response.StatusCode)
-		exchange.Headers().Bind("http.ContentLength", response.ContentLength)
+		exchange.Headers().Bind(HTTP_STATUS_CODE, fmt.Sprint(response.StatusCode))
+		exchange.Headers().Bind(HTTP_CONTENT_LENGTH, response.ContentLength)
 
 		for k, v := range response.Header {
 			if len(v) >= 1 {
-				exchange.Headers().Bind("http."+k, v[0])
+				exchange.Headers().Bind(k, v)
 			}
 		}
 

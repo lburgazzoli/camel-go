@@ -27,12 +27,21 @@ func init() {
 // ==========================
 //
 // this is where constant
-// shoud be se
+// should be set
 //
 // ==========================
 
-// HTTPHeaderPrefix --
-const HTTPHeaderPrefix = "http."
+// HTTP Method Header --
+const HTTP_METHOD = "camel.http.method"
 
-// HTTPHeaderPrefixLen --
-const HTTPHeaderPrefixLen = len(HTTPHeaderPrefix)
+// HTTP Query Header --
+const HTTP_QUERY = "camel.http.query"
+
+// HTTP Request Path Header --
+const HTTP_REQUEST_PATH = "camel.http.requestPath"
+
+// HTTP Status Code Header --
+const HTTP_STATUS_CODE = "camel.http.statusCode"
+
+// HTTP Content Length Header --
+const HTTP_CONTENT_LENGTH = "camel.http.contentLength"
