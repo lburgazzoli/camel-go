@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	ghttp "net/http"
+	"strings"
 
 	"github.com/rs/zerolog"
 
@@ -67,8 +68,24 @@ func (consumer *httpConsumer) Start() {
 		body, _ := ioutil.ReadAll(r.Body)
 
 		exchange := camel.NewExchange(consumer.endpoint.component.context)
-		exchange.Headers().Bind("http.RequestPath", r.URL.Path)
-		exchange.Headers().Bind("http.Method", r.Method)
+		exchange.Headers().Bind(HTTP_REQUEST_PATH, r.URL.Path)
+		exchange.Headers().Bind(HTTP_METHOD, r.Method)
+		exchange.Headers().Bind(HTTP_QUERY, r.URL.RawQuery)
+
+		for queryKey, queryValues := range r.URL.Query() {
+			if len(queryValues) == 1 {
+				exchange.Headers().Bind(queryKey, queryValues[0])
+			} else {
+				exchange.Headers().Bind(queryKey, queryValues)
+			}
+		}
+
+		for headerKey, headerValue := range r.Header {
+			if !strings.HasPrefix(headerKey, camel.CAMEL_HEADER) {
+				exchange.Headers().Bind(headerKey, headerValue)
+			}
+		}
+
 		exchange.SetBody(string(body))
 
 		consumer.processor.Publish(exchange)
