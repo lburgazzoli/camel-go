@@ -13,6 +13,7 @@
 package http
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -121,8 +122,14 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 		}
 	}
 
+	// Convert the body to a byte array
+	body := []byte(fmt.Sprintf("%+v", exchange.Body()))
+	if bodyBytes, ok := exchange.Body().([]byte); ok {
+		body = bodyBytes
+	}
+
 	// Create the request
-	req, err := ghttp.NewRequest(producer.endpoint.method, url, nil)
+	req, err := ghttp.NewRequest(producer.endpoint.method, url, bytes.NewBuffer(body))
 	if err != nil {
 		// do nothing here for the moment, we should fail the exchange
 		producer.logger.Error().Msg(err.Error())
@@ -157,7 +164,6 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 					}
 				}
 			}
-
 		})
 
 		response, err := producer.client.Do(req)
