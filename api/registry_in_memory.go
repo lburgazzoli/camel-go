@@ -65,6 +65,11 @@ func (registry *InMemoryRegistry) LookupAs(name string, asType reflect.Type) (in
 	return answer, true
 }
 
+// Remove --
+func (registry *InMemoryRegistry) Remove(name string) {
+	registry.data.Delete(name)
+}
+
 // Range --
 func (registry *InMemoryRegistry) Range(f func(key string, value interface{}) bool) {
 	registry.data.Range(func(key, value interface{}) bool {

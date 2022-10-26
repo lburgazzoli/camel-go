@@ -84,6 +84,11 @@ func (registry *CombinedRegistry) LookupAs(name string, asType reflect.Type) (in
 	return answer, found
 }
 
+// Remove --
+func (registry *CombinedRegistry) Remove(name string) {
+	registry.root.Remove(name)
+}
+
 // Range --
 func (registry *CombinedRegistry) Range(f func(key string, value interface{}) bool) {
 	registry.root.Range(f)
