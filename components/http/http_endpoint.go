@@ -118,14 +118,17 @@ func Client(value *ghttp.Client) EndpointOption {
 func newEndpoint(component *Component, url url.URL, setters ...EndpointOption) (*httpEndpoint, error) {
 	endpoint := httpEndpoint{}
 	endpoint.component = component
-	endpoint.method = ghttp.MethodGet
 	endpoint.connectionTimeout = 10 * time.Second
 	endpoint.requestTimeout = 60 * time.Second
-	endpoint.path = url.Path
 	endpoint.port = 80
 
 	if url.Hostname() != "" {
 		endpoint.host = url.Hostname()
+	}
+
+	endpoint.path = "/"
+	if url.Path != "" {
+		endpoint.path = url.Path
 	}
 
 	if url.Port() != "" {
