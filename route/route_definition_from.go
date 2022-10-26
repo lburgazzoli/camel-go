@@ -56,14 +56,14 @@ func (definition *FromDefinition) Processor() (api.Processor, error) {
 	var endpoint api.Endpoint
 
 	if endpoint, err = api.NewEndpointFromURI(definition.context, definition.URI); err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	// TODO: re-engine
 	endpoint.Start()
 
 	if consumer, err = endpoint.CreateConsumer(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return processor.NewProcessingService(consumer, consumer.Processor()), nil
