@@ -14,7 +14,9 @@ package route
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/processor"
+	"github.com/rs/zerolog"
 )
 
 // ==========================
@@ -87,11 +89,25 @@ func (definition *SetHeadersDefinition) Children() []Definition {
 	return definition.children
 }
 
+//TODO: error handling
 // Processor ---
 func (definition *SetHeadersDefinition) Processor() (api.Processor, error) {
 	if definition.headers != nil {
 		p := processor.NewProcessingPipeline(func(exchange api.Exchange) {
 			for k, v := range definition.headers {
+
+				// Check if the value is an expression
+				if expr, ok := v.(api.Expression); ok {
+
+					var err error
+					v, err = expr.Evaluate(exchange)
+					if err != nil {
+						// do nothing here for the moment, we should fail the exchange
+						logger.Log(zerolog.ErrorLevel, err.Error())
+						v = expr.Raw()
+					}
+				}
+
 				exchange.Headers().Bind(k, v)
 			}
 		})
