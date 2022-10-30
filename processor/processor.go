@@ -30,6 +30,10 @@ func Connect(source api.Processor, destination api.Processor) {
 	source.Subscribe(func(exchange api.Exchange) {
 		destination.Publish(exchange)
 	})
+
+	destination.SubscribeReturn(func(exchange api.Exchange) {
+		source.PublishReturn(exchange)
+	})
 }
 
 // ==========================
@@ -41,9 +45,10 @@ func Connect(source api.Processor, destination api.Processor) {
 // New --
 func New(fn Fn) api.Processor {
 	p := defaultProcessor{
-		in:  make(chan api.Exchange),
-		out: make(chan api.Exchange),
-		fn:  fn,
+		in:        make(chan api.Exchange),
+		out:       make(chan api.Exchange),
+		returning: make(chan api.Exchange),
+		fn:        fn,
 	}
 
 	go func() {
@@ -156,9 +161,10 @@ func (subscription *simpleSubcription) Cancel() {
 type defaultProcessor struct {
 	api.Processor
 
-	in  chan api.Exchange
-	out chan api.Exchange
-	fn  func(api.Exchange, chan<- api.Exchange)
+	in        chan api.Exchange
+	out       chan api.Exchange
+	returning chan api.Exchange
+	fn        Fn
 }
 
 // Publish --
@@ -189,6 +195,32 @@ func (processor *defaultProcessor) Subscribe(consumer func(api.Exchange)) api.Su
 	return subscription
 }
 
+func (processor *defaultProcessor) PublishReturn(exchange api.Exchange) {
+	processor.returning <- exchange
+}
+
+func (processor *defaultProcessor) SubscribeReturn(consumer func(api.Exchange)) api.Subscription {
+	signal := make(chan bool)
+	subscription := &simpleSubcription{
+		fn: func() {
+			signal <- true
+		},
+	}
+
+	go func() {
+		for {
+			select {
+			case exchange := <-processor.returning:
+				consumer(exchange)
+			case _ = <-signal:
+				return
+			}
+		}
+	}()
+
+	return subscription
+}
+
 // ==========================
 //
 //
@@ -208,6 +240,14 @@ func (target *defaultProcessingService) Publish(exchange api.Exchange) {
 
 func (target *defaultProcessingService) Subscribe(consumer func(api.Exchange)) api.Subscription {
 	return target.processor.Subscribe(consumer)
+}
+
+func (target *defaultProcessingService) PublishReturn(exchange api.Exchange) {
+	target.processor.PublishReturn(exchange)
+}
+
+func (target *defaultProcessingService) SubscribeReturn(consumer func(api.Exchange)) api.Subscription {
+	return target.processor.SubscribeReturn(consumer)
 }
 
 func (target *defaultProcessingService) Start() {

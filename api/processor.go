@@ -43,6 +43,9 @@ type Subscriber interface {
 type Processor interface {
 	Publisher
 	Subscriber
+
+	PublishReturn(Exchange)
+	SubscribeReturn(func(Exchange)) Subscription
 }
 
 // ==========================

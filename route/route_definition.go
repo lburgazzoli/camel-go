@@ -101,8 +101,9 @@ func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
 	}
 
 	if p := unwrapDefinition(context, route, nil, definition); p != nil {
-		p.Subscribe(func(_ api.Exchange) {
+		p.Subscribe(func(exchange api.Exchange) {
 			// processing end
+			p.PublishReturn(exchange)
 		})
 	}
 

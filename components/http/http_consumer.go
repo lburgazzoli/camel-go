@@ -68,8 +68,6 @@ func (consumer *httpConsumer) Start() {
 			return
 		}
 
-		w.WriteHeader(ghttp.StatusOK)
-
 		defer r.Body.Close()
 
 		body, _ := ioutil.ReadAll(r.Body)
@@ -96,6 +94,38 @@ func (consumer *httpConsumer) Start() {
 		exchange.SetBody(string(body))
 
 		consumer.processor.Publish(exchange)
+
+		// Wait for the returned exchange
+		ch := make(chan api.Exchange)
+		subscription := consumer.processor.SubscribeReturn(func(retExchange api.Exchange) {
+			ch <- retExchange
+		})
+		retExchange := <-ch
+		subscription.Cancel()
+
+		// Write the headers
+		retExchange.Headers().ForEach(func(key string, value any) {
+
+			switch {
+			case strings.HasPrefix(key, camel.CAMEL_HEADER):
+				// Skip Camel internal headers
+
+			case key == "Content-Length":
+				// Skip Content-Length header
+
+			default:
+				camel.ForEachIn(value, func(_, v any) {
+					w.Header().Add(key, fmt.Sprintf("%v", v))
+				})
+			}
+		})
+		w.WriteHeader(ghttp.StatusOK)
+
+		// Write the body
+		if _, err := w.Write([]byte(fmt.Sprintf("%+v", retExchange.Body()))); err != nil {
+			consumer.logger.Error().Err(err).Msg("Error writing response")
+		}
+
 	})
 
 	consumer.server = &ghttp.Server{Addr: url, Handler: mux}

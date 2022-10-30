@@ -164,6 +164,45 @@ func getValue(object any, key string) (v any, e error) {
 	}
 }
 
+// ForEach --
+func ForEachIn(object any, fn func(key any, value any)) (err error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to convert - %v", r)
+		}
+	}()
+
+	switch reflect.TypeOf(object).Kind() {
+
+	case reflect.Map:
+		objValue := reflect.ValueOf(object)
+
+		for _, key := range objValue.MapKeys() {
+			fn(key.Interface(), objValue.MapIndex(key).Interface())
+		}
+
+	case reflect.Slice, reflect.Array:
+		objValue := reflect.ValueOf(object)
+
+		for i := 0; i < objValue.Len(); i++ {
+			fn(i, objValue.Index(i).Interface())
+		}
+
+	case reflect.Struct:
+		objValue := reflect.ValueOf(object)
+
+		for i := 0; i < objValue.NumField(); i++ {
+			fn(objValue.Type().Field(i).Name, objValue.Field(i).Interface())
+		}
+
+	default:
+		fn(0, object)
+	}
+
+	return nil
+}
+
 // ==========================
 //
 // this is where constant

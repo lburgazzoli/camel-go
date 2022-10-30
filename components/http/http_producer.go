@@ -150,19 +150,19 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 		}
 
 		// Set the headers
-		exchange.Headers().ForEach(func(key string, val interface{}) {
-			// Skip Camel internal headers
-			if !strings.HasPrefix(key, camel.CAMEL_HEADER) {
+		exchange.Headers().ForEach(func(key string, value any) {
 
-				if values, ok := val.([]string); ok {
-					for _, v := range values {
-						req.Header.Add(key, v)
-					}
-				} else {
-					if v, err := producer.converter(val, camel.TypeString); err == nil {
-						req.Header.Set(key, v.(string))
-					}
-				}
+			switch {
+			case strings.HasPrefix(key, camel.CAMEL_HEADER):
+				// Skip Camel internal headers
+
+			case key == "Content-Length":
+				// Skip Content-Length header
+
+			default:
+				camel.ForEachIn(value, func(_, v any) {
+					req.Header.Add(key, fmt.Sprintf("%v", v))
+				})
 			}
 		})
 
