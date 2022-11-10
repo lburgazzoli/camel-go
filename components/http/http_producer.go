@@ -91,7 +91,6 @@ func (producer *httpProducer) Processor() api.Processor {
 	return producer.processor
 }
 
-//TODO: error handling
 func (producer *httpProducer) process(exchange api.Exchange) {
 
 	// compute the url
@@ -111,8 +110,10 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 				headerMethod != ghttp.MethodHead &&
 				headerMethod != ghttp.MethodPatch &&
 				headerMethod != ghttp.MethodTrace {
-				// do nothing here for the moment, we should fail the exchange
-				producer.logger.Error().Msg("invalid HTTP method")
+
+				errMesg := "invalid HTTP method"
+				producer.logger.Error().Msg(errMesg)
+				exchange.SetError(fmt.Errorf(errMesg))
 				return
 			}
 			producer.endpoint.method = headerMethod.(string)
@@ -131,8 +132,8 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 	// Create the request
 	req, err := ghttp.NewRequest(producer.endpoint.method, url, bytes.NewBuffer(body))
 	if err != nil {
-		// do nothing here for the moment, we should fail the exchange
 		producer.logger.Error().Msg(err.Error())
+		exchange.SetError(err)
 	} else {
 
 		// Set the query parameters
@@ -169,8 +170,8 @@ func (producer *httpProducer) process(exchange api.Exchange) {
 		response, err := producer.client.Do(req)
 
 		if err != nil {
-			// do nothing here for the moment, we should fail the exchange
 			producer.logger.Error().Msg(err.Error())
+			exchange.SetError(err)
 		}
 
 		defer response.Body.Close()

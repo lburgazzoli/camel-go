@@ -76,7 +76,6 @@ func (definition *JsonUnmarshalDefinition) Children() []Definition {
 	return definition.children
 }
 
-//TODO: error handling
 // Processor ---
 func (definition *JsonUnmarshalDefinition) Processor() (api.Processor, error) {
 
@@ -89,15 +88,15 @@ func (definition *JsonUnmarshalDefinition) Processor() (api.Processor, error) {
 		// convert body to string
 		str, err := tc(body, camel.TypeString)
 		if err != nil {
-			// do nothing here for the moment, we should fail the exchange
 			logger.Log(zerolog.ErrorLevel, err.Error())
+			exchange.SetError(err)
 			return
 		}
 
 		// convert body string to map[string]any
 		if err := json.Unmarshal([]byte(str.(string)), &data); err != nil {
-			// do nothing here for the moment, we should fail the exchange
 			logger.Log(zerolog.ErrorLevel, err.Error())
+			exchange.SetError(err)
 			return
 		}
 

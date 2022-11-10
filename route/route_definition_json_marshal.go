@@ -75,7 +75,6 @@ func (definition *JsonMarshalDefinition) Children() []Definition {
 	return definition.children
 }
 
-//TODO: error handling
 // Processor ---
 func (definition *JsonMarshalDefinition) Processor() (api.Processor, error) {
 
@@ -85,8 +84,8 @@ func (definition *JsonMarshalDefinition) Processor() (api.Processor, error) {
 		// convert body to json
 		data, err := json.Marshal(body)
 		if err != nil {
-			// do nothing here for the moment, we should fail the exchange
 			logger.Log(zerolog.ErrorLevel, err.Error())
+			exchange.SetError(err)
 			return
 		}
 		// set the body to the json

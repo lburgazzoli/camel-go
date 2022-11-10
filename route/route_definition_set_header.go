@@ -89,7 +89,6 @@ func (definition *SetHeadersDefinition) Children() []Definition {
 	return definition.children
 }
 
-//TODO: error handling
 // Processor ---
 func (definition *SetHeadersDefinition) Processor() (api.Processor, error) {
 	if definition.headers != nil {
@@ -102,8 +101,8 @@ func (definition *SetHeadersDefinition) Processor() (api.Processor, error) {
 					var err error
 					v, err = expr.Evaluate(exchange)
 					if err != nil {
-						// do nothing here for the moment, we should fail the exchange
 						logger.Log(zerolog.ErrorLevel, err.Error())
+						exchange.SetError(err)
 						v = expr.Raw()
 					}
 				}

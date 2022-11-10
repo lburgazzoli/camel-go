@@ -52,6 +52,7 @@ type DefaultExchange struct {
 	converter  api.TypeConverter
 	headers    api.Headers
 	properties api.Properties
+	err        error
 }
 
 // Body --
@@ -89,6 +90,21 @@ func (exchange *DefaultExchange) Headers() *api.Headers {
 // Properties --
 func (exchange *DefaultExchange) Properties() *api.Properties {
 	return &exchange.properties
+}
+
+// Error --
+func (exchange *DefaultExchange) Error() error {
+	return exchange.err
+}
+
+// SetError --
+func (exchange *DefaultExchange) SetError(err error) {
+	exchange.err = err
+}
+
+// IsFailed --
+func (exchange *DefaultExchange) IsFailed() bool {
+	return exchange.err != nil
 }
 
 // ==========================
