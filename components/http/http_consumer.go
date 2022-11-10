@@ -119,11 +119,19 @@ func (consumer *httpConsumer) Start() {
 				})
 			}
 		})
-		w.WriteHeader(ghttp.StatusOK)
 
-		// Write the body
-		if _, err := w.Write([]byte(fmt.Sprintf("%+v", retExchange.Body()))); err != nil {
-			consumer.logger.Error().Err(err).Msg("Error writing response")
+		if retExchange.IsFailed() {
+			w.WriteHeader(ghttp.StatusInternalServerError)
+			// Write the http body with the error message
+			if _, err := w.Write([]byte(fmt.Sprintf("%+v", retExchange.Error()))); err != nil {
+				consumer.logger.Error().Err(err).Msg("Error writing response")
+			}
+		} else {
+			w.WriteHeader(ghttp.StatusOK)
+			// Write the http body with the message body
+			if _, err := w.Write([]byte(fmt.Sprintf("%+v", retExchange.Body()))); err != nil {
+				consumer.logger.Error().Err(err).Msg("Error writing response")
+			}
 		}
 
 	})

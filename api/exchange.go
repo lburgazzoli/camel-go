@@ -34,4 +34,8 @@ type Exchange interface {
 	SetBody(body interface{})
 	Headers() *Headers
 	Properties() *Properties
+
+	Error() error
+	SetError(err error)
+	IsFailed() bool
 }
