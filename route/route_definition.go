@@ -14,6 +14,9 @@ package route
 
 import (
 	"github.com/lburgazzoli/camel-go/api"
+	"github.com/lburgazzoli/camel-go/components/http"
+	"github.com/lburgazzoli/camel-go/components/log"
+	"github.com/lburgazzoli/camel-go/components/timer"
 	"github.com/lburgazzoli/camel-go/logger"
 	"github.com/lburgazzoli/camel-go/processor"
 	"github.com/rs/zerolog"
@@ -93,6 +96,15 @@ func From(uri string) *RouteDefinition {
 
 // ToRoute --
 func ToRoute(context api.Context, definition Definition) (*api.Route, error) {
+
+	// Bind components
+	context.Registry().Bind("log", log.NewComponent())
+	context.Registry().Bind("timer", timer.NewComponent())
+	context.Registry().Bind("http", http.NewComponent())
+	context.Registry().Bind("https", http.NewComponent(func(options *http.ComponentOptions) {
+		options.Scheme = "https"
+	}))
+
 	route := api.NewRoute("")
 
 	// Find the root

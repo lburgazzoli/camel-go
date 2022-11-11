@@ -31,6 +31,7 @@ import (
 
 // ComponentOptions --
 type ComponentOptions struct {
+	Scheme string
 }
 
 // ==========================
@@ -102,7 +103,11 @@ func (component *Component) Stage() api.ServiceStage {
 
 // CreateEndpoint --
 func (component *Component) CreateEndpoint(remaining string, options map[string]interface{}) (api.Endpoint, error) {
-	url, err := url.Parse("http://" + remaining)
+
+	if component.Scheme == "" {
+		component.Scheme = "http"
+	}
+	url, err := url.Parse(fmt.Sprintf("%s://%s", component.Scheme, remaining))
 	if err != nil {
 		return nil, err
 	}
