@@ -120,7 +120,6 @@ func newEndpoint(component *Component, url url.URL, setters ...EndpointOption) (
 	endpoint.component = component
 	endpoint.connectionTimeout = 10 * time.Second
 	endpoint.requestTimeout = 60 * time.Second
-	endpoint.port = 80
 
 	if url.Hostname() != "" {
 		endpoint.host = url.Hostname()
@@ -131,6 +130,11 @@ func newEndpoint(component *Component, url url.URL, setters ...EndpointOption) (
 		endpoint.path = url.Path
 	}
 
+	endpoint.scheme = "http"
+	if url.Scheme != "" {
+		endpoint.scheme = url.Scheme
+	}
+
 	if url.Port() != "" {
 		port, err := strconv.Atoi(url.Port())
 		if err != nil {
@@ -138,14 +142,13 @@ func newEndpoint(component *Component, url url.URL, setters ...EndpointOption) (
 		}
 
 		endpoint.port = port
-	}
-
-	if endpoint.port == 443 && endpoint.scheme == "" {
-		endpoint.scheme = "https"
-	}
-
-	if endpoint.scheme == "" {
-		endpoint.scheme = "http"
+	} else {
+		switch endpoint.scheme {
+		case "https":
+			endpoint.port = 443
+		default:
+			endpoint.port = 80
+		}
 	}
 
 	// Apply options
