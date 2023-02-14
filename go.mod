@@ -7,7 +7,7 @@ require (
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/rs/zerolog v1.8.1-0.20180726225302-71e1f5e052d0
-	github.com/spf13/cast v1.2.0
+	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.0.2
 	github.com/stretchr/testify v1.2.2
