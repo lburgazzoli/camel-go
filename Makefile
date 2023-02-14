@@ -25,7 +25,7 @@ build:
 		$(GOBUILD) -o $(BINARY_NAME) 
 test: 
 		#exclude examples
-		$(GOTEST) `go list ./... | grep -v examples`
+		$(GOTEST) ./...
 		
 clean: 
 		$(GOCLEAN)
