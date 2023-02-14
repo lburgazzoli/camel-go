@@ -10,13 +10,13 @@ require (
 	github.com/spf13/cast v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.0.2
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 )
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
-	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/hashicorp/hcl v0.0.0-20180404174102-ef8a98b0bbce // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -30,4 +30,5 @@ require (
 	golang.org/x/text v0.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.2.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
