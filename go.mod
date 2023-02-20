@@ -10,7 +10,7 @@ require (
 	github.com/rs/xid v1.4.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/tetratelabs/wazero v1.0.0-pre.8
+	github.com/tetratelabs/wazero v1.0.0-pre.9
 	gopkg.in/yaml.v3 v3.0.1
 )
 
