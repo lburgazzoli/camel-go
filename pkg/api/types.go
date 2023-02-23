@@ -4,6 +4,11 @@ import "io"
 
 type Parameters map[string]interface{}
 
+type Service interface {
+	Start() error
+	Stop() error
+}
+
 type Identifiable interface {
 	ID() string
 }
@@ -29,4 +34,5 @@ type Component interface {
 
 type Endpoint interface {
 	Identifiable
+	Service
 }

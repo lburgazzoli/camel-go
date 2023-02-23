@@ -7,8 +7,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	"github.com/mitchellh/mapstructure"
-
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 )
 
 const Scheme = "kafka"
@@ -42,5 +40,28 @@ func (c *Component) Scheme() string {
 }
 
 func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
-	return nil, camelerrors.NotImplementedf("Endpoint for scheme %s not implemented", c.Scheme())
+	e := Endpoint{
+		id:     uuid.New(),
+		config: c.config,
+	}
+
+	return &e, nil
+}
+
+// Endpoint ---
+type Endpoint struct {
+	id     string
+	config Config
+}
+
+func (e *Endpoint) ID() string {
+	return e.id
+}
+
+func (e *Endpoint) Start() error {
+	return nil
+}
+
+func (e *Endpoint) Stop() error {
+	return nil
 }

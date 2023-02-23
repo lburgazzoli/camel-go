@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 )
 
@@ -30,7 +31,7 @@ func NotImplemented(message string) error {
 }
 
 func NotImplementedf(format string, args ...any) error {
-	return NotImplemented(fmt.Sprintf(format, args))
+	return NotImplemented(fmt.Sprintf(format, args...))
 }
 
 func IsNotImplemented(err error) bool {

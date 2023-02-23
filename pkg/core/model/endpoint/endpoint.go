@@ -1,6 +1,8 @@
 package endpoint
 
 import (
+	"github.com/asynkron/protoactor-go/actor"
+	"github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/model"
 )
 
@@ -17,6 +19,6 @@ type Endpoint struct {
 	Parameters map[string]interface{} `yaml:"parameters,omitempty"`
 }
 
-func (e *Endpoint) Reify() error {
-	return nil
+func (e *Endpoint) Reify() (actor.Actor, error) {
+	return nil, errors.NotImplemented("")
 }

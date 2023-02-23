@@ -2,13 +2,14 @@ package model
 
 import (
 	"fmt"
+	"github.com/asynkron/protoactor-go/actor"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
 type Reifybiable interface {
-	Reify() error
+	Reify() (actor.Actor, error)
 }
 
 type Step struct {

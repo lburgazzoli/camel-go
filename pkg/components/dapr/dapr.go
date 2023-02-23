@@ -9,22 +9,15 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	"github.com/mitchellh/mapstructure"
-
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 )
 
 const Scheme = "dapr"
 
 func NewComponent(config map[string]interface{}) (api.Component, error) {
-	c, err := client.NewClient()
-	if err != nil {
-		return nil, err
-	}
 
 	component := Component{
 		id:     uuid.New(),
 		scheme: Scheme,
-		client: c,
 	}
 
 	if err := mapstructure.Decode(config, &component.config); err != nil {
@@ -38,7 +31,6 @@ func NewComponent(config map[string]interface{}) (api.Component, error) {
 type Component struct {
 	id     string
 	scheme string
-	client client.Client
 	config Config
 }
 
@@ -51,5 +43,35 @@ func (c *Component) Scheme() string {
 }
 
 func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
-	return nil, camelerrors.NotImplementedf("Endpoint for scheme %s not implemented", c.Scheme())
+	daprClient, err := client.NewClient()
+	if err != nil {
+		return nil, err
+	}
+
+	e := Endpoint{
+		id:     uuid.New(),
+		client: daprClient,
+		config: c.config,
+	}
+
+	return &e, nil
+}
+
+// Endpoint ---
+type Endpoint struct {
+	id     string
+	client client.Client
+	config Config
+}
+
+func (e *Endpoint) ID() string {
+	return e.id
+}
+
+func (e *Endpoint) Start() error {
+	return nil
+}
+
+func (e *Endpoint) Stop() error {
+	return nil
 }
