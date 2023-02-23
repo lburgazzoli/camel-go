@@ -1,6 +1,7 @@
 package context
 
 import (
+	"context"
 	"io"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -8,8 +9,9 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
-func NewDefaultContext() api.Context {
+func NewDefaultContext(context context.Context) api.Context {
 	ctx := defaultContext{
+		ctx:      context,
 		id:       uuid.New(),
 		system:   actor.NewActorSystem(),
 		registry: NewDefaultRegistry(),
@@ -19,9 +21,14 @@ func NewDefaultContext() api.Context {
 }
 
 type defaultContext struct {
+	ctx      context.Context
 	id       string
 	system   *actor.ActorSystem
 	registry api.Registry
+}
+
+func (c *defaultContext) C() context.Context {
+	return c.ctx
 }
 
 func (c *defaultContext) ID() string {

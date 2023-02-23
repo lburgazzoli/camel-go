@@ -1,6 +1,11 @@
 package api
 
-import "io"
+import (
+	"context"
+	"io"
+
+	ce "github.com/cloudevents/sdk-go/v2"
+)
 
 type Parameters map[string]interface{}
 
@@ -21,6 +26,8 @@ type Registry interface {
 type Context interface {
 	Identifiable
 
+	C() context.Context
+
 	Registry() Registry
 	LoadRoutes(in io.Reader) error
 }
@@ -36,3 +43,18 @@ type Endpoint interface {
 	Identifiable
 	Service
 }
+
+type Message interface {
+	ce.EventContext
+
+	Fail(error)
+	Error() error
+
+	Annotation(string) (interface{}, bool)
+	SetAnnotation(string, interface{})
+
+	Content() interface{}
+	SetContent(interface{})
+}
+
+type Processor func(Message)

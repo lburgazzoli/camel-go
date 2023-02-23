@@ -3,32 +3,47 @@ package message
 import (
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/api"
+
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 // New returns a new Message.
-func New() Message {
-	m := Message{
-		Event:       ce.NewEvent(),
-		annotations: nil,
+func New() (api.Message, error) {
+	m := defaultMessage{
+		EventContext: &ce.EventContextV1{},
+		annotations:  nil,
 	}
 
-	m.SetID(uuid.New())
-	m.SetTime(time.Now())
+	if err := m.SetID(uuid.New()); err != nil {
+		return nil, err
+	}
+	if err := m.SetTime(time.Now()); err != nil {
+		return nil, err
+	}
 
-	return m
+	return &m, nil
 }
 
-type Message struct {
-	ce.Event
+type defaultMessage struct {
+	ce.EventContext
 
+	err         error
 	annotations map[string]interface{}
+	content     interface{}
 }
 
-// Annotation ---
-// TODO: this may be a private method to store contextual info for routing purposes
-func (m *Message) Annotation(key string, val interface{}) {
+func (m *defaultMessage) Fail(err error) {
+	m.err = err
+}
+
+func (m *defaultMessage) Error() error {
+	return nil
+}
+
+// SetAnnotation ---
+func (m *defaultMessage) SetAnnotation(key string, val interface{}) {
 	if m.annotations == nil {
 		m.annotations = make(map[string]interface{})
 	}
@@ -36,9 +51,8 @@ func (m *Message) Annotation(key string, val interface{}) {
 	m.annotations[key] = val
 }
 
-// GetAnnotation ---
-// TODO: this may be a private method to store contextual info for routing purposes
-func (m *Message) GetAnnotation(key string) (interface{}, bool) {
+// Annotation ---
+func (m *defaultMessage) Annotation(key string) (interface{}, bool) {
 	if m.annotations == nil {
 		return nil, false
 	}
@@ -46,4 +60,12 @@ func (m *Message) GetAnnotation(key string) (interface{}, bool) {
 	r, ok := m.annotations[key]
 
 	return r, ok
+}
+
+func (m *defaultMessage) Content() interface{} {
+	return m.content
+}
+
+func (m *defaultMessage) SetContent(content interface{}) {
+	m.content = content
 }

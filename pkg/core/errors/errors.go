@@ -37,3 +37,67 @@ func NotImplementedf(format string, args ...any) error {
 func IsNotImplemented(err error) bool {
 	return errors.Is(err, &notImplemented{})
 }
+
+//
+// Missing parameter
+//
+
+type missingParameter struct {
+	commonError
+
+	parameter string
+}
+
+func MissingParameter(parameter string, message string) error {
+	answer := &missingParameter{
+		parameter: parameter,
+	}
+
+	if message == "" {
+		answer.message = fmt.Sprintf("mandatory parameter %s not set", parameter)
+	} else {
+		answer.message = fmt.Sprintf("%s: mandatory parameter %s not set", answer, parameter)
+	}
+
+	return answer
+}
+
+func MissingParameterf(parameter string, format string, args ...any) error {
+	return MissingParameter(parameter, fmt.Sprintf(format, args...))
+}
+
+func IsMissingParameter(err error) bool {
+	return errors.Is(err, &missingParameter{})
+}
+
+//
+// Missing parameter
+//
+
+type invalidParameter struct {
+	commonError
+
+	parameter string
+}
+
+func InvalidParameter(parameter string, message string) error {
+	answer := &invalidParameter{
+		parameter: parameter,
+	}
+
+	if message == "" {
+		answer.message = fmt.Sprintf("invalid parameter %s", parameter)
+	} else {
+		answer.message = fmt.Sprintf("%s: invalid parameter %s", answer, parameter)
+	}
+
+	return answer
+}
+
+func InvalidParameterf(parameter string, format string, args ...any) error {
+	return InvalidParameter(parameter, fmt.Sprintf(format, args...))
+}
+
+func IsInvalidParameter(err error) bool {
+	return errors.Is(err, &invalidParameter{})
+}

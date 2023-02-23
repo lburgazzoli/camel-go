@@ -1,10 +1,13 @@
 package core
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
+	"context"
+
+	"github.com/lburgazzoli/camel-go/pkg/api"
+	context2 "github.com/lburgazzoli/camel-go/pkg/core/context"
 )
 
-// NewMessage returns a new Message.
-func NewMessage() message.Message {
-	return message.New()
+// NewContext ---
+func NewContext(ctx context.Context) api.Context {
+	return context2.NewDefaultContext(ctx)
 }

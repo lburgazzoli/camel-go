@@ -7,9 +7,10 @@ import (
 )
 
 func TestMessage(t *testing.T) {
-	m := New()
+	m, err := New()
 
-	assert.NotNil(t, m.ID())
-	assert.NotNil(t, m.Time())
-	assert.NotZero(t, m.Time())
+	assert.Nil(t, err)
+	assert.NotNil(t, m.GetID())
+	assert.NotNil(t, m.GetTime())
+	assert.NotZero(t, m.GetTime())
 }

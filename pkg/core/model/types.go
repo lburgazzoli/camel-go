@@ -2,14 +2,15 @@ package model
 
 import (
 	"fmt"
-	"github.com/asynkron/protoactor-go/actor"
 
+	"github.com/asynkron/protoactor-go/actor"
+	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
-type Reifybiable interface {
-	Reify() (actor.Actor, error)
+type Reifyable interface {
+	Reify(api.Context) (actor.Actor, error)
 }
 
 type Step struct {
