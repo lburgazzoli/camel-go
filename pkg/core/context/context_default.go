@@ -21,7 +21,7 @@ func NewDefaultContext() api.Context {
 type defaultContext struct {
 	id       string
 	system   *actor.ActorSystem
-	registry Registry
+	registry api.Registry
 }
 
 func (c *defaultContext) ID() string {

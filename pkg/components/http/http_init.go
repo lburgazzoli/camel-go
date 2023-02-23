@@ -1,6 +1,6 @@
-//go:build component_wasm || components_all
+//go:build component_http || components_all
 
-package wasm
+package http
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/components"

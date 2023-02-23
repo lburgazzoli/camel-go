@@ -1,6 +1,6 @@
-//go:build component_wasm || components_all
+//go:build component_kafka || components_all
 
-package wasm
+package kafka
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/components"

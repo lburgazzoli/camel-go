@@ -69,7 +69,7 @@ lint: golangci-lint
 
 .PHONY: build
 build: fmt vet
-	CGO_ENABLED=0 go build -o $(LOCAL_BIN_PATH)/camel cmd/camel/main.go
+	CGO_ENABLED=0 go build -o $(LOCAL_BIN_PATH)/camel -tags components_all cmd/camel/main.go
 
 .PHONY: image/publish
 image/publish: ko

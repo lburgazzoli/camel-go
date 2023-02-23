@@ -1,23 +1,22 @@
+//go:build component_wasm || components_all
+
 package wasm
 
 import (
-	"github.com/dapr/go-sdk/client"
+	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
+
 	"github.com/mitchellh/mapstructure"
+
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 )
 
 const Scheme = "wasm"
 
-func NewComponent(config map[string]interface{}) (*Component, error) {
-	c, err := client.NewClient()
-	if err != nil {
-		return nil, err
-	}
-
+func NewComponent(config map[string]interface{}) (api.Component, error) {
 	component := Component{
 		id:     uuid.New(),
 		scheme: Scheme,
-		client: c,
 	}
 
 	if err := mapstructure.Decode(config, &component.config); err != nil {
@@ -31,7 +30,6 @@ func NewComponent(config map[string]interface{}) (*Component, error) {
 type Component struct {
 	id     string
 	scheme string
-	client client.Client
 	config Config
 }
 
@@ -41,4 +39,8 @@ func (c *Component) ID() string {
 
 func (c *Component) Scheme() string {
 	return c.scheme
+}
+
+func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
+	return nil, camelerrors.NotImplementedf("Endpoint for scheme %s not implemented", c.Scheme())
 }

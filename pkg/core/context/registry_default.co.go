@@ -1,8 +1,9 @@
 package context
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/api"
 	"sync"
+
+	"github.com/lburgazzoli/camel-go/pkg/api"
 )
 
 func NewDefaultRegistry() api.Registry {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )

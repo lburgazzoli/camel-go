@@ -2,6 +2,8 @@ package api
 
 import "io"
 
+type Parameters map[string]interface{}
+
 type Identifiable interface {
 	ID() string
 }
@@ -20,6 +22,11 @@ type Context interface {
 
 type Component interface {
 	Identifiable
-	
+
 	Scheme() string
+	Endpoint(Parameters) (Endpoint, error)
+}
+
+type Endpoint interface {
+	Identifiable
 }
