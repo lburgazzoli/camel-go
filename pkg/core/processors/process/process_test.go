@@ -2,13 +2,14 @@ package process
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,40 +25,22 @@ func TestSimpleProcessor(t *testing.T) {
 		message.SetContent(content)
 	})
 
-	as := actor.NewActorSystem()
-	receiverPid := as.Root.Spawn(actor.PropsFromFunc(func(c actor.Context) {
+	p := Process{Ref: "p"}
+	p.Next(c.SpawnFn(func(c actor.Context) {
 		switch msg := c.Message().(type) {
-		case *actor.Started:
-			break
-		case *actor.Stopping:
-			break
-		case *actor.Stopped:
-			break
-		case *actor.Restarting:
-			break
 		case api.Message:
 			wg <- msg
 		}
 	}))
 
-	p := Process{
-		Ref: "p",
-		SendTo: []*actor.PID{
-			receiverPid,
-		},
-	}
-
-	a, err := p.Reify(c)
+	pid, err := p.Reify(c)
 	assert.Nil(t, err)
-
-	senderPid := as.Root.Spawn(actor.PropsFromProducer(func() actor.Actor {
-		return a
-	}))
+	assert.NotNil(t, pid)
 
 	msg, err := message.New()
 	assert.Nil(t, err)
 
-	as.Root.Send(senderPid, msg)
+	c.Send(pid, msg)
 
 	select {
 	case msg := <-wg:

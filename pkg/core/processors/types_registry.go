@@ -1,4 +1,4 @@
-package model
+package processors
 
 type TypeFactory func() interface{}
 

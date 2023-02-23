@@ -1,4 +1,4 @@
-package context
+package registry
 
 import (
 	"sync"
@@ -34,4 +34,20 @@ func (r *defaultRegistry) Get(key string) (interface{}, bool) {
 	answer, ok := r.store[key]
 
 	return answer, ok
+}
+
+func GetAs[T any](r api.Registry, key string) (T, bool) {
+	v1, ok := r.Get(key)
+	if !ok {
+		var result T
+		return result, false
+	}
+
+	v2, ok := v1.(T)
+	if !ok {
+		var result T
+		return result, false
+	}
+
+	return v2, ok
 }

@@ -1,6 +1,6 @@
-//go:build components_wasm || components_all
+//go:build components_timer || components_all
 
-package wasm
+package timer
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -9,7 +9,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const Scheme = "wasm"
+const Scheme = "timer"
 
 func NewComponent(config map[string]interface{}) (api.Component, error) {
 	component := Component{

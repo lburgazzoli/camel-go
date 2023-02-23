@@ -1,6 +1,6 @@
-//go:build components_http || components_all
+//go:build components_timer || components_all
 
-package http
+package timer
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/components"

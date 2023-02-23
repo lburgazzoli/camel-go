@@ -3,6 +3,9 @@ package context
 import (
 	"context"
 	"io"
+	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/registry"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -14,7 +17,7 @@ func NewDefaultContext(context context.Context) api.Context {
 		ctx:      context,
 		id:       uuid.New(),
 		system:   actor.NewActorSystem(),
-		registry: NewDefaultRegistry(),
+		registry: registry.NewDefaultRegistry(),
 	}
 
 	return &ctx
@@ -41,4 +44,26 @@ func (c *defaultContext) LoadRoutes(in io.Reader) error {
 
 func (c *defaultContext) Registry() api.Registry {
 	return c.registry
+}
+
+func (c *defaultContext) Spawn(a actor.Actor) *actor.PID {
+	p := actor.PropsFromProducer(func() actor.Actor {
+		return a
+	})
+
+	return c.system.Root.Spawn(p)
+}
+
+func (c *defaultContext) SpawnFn(a actor.ReceiveFunc) *actor.PID {
+	p := actor.PropsFromFunc(a)
+
+	return c.system.Root.Spawn(p)
+}
+
+func (c *defaultContext) Send(pid *actor.PID, message api.Message) {
+	c.system.Root.Send(pid, message)
+}
+
+func (c *defaultContext) Receive(*actor.PID, time.Duration) api.Message {
+	return nil
 }

@@ -3,7 +3,7 @@ package route
 import (
 	"io"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/model/route"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors/route"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"

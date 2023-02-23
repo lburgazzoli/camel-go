@@ -1,4 +1,4 @@
-package model
+package processors
 
 import (
 	"fmt"
@@ -10,11 +10,11 @@ import (
 )
 
 type Reifyable interface {
-	Reify(api.Context) (actor.Actor, error)
+	Reify(api.Context) (*actor.PID, error)
 }
 
 type Step struct {
-	t interface{}
+	T Reifyable
 }
 
 func (s *Step) UnmarshalYAML(node *yaml.Node) error {
@@ -32,11 +32,17 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 		return fmt.Errorf("unsupported tag: %s", tag)
 	}
 
-	t := factory()
+	definition := factory()
 
-	if err := node.Content[1].Decode(t); err != nil {
+	if err := node.Content[1].Decode(definition); err != nil {
 		return errors.Wrapf(err, "unable to decode tag: %s (line: %d, column: %d) ", tag, node.Line, node.Column)
 	}
 
+	s.T = definition.(Reifyable)
+
 	return nil
+}
+
+type OutputAware interface {
+	Next(*actor.PID)
 }

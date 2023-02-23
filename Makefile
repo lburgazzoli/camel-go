@@ -9,6 +9,7 @@ LOCAL_BIN_PATH := ${PROJECT_PATH}/bin
 KO_CONFIG_PATH := ${PROJECT_PATH}/etc/ko.yaml
 KO_DOCKER_REPO := "quay.io/lburgazzoli/cos-fleetshard"
 CGO_ENABLED := 0
+BUILD_TAGS := -tags components_all -tags steps_all
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -49,13 +50,9 @@ fmt: goimport
 	$(LOCALBIN)/goimports -l -w .
 	go fmt ./...
 
-.PHONY: vet
-vet:
-	go vet ./...
-
 .PHONY: test
 test:
-	go test ./...
+	go test $(BUILD_TAGS) ./...
 
 .PHONY: deps
 deps:
@@ -68,8 +65,8 @@ lint: golangci-lint
 ##@ Build
 
 .PHONY: build
-build: fmt vet
-	CGO_ENABLED=0 go build -o $(LOCAL_BIN_PATH)/camel -tags components_all -tags steps_all cmd/camel/main.go
+build: fmt
+	CGO_ENABLED=0 go build -o $(LOCAL_BIN_PATH)/camel $(BUILD_TAGS) cmd/camel/main.go
 
 .PHONY: image/publish
 image/publish: ko

@@ -1,4 +1,4 @@
-//go:build component_http || components_all
+//go:build components_http || components_all
 
 package http
 
@@ -9,7 +9,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const Scheme = "wasm"
+const Scheme = "http"
 
 func NewComponent(config map[string]interface{}) (api.Component, error) {
 	component := Component{
