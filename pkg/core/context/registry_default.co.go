@@ -1,8 +1,11 @@
 package context
 
-import "sync"
+import (
+	"github.com/lburgazzoli/camel-go/pkg/api"
+	"sync"
+)
 
-func NewDefaultRegistry() Registry {
+func NewDefaultRegistry() api.Registry {
 	r := defaultRegistry{
 		store:     make(map[string]interface{}),
 		storeLock: &sync.RWMutex{},
