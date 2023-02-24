@@ -47,21 +47,3 @@ func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
 
 	return &e, nil
 }
-
-// Endpoint ---
-type Endpoint struct {
-	id     string
-	config Config
-}
-
-func (e *Endpoint) ID() string {
-	return e.id
-}
-
-func (e *Endpoint) Start() error {
-	return nil
-}
-
-func (e *Endpoint) Stop() error {
-	return nil
-}

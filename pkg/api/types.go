@@ -79,3 +79,19 @@ type Message interface {
 }
 
 type Processor func(Message)
+
+type Producer interface {
+	Service
+}
+
+type ProducerFactory interface {
+	Producer() (Producer, error)
+}
+
+type Consumer interface {
+	Service
+}
+
+type ConsumerFactory interface {
+	Consumer() (Consumer, error)
+}

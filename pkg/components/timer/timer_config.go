@@ -2,5 +2,8 @@
 
 package timer
 
+import "time"
+
 type Config struct {
+	Interval time.Duration `mapstructure:"interval"`
 }
