@@ -1,3 +1,5 @@
+//go:build steps_process || steps_all
+
 package process
 
 import (
@@ -25,13 +27,17 @@ func TestSimpleProcessor(t *testing.T) {
 		message.SetContent(content)
 	})
 
-	p := Process{Ref: "p"}
-	p.Next(c.SpawnFn(func(c actor.Context) {
+	consumer, err := c.SpawnFn(uuid.New(), func(c actor.Context) {
 		switch msg := c.Message().(type) {
 		case api.Message:
 			wg <- msg
 		}
-	}))
+	})
+
+	assert.Nil(t, err)
+
+	p := Process{Ref: "p"}
+	p.Next(consumer)
 
 	pid, err := p.Reify(c)
 	assert.Nil(t, err)

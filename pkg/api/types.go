@@ -37,12 +37,12 @@ type Context interface {
 	// Spawn ---
 	// TODO: must be hidden
 	// TODO: each route must have its own context/supervisor
-	Spawn(actor.Actor) *actor.PID
+	Spawn(string, actor.Actor) (*actor.PID, error)
 
 	// SpawnFn ---
 	// TODO: must be hidden
 	// TODO: each route must have its own context/supervisor
-	SpawnFn(actor.ReceiveFunc) *actor.PID
+	SpawnFn(string, actor.ReceiveFunc) (*actor.PID, error)
 
 	// Send ---
 	// TODO: must use name instead of PID

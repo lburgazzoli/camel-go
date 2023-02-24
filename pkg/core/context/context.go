@@ -46,18 +46,18 @@ func (c *defaultContext) Registry() api.Registry {
 	return c.registry
 }
 
-func (c *defaultContext) Spawn(a actor.Actor) *actor.PID {
+func (c *defaultContext) Spawn(name string, a actor.Actor) (*actor.PID, error) {
 	p := actor.PropsFromProducer(func() actor.Actor {
 		return a
 	})
 
-	return c.system.Root.Spawn(p)
+	return c.system.Root.SpawnNamed(p, name)
 }
 
-func (c *defaultContext) SpawnFn(a actor.ReceiveFunc) *actor.PID {
+func (c *defaultContext) SpawnFn(name string, a actor.ReceiveFunc) (*actor.PID, error) {
 	p := actor.PropsFromFunc(a)
 
-	return c.system.Root.Spawn(p)
+	return c.system.Root.SpawnNamed(p, name)
 }
 
 func (c *defaultContext) Send(pid *actor.PID, message api.Message) {
