@@ -101,3 +101,29 @@ func InvalidParameterf(parameter string, format string, args ...any) error {
 func IsInvalidParameter(err error) bool {
 	return errors.Is(err, &invalidParameter{})
 }
+
+//
+// Internal error
+//
+
+type internalError struct {
+	commonError
+}
+
+func InternalError(message string) error {
+	answer := &internalError{
+		commonError: commonError{
+			message: message,
+		},
+	}
+
+	return answer
+}
+
+func InternalErrorf(format string, args ...any) error {
+	return InternalError(fmt.Sprintf(format, args...))
+}
+
+func IsInternalError(err error) bool {
+	return errors.Is(err, &internalError{})
+}

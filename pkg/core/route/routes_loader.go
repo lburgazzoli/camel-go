@@ -27,8 +27,8 @@ func Load(in io.Reader) ([]route.Route, error) {
 	for i := range holder {
 		r := holder[i].R
 
-		if r.ID == "" {
-			r.ID = uuid.New()
+		if r.Identity == "" {
+			r.Identity = uuid.New()
 		}
 
 		routes = append(routes, r)

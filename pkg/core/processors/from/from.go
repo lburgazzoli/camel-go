@@ -24,12 +24,7 @@ type From struct {
 func (f *From) Reify(ctx api.Context) (*actor.PID, error) {
 
 	for i := range f.Steps {
-		r, ok := f.Steps[i].T.(processors.Reifyable)
-		if !ok {
-			panic("internal error")
-		}
-
-		pid, err := r.Reify(ctx)
+		pid, err := f.Steps[i].Reify(ctx)
 		if err != nil {
 			return nil, err
 		}

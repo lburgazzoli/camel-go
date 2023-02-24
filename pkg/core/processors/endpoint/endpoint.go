@@ -1,9 +1,10 @@
 package endpoint
 
 import (
+	"net/url"
+
 	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"net/url"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
