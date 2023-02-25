@@ -1,4 +1,4 @@
-//go:build components_dapr || components_all
+////go:build components_dapr || components_all
 
 package dapr
 

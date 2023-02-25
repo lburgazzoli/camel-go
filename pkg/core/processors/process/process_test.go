@@ -1,9 +1,8 @@
-//go:build steps_process || steps_all
+////go:build steps_process || steps_all
 
 package process
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -20,7 +19,7 @@ func TestSimpleProcessor(t *testing.T) {
 	content := uuid.New()
 	wg := make(chan api.Message)
 
-	c := core.NewContext(context.Background())
+	c := core.NewContext()
 	assert.NotNil(t, c)
 
 	c.Registry().Set("p", func(message api.Message) {
@@ -28,8 +27,8 @@ func TestSimpleProcessor(t *testing.T) {
 	})
 
 	consumer, err := c.SpawnFn(uuid.New(), func(c actor.Context) {
-		switch msg := c.Message().(type) {
-		case api.Message:
+		msg, ok := c.Message().(api.Message)
+		if ok {
 			wg <- msg
 		}
 	})

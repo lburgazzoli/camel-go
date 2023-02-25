@@ -5,6 +5,8 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
+	"github.com/pkg/errors"
 )
 
 const TAG = "from"
@@ -23,14 +25,28 @@ type From struct {
 
 func (f *From) Reify(ctx api.Context) (*actor.PID, error) {
 
+	current := api.OutputAware(&f.Endpoint)
 	for i := range f.Steps {
 		pid, err := f.Steps[i].Reify(ctx)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error creating step")
 		}
 
-		f.Endpoint.Next(pid)
+		current.Next(pid)
+		current = &f.Steps[i]
 	}
 
-	return f.Endpoint.Reify(ctx)
+	consumer, err := f.Endpoint.Consumer(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error creating consumer")
+	}
+
+	return ctx.SpawnFn(uuid.New(), func(c actor.Context) {
+		switch c.Message().(type) {
+		case *actor.Started:
+			_ = consumer.Start()
+		case *actor.Stopping:
+			_ = consumer.Stop()
+		}
+	})
 }

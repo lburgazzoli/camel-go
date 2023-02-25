@@ -52,7 +52,7 @@ fmt: goimport
 
 .PHONY: test
 test:
-	go test $(BUILD_TAGS) ./...
+	go test -v $(BUILD_TAGS) ./...
 
 .PHONY: deps
 deps:
@@ -60,7 +60,7 @@ deps:
 
 .PHONY: lint
 lint: golangci-lint
-	$(LOCALBIN)/golangci-lint run --config .golangci.yml --out-format tab  --verbose
+	$(LOCALBIN)/golangci-lint run --config .golangci.yml --out-format tab
 
 ##@ Build
 
@@ -85,7 +85,7 @@ image/kind: ko
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
-	mkdir -p $(LOCALBIN)
+	@mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
 GOIMPORT ?= $(LOCALBIN)/goimports
@@ -95,16 +95,16 @@ GOLANGCILINT ?=  $(LOCALBIN)/golangci-lint
 .PHONY: goimport
 goimport: $(GOIMPORT)
 $(GOIMPORT): $(LOCALBIN)
-	test -s $(LOCALBIN)/goimport || \
+	@test -s $(LOCALBIN)/goimport || \
 	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
 
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCILINT)
 $(GOLANGCILINT): $(LOCALBIN)
-	test -s $(LOCALBIN)/golangci-lint || \
+	@test -s $(LOCALBIN)/golangci-lint || \
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
 
 .PHONY: ko
 ko: $(KO)
 $(KO): $(LOCALBIN)
-	test -s $(LOCALBIN)/ko || GOBIN=$(LOCALBIN) go install github.com/google/ko@main
+	@test -s $(LOCALBIN)/ko || GOBIN=$(LOCALBIN) go install github.com/google/ko@main

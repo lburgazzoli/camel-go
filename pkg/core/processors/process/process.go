@@ -1,8 +1,9 @@
-//go:build steps_process || steps_all
+////go:build steps_process || steps_all
 
 package process
 
 import (
+	"fmt"
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -74,12 +75,14 @@ type processActor struct {
 }
 
 func (p *processActor) Receive(c actor.Context) {
-	switch msg := c.Message().(type) {
-	case api.Message:
+	msg, ok := c.Message().(api.Message)
+	if ok {
+		fmt.Println("process msg", c.Self().String())
 		p.camelProcessor(msg)
 
 		if p.outputs != nil {
 			p.outputs.ForEach(func(_ int, pid *actor.PID) {
+				fmt.Println("send to", pid.String())
 				c.Send(pid, msg)
 			})
 		}

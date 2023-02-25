@@ -1,4 +1,4 @@
-//go:build components_http || components_all
+////go:build components_http || components_all
 
 package http
 

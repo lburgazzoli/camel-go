@@ -1,4 +1,4 @@
-//go:build components_timer || components_all
+////go:build components_timer || components_all
 
 package timer
 

@@ -1,21 +1,16 @@
-//go:build components_timer || components_all
+////go:build components_timer || components_all
 
 package timer
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/components"
 )
 
-// Endpoint ---
 type Endpoint struct {
-	api.ConsumerFactory
+	components.DefaultEndpoint
 
-	id     string
 	config Config
-}
-
-func (e *Endpoint) ID() string {
-	return e.id
 }
 
 func (e *Endpoint) Start() error {

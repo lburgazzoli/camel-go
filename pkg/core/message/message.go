@@ -42,7 +42,6 @@ func (m *defaultMessage) Error() error {
 	return nil
 }
 
-// SetAnnotation ---
 func (m *defaultMessage) SetAnnotation(key string, val interface{}) {
 	if m.annotations == nil {
 		m.annotations = make(map[string]interface{})
@@ -51,7 +50,6 @@ func (m *defaultMessage) SetAnnotation(key string, val interface{}) {
 	m.annotations[key] = val
 }
 
-// Annotation ---
 func (m *defaultMessage) Annotation(key string) (interface{}, bool) {
 	if m.annotations == nil {
 		return nil, false

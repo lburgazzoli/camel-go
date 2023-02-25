@@ -1,4 +1,4 @@
-//go:build components_kafka || components_all
+////go:build components_kafka || components_all
 
 package kafka
 

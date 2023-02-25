@@ -16,6 +16,7 @@ type Reifyable interface {
 
 type Step struct {
 	Reifyable
+	api.WithOutputs
 
 	t interface{}
 }
@@ -37,7 +38,7 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 
 	s.t = factory()
 
-	if err := node.Content[1].Decode(&s.t); err != nil {
+	if err := node.Content[1].Decode(s.t); err != nil {
 		return errors.Wrapf(err, "unable to decode tag: %s (line: %d, column: %d) ", tag, node.Line, node.Column)
 	}
 
@@ -51,8 +52,4 @@ func (s *Step) Reify(ctx api.Context) (*actor.PID, error) {
 	}
 
 	return r.Reify(ctx)
-}
-
-type OutputAware interface {
-	Next(*actor.PID)
 }

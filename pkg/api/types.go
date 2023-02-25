@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"io"
 	"time"
 
@@ -29,8 +28,6 @@ type Registry interface {
 type Context interface {
 	Identifiable
 
-	C() context.Context
-
 	Registry() Registry
 	LoadRoutes(in io.Reader) error
 
@@ -56,6 +53,7 @@ type Context interface {
 type Component interface {
 	Identifiable
 
+	Context() Context
 	Scheme() string
 	Endpoint(Parameters) (Endpoint, error)
 }
@@ -63,6 +61,8 @@ type Component interface {
 type Endpoint interface {
 	Identifiable
 	Service
+
+	Component() Component
 }
 
 type Message interface {
@@ -71,9 +71,13 @@ type Message interface {
 	Fail(error)
 	Error() error
 
+	// Annotation ---
+	// TODO: add options Annotation("foo", opt.WithDefault("bar"), opt.AsType(baz{})).
 	Annotation(string) (interface{}, bool)
 	SetAnnotation(string, interface{})
 
+	// Content ---
+	// TODO: add options Content(opt.AsType(baz{})).
 	Content() interface{}
 	SetContent(interface{})
 }
@@ -82,6 +86,8 @@ type Processor func(Message)
 
 type Producer interface {
 	Service
+
+	Endpoint() Endpoint
 }
 
 type ProducerFactory interface {
@@ -90,8 +96,40 @@ type ProducerFactory interface {
 
 type Consumer interface {
 	Service
+	OutputAware
+
+	Endpoint() Endpoint
 }
 
 type ConsumerFactory interface {
 	Consumer() (Consumer, error)
+}
+
+// OutputAware ---
+// TODO: use name or other abstractions instead of PIO.
+type OutputAware interface {
+	Next(*actor.PID)
+	Outputs() []*actor.PID
+}
+
+// WithOutputs ---
+// TODO: move to helper package.
+type WithOutputs struct {
+	outputs *actor.PIDSet
+}
+
+func (o *WithOutputs) Next(pid *actor.PID) {
+	if o.outputs == nil {
+		o.outputs = actor.NewPIDSet()
+	}
+
+	o.outputs.Add(pid)
+}
+
+func (o *WithOutputs) Outputs() []*actor.PID {
+	if o.outputs == nil {
+		return nil
+	}
+
+	return o.outputs.Values()
 }

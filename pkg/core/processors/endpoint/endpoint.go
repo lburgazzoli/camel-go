@@ -1,14 +1,12 @@
 package endpoint
 
 import (
+	"github.com/pkg/errors"
 	"net/url"
 
-	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-
-	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/errors"
+	"github.com/lburgazzoli/camel-go/pkg/components"
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
@@ -22,11 +20,10 @@ func init() {
 
 type Endpoint struct {
 	api.Identifiable
-
-	outputs *actor.PIDSet
+	api.WithOutputs
 
 	Identity   string                 `yaml:"id"`
-	URL        url.URL                `yaml:"url,omitempty"`
+	URI        string                 `yaml:"uri"`
 	Parameters map[string]interface{} `yaml:"parameters,omitempty"`
 }
 
@@ -34,34 +31,55 @@ func (e *Endpoint) ID() string {
 	return e.Identity
 }
 
-func (e *Endpoint) Next(pid *actor.PID) {
-	if e.outputs == nil {
-		e.outputs = actor.NewPIDSet()
+func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
+
+	ep, err := e.create(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failure creating endpoint")
 	}
 
-	e.outputs.Add(pid)
+	cf, ok := ep.(api.ConsumerFactory)
+	if !ok {
+		return nil, camelerrors.NotImplementedf("scheme %s does not implement consumer", ep.Component().Scheme())
+	}
+
+	consumer, err := cf.Consumer()
+	if err != nil {
+		return nil, errors.Wrapf(err, "error creating consumer")
+	}
+
+	for _, o := range e.Outputs() {
+		next := o
+
+		consumer.Next(next)
+	}
+	return consumer, nil
 }
 
-func (e *Endpoint) Reify(_ api.Context) (*actor.PID, error) {
-
+func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 	params := make(map[string]interface{})
 
-	for k, v := range e.URL.Query() {
+	u, err := url.Parse(e.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range u.Query() {
 		params[k] = v
 	}
 	for k, v := range e.Parameters {
 		params[k] = v
 	}
 
-	id := e.Identity
-	if id == "" {
-		id = uuid.New()
-	}
-
-	_, ok := components.Factories[e.URL.Scheme]
+	f, ok := components.Factories[u.Scheme]
 	if !ok {
-		return nil, errors.NotImplemented("")
+		return nil, camelerrors.NotFoundf("not component for scheme %s", u.Scheme)
 	}
 
-	return nil, errors.NotImplemented("")
+	c, err := f(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Endpoint(params)
 }

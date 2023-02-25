@@ -127,3 +127,29 @@ func InternalErrorf(format string, args ...any) error {
 func IsInternalError(err error) bool {
 	return errors.Is(err, &internalError{})
 }
+
+//
+// Not found
+//
+
+type notFound struct {
+	commonError
+}
+
+func NotFound(message string) error {
+	answer := &notFound{
+		commonError: commonError{
+			message: message,
+		},
+	}
+
+	return answer
+}
+
+func NotFoundf(format string, args ...any) error {
+	return NotFound(fmt.Sprintf(format, args...))
+}
+
+func IsNotFound(err error) bool {
+	return errors.Is(err, &notFound{})
+}

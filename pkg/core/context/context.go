@@ -1,7 +1,7 @@
 package context
 
 import (
-	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/route"
 	"io"
 	"time"
 
@@ -12,9 +12,8 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
-func NewDefaultContext(context context.Context) api.Context {
+func NewDefaultContext() api.Context {
 	ctx := defaultContext{
-		ctx:      context,
 		id:       uuid.New(),
 		system:   actor.NewActorSystem(),
 		registry: registry.NewDefaultRegistry(),
@@ -24,14 +23,9 @@ func NewDefaultContext(context context.Context) api.Context {
 }
 
 type defaultContext struct {
-	ctx      context.Context
 	id       string
 	system   *actor.ActorSystem
 	registry api.Registry
-}
-
-func (c *defaultContext) C() context.Context {
-	return c.ctx
 }
 
 func (c *defaultContext) ID() string {
@@ -39,6 +33,17 @@ func (c *defaultContext) ID() string {
 }
 
 func (c *defaultContext) LoadRoutes(in io.Reader) error {
+	routes, err := route.Load(in)
+	if err != nil {
+		return err
+	}
+
+	for i := range routes {
+		if _, err := routes[i].Reify(c); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

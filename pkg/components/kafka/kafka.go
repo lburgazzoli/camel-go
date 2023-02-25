@@ -1,20 +1,18 @@
-//go:build components_kafka || components_all
+////go:build components_kafka || components_all
 
 package kafka
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-
+	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/mitchellh/mapstructure"
 )
 
 const Scheme = "kafka"
 
-func NewComponent(config map[string]interface{}) (api.Component, error) {
+func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component, error) {
 	component := Component{
-		id:     uuid.New(),
-		scheme: Scheme,
+		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
 	if err := mapstructure.Decode(config, &component.config); err != nil {
@@ -24,38 +22,25 @@ func NewComponent(config map[string]interface{}) (api.Component, error) {
 	return &component, nil
 }
 
-// Component ---
 type Component struct {
-	id     string
-	scheme string
+	components.DefaultComponent
+
 	config Config
-}
-
-func (c *Component) ID() string {
-	return c.id
-}
-
-func (c *Component) Scheme() string {
-	return c.scheme
 }
 
 func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
 	e := Endpoint{
-		id:     uuid.New(),
-		config: c.config,
+		DefaultEndpoint: components.NewDefaultEndpoint(c),
+		config:          c.config,
 	}
 
 	return &e, nil
 }
 
-// Endpoint ---
 type Endpoint struct {
-	id     string
-	config Config
-}
+	components.DefaultEndpoint
 
-func (e *Endpoint) ID() string {
-	return e.id
+	config Config
 }
 
 func (e *Endpoint) Start() error {
