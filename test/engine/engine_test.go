@@ -4,12 +4,15 @@ package engine
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/lburgazzoli/camel-go/test/support/containers"
+	"github.com/lburgazzoli/camel-go/test/support/containers/kafka"
+	. "github.com/onsi/gomega"
+
 	"strings"
 
+	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	"github.com/lburgazzoli/camel-go/pkg/components/timer"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -24,6 +27,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/from"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/process"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -101,71 +105,41 @@ func TestSimpleYAML(t *testing.T) {
 	}
 }
 
-const _ = `
+const simpleKafka = `
 - route:
     from:
       uri: "timer:foo"
       steps:
         - process:
             ref: "consumer-1"
-        - process:
-            ref: "consumer-2"
+        - to:
+            uri: "kafka:foo"
+            parameters:
+              brokers: "localhost:9092"
+              topics: "foo"
 `
 
 func TestSimpleKafka(t *testing.T) {
-	t.Skip("TODO")
-
+	content := uuid.New()
 	ctx := context.Background()
 
-	_ = strings.Join(
-		[]string{
-			"OUTSIDE://0.0.0.0:9092",
-			"PLAINTEXT://0.0.0.0:9092",
-		},
-		",")
-
-	_ = strings.Join(
-		[]string{
-			"OUTSIDE://localhost:9092",
-			"PLAINTEXT://localhost:9092",
-		},
-		",")
-
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "docker.io/redpandadata/redpanda:v22.3.13",
-			ExposedPorts: []string{"9092:9092"},
-			WaitingFor:   wait.ForLog("Started Kafka API server"),
-			Cmd:          []string{"redpanda", "start", "--mode dev-container"},
-		},
-		Started: true,
-	})
-
+	container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
 	if err != nil {
 		t.Error(err)
 	}
 
 	defer func() {
-		if err := container.StopLogProducer(); err != nil {
-			t.Fatalf("failed to stop log producers: %s", err.Error())
-		}
-		if err := container.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err.Error())
+		if err := container.Stop(ctx); err != nil {
+			t.Fatal(err.Error())
 		}
 	}()
 
-	container.FollowOutput(&TestLogConsumer{})
-	assert.Nil(t, container.StartLogProducer(ctx))
 	assert.Nil(t, container.Start(ctx))
 
-	host, err := container.Host(ctx)
-	assert.Nil(t, err)
-
-	port, err := container.MappedPort(ctx, "9092")
-	assert.Nil(t, err)
-
-	cl, err := kgo.NewClient(
-		kgo.SeedBrokers(host + ":" + port.Port()),
+	cl, err := container.Client(
+		ctx,
+		kgo.ConsumeTopics("foo"),
+		kgo.ConsumerGroup(uuid.New()),
 	)
 
 	assert.Nil(t, err)
@@ -178,33 +152,23 @@ func TestSimpleKafka(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Nil(t, tp.Err)
 
-	assert.Nil(t, cl.ProduceSync(
-		ctx,
-		&kgo.Record{
-			Topic: "foo",
-			Value: []byte("bar"),
-		}).FirstErr())
+	c := core.NewContext()
+	assert.NotNil(t, c)
 
-	for {
-		fetches := cl.PollFetches(ctx)
-		if errs := fetches.Errors(); len(errs) > 0 {
-			// All errors are retried internally when fetching, but non-retriable errors are
-			// returned from polls so that users can notice and take action.
-			panic(fmt.Sprint(errs))
-		}
+	c.Registry().Set("consumer-1", func(message api.Message) {
+		message.SetContent(content)
+	})
 
-		// We can iterate through a record iterator...
-		iter := fetches.RecordIter()
-		for !iter.Done() {
-			record := iter.Next()
-			fmt.Println(string(record.Value), "from an iterator!")
-		}
-	}
-}
+	err = c.LoadRoutes(strings.NewReader(simpleKafka))
+	assert.Nil(t, err)
 
-type TestLogConsumer struct {
-}
+	RegisterTestingT(t)
 
-func (g *TestLogConsumer) Accept(l testcontainers.Log) {
-	fmt.Print(string(l.Content))
+	Eventually(func(g Gomega) {
+		f := cl.PollFetches(ctx)
+
+		Expect(f.Errors()).To(BeEmpty())
+		Expect(f.NumRecords()).To(Equal(1))
+		Expect(string(f.Records()[0].Value)).To(Equal(content))
+	}).Should(Succeed())
 }

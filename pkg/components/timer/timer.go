@@ -33,7 +33,7 @@ type Component struct {
 	config Config
 }
 
-func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
+func (c *Component) Endpoint(params api.Parameters) (api.Endpoint, error) {
 	e := Endpoint{
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
 		config:          c.config,

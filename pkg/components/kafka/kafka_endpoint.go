@@ -18,7 +18,7 @@ func (e *Endpoint) Stop() error {
 	return nil
 }
 
-func (e *Endpoint) Producer() (api.Consumer, error) {
+func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
 		endpoint: e,
 	}

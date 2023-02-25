@@ -7,6 +7,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/cucumber/godog v0.12.6
 	github.com/dapr/go-sdk v1.7.0
+	github.com/imdario/mergo v0.3.13
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/gomega v1.27.1
 	github.com/pkg/errors v0.9.1

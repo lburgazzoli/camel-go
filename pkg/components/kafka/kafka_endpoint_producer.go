@@ -51,21 +51,6 @@ func (p *Producer) Receive(ctx actor.Context) {
 	case *actor.Stopping:
 		_ = p.Stop()
 	case api.Message:
-		record := &kgo.Record{}
-		record.Topic = p.endpoint.config.Topics
-
-		// TODO: must add type converters
-
-		switch v := msg.Content().(type) {
-		case []byte:
-			record.Value = v
-		case string:
-			record.Value = []byte(v)
-		default:
-			panic("unsupported content type")
-		}
-
-		// TODO: must get a context.Context
 		if err := p.publish(msg); err != nil {
 			panic(err)
 		}
