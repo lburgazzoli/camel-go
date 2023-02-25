@@ -82,10 +82,13 @@ type Message interface {
 	SetContent(interface{})
 }
 
-type Processor func(Message)
+type Processor = func(Message)
 
 type Producer interface {
 	Service
+	OutputAware
+	
+	actor.Actor
 
 	Endpoint() Endpoint
 }
@@ -97,6 +100,8 @@ type ProducerFactory interface {
 type Consumer interface {
 	Service
 	OutputAware
+
+	actor.Actor
 
 	Endpoint() Endpoint
 }

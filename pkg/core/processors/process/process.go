@@ -7,6 +7,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/lburgazzoli/camel-go/pkg/core/registry"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
@@ -36,14 +37,9 @@ func (p *Process) Reify(ctx api.Context) (*actor.PID, error) {
 		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
 	}
 
-	val, ok := ctx.Registry().Get(p.Ref)
+	proc, ok := registry.GetAs[api.Processor](ctx.Registry(), p.Ref)
 	if !ok {
 		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
-	}
-
-	proc, ok := val.(func(api.Message))
-	if !ok {
-		return nil, camelerrors.InvalidParameterf("ref", "failure retrieving value from registry")
 	}
 
 	id := p.Identity

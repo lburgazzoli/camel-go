@@ -25,8 +25,6 @@ type From struct {
 
 func (f *From) Reify(ctx api.Context) (*actor.PID, error) {
 
-	//current := api.OutputAware(&f.Endpoint)
-
 	var last *actor.PID
 
 	for i := len(f.Steps) - 1; i >= 0; i-- {
@@ -51,12 +49,5 @@ func (f *From) Reify(ctx api.Context) (*actor.PID, error) {
 		return nil, errors.Wrapf(err, "error creating consumer")
 	}
 
-	return ctx.SpawnFn(uuid.New(), func(c actor.Context) {
-		switch c.Message().(type) {
-		case *actor.Started:
-			_ = consumer.Start()
-		case *actor.Stopping:
-			_ = consumer.Stop()
-		}
-	})
+	return ctx.Spawn(uuid.New(), consumer)
 }

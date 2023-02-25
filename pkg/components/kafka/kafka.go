@@ -23,9 +23,8 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 }
 
 type Component struct {
-	components.DefaultComponent
-
 	config Config
+	components.DefaultComponent
 }
 
 func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
@@ -35,18 +34,4 @@ func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
 	}
 
 	return &e, nil
-}
-
-type Endpoint struct {
-	components.DefaultEndpoint
-
-	config Config
-}
-
-func (e *Endpoint) Start() error {
-	return nil
-}
-
-func (e *Endpoint) Stop() error {
-	return nil
 }

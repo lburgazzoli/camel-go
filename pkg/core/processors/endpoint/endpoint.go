@@ -39,12 +39,12 @@ func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
 		return nil, errors.Wrapf(err, "failure creating endpoint")
 	}
 
-	cf, ok := ep.(api.ConsumerFactory)
+	factory, ok := ep.(api.ConsumerFactory)
 	if !ok {
 		return nil, camelerrors.NotImplementedf("scheme %s does not implement consumer", ep.Component().Scheme())
 	}
 
-	consumer, err := cf.Consumer()
+	consumer, err := factory.Consumer()
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating consumer")
 	}
@@ -55,6 +55,32 @@ func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
 		consumer.Next(next)
 	}
 	return consumer, nil
+}
+
+func (e *Endpoint) Producer(ctx api.Context) (api.Producer, error) {
+
+	ep, err := e.create(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failure creating endpoint")
+	}
+
+	factory, ok := ep.(api.ProducerFactory)
+	if !ok {
+		return nil, camelerrors.NotImplementedf("scheme %s does not implement producer", ep.Component().Scheme())
+	}
+
+	producer, err := factory.Producer()
+	if err != nil {
+		return nil, errors.Wrapf(err, "error creating producer")
+	}
+
+	for _, o := range e.Outputs() {
+		next := o
+
+		producer.Next(next)
+	}
+
+	return producer, nil
 }
 
 func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {

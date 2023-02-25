@@ -8,7 +8,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const Scheme = "timer"
+const (
+	Scheme = "timer"
+
+	AnnotationTimerStarted    = "timer.started"
+	AnnotationTimerFiredCount = "timer.fired.count"
+)
 
 func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component, error) {
 	component := Component{

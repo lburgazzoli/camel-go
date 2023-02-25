@@ -2,7 +2,6 @@ package cucumber
 
 import (
 	"os"
-	"sync"
 	"time"
 
 	"github.com/cucumber/godog"
@@ -28,15 +27,13 @@ func DefaultOptions() godog.Options {
 // TestSuite holds the state global to all the test scenarios.
 // It is accessed concurrently from all test scenarios.
 type TestSuite struct {
-	Mu sync.Mutex
 }
 
 // TestScenario holds that state of single scenario.
 // It is not accessed concurrently.
 type TestScenario struct {
-	Suite           *TestSuite
-	Variables       map[string]interface{}
-	hasTestCaseLock bool
+	Suite     *TestSuite
+	Variables map[string]interface{}
 }
 
 // StepModules is the list of functions used to add steps to a godog.ScenarioContext, you can
