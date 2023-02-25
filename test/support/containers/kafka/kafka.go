@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"github.com/twmb/franz-go/pkg/kadm"
 	"os"
 	"strconv"
 
@@ -53,6 +54,16 @@ func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, e
 	kopts = append(kopts, kgo.WithLogger(kgo.BasicLogger(os.Stdout, kgo.LogLevelInfo, func() string { return id })))
 
 	return kgo.NewClient(kopts...)
+}
+
+func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
+
+	client, err := c.Client(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return kadm.NewClient(client), nil
 }
 
 func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {

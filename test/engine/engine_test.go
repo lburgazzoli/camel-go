@@ -13,7 +13,6 @@ import (
 
 	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	"github.com/lburgazzoli/camel-go/pkg/components/timer"
-	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -146,7 +145,8 @@ func TestSimpleKafka(t *testing.T) {
 
 	defer cl.Close()
 
-	ac := kadm.NewClient(cl)
+	ac, err := container.Admin(ctx)
+	assert.Nil(t, err)
 
 	tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
 	assert.Nil(t, err)
