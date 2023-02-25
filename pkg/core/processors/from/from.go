@@ -25,15 +25,25 @@ type From struct {
 
 func (f *From) Reify(ctx api.Context) (*actor.PID, error) {
 
-	current := api.OutputAware(&f.Endpoint)
-	for i := range f.Steps {
+	//current := api.OutputAware(&f.Endpoint)
+
+	var last *actor.PID
+
+	for i := len(f.Steps) - 1; i >= 0; i-- {
+		if last != nil {
+			f.Steps[i].Next(last)
+		}
+
 		pid, err := f.Steps[i].Reify(ctx)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error creating step")
 		}
 
-		current.Next(pid)
-		current = &f.Steps[i]
+		last = pid
+	}
+
+	if last != nil {
+		f.Endpoint.Next(last)
 	}
 
 	consumer, err := f.Endpoint.Consumer(ctx)

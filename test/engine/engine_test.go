@@ -3,9 +3,10 @@
 package engine
 
 import (
+	"strings"
+
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	cameltest "github.com/lburgazzoli/camel-go/test/support"
-	"strings"
 
 	"testing"
 	"time"
@@ -88,7 +89,7 @@ func TestSimpleYAML(t *testing.T) {
 		a, ok := msg.Annotation("counter")
 		assert.True(t, ok)
 		assert.Equal(t, uint64(1), a)
-		//assert.Equal(t, content, msg.Content())
+		assert.Equal(t, content, msg.Content())
 	case <-time.After(5 * time.Second):
 		assert.Fail(t, "timeout")
 	}

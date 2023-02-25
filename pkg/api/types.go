@@ -119,6 +119,9 @@ type WithOutputs struct {
 }
 
 func (o *WithOutputs) Next(pid *actor.PID) {
+	if pid == nil {
+		return
+	}
 	if o.outputs == nil {
 		o.outputs = actor.NewPIDSet()
 	}

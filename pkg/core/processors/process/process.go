@@ -3,7 +3,6 @@
 package process
 
 import (
-	"fmt"
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -21,8 +20,7 @@ func init() {
 
 type Process struct {
 	api.Identifiable
-
-	outputs *actor.PIDSet
+	api.WithOutputs
 
 	Identity string `yaml:"id"`
 	Ref      string `yaml:"ref"`
@@ -30,14 +28,6 @@ type Process struct {
 
 func (p *Process) ID() string {
 	return p.Identity
-}
-
-func (p *Process) Next(pid *actor.PID) {
-	if p.outputs == nil {
-		p.outputs = actor.NewPIDSet()
-	}
-
-	p.outputs.Add(pid)
 }
 
 func (p *Process) Reify(ctx api.Context) (*actor.PID, error) {
@@ -62,29 +52,25 @@ func (p *Process) Reify(ctx api.Context) (*actor.PID, error) {
 	}
 
 	return ctx.Spawn(id, &processActor{
-		camelContext:   ctx,
-		camelProcessor: proc,
-		outputs:        p.outputs,
+		context:   ctx,
+		processor: proc,
+		outputs:   p.Outputs(),
 	})
 }
 
 type processActor struct {
-	camelContext   api.Context
-	camelProcessor api.Processor
-	outputs        *actor.PIDSet
+	context   api.Context
+	processor api.Processor
+	outputs   []*actor.PID
 }
 
 func (p *processActor) Receive(c actor.Context) {
 	msg, ok := c.Message().(api.Message)
 	if ok {
-		fmt.Println("process msg", c.Self().String())
-		p.camelProcessor(msg)
+		p.processor(msg)
 
-		if p.outputs != nil {
-			p.outputs.ForEach(func(_ int, pid *actor.PID) {
-				fmt.Println("send to", pid.String())
-				c.Send(pid, msg)
-			})
+		for i := range p.outputs {
+			c.Send(p.outputs[i], msg)
 		}
 	}
 }

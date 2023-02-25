@@ -1,9 +1,10 @@
 package context
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/core/route"
 	"io"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/route"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/registry"
 

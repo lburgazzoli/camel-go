@@ -52,7 +52,7 @@ fmt: goimport
 
 .PHONY: test
 test:
-	go test -v $(BUILD_TAGS) ./...
+	go test $(BUILD_TAGS) ./...
 
 .PHONY: deps
 deps:
@@ -80,6 +80,17 @@ image/local: ko
 image/kind: ko
 	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
+.PHONY: examples
+examples:
+	docker run \
+		--rm \
+		--volume $(PROJECT_PATH):/src \
+		tinygo/tinygo:0.27.0 \
+			tinygo build \
+			-o wasm.wasm \
+			-target=wasm examples/wasm/export
+
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
@@ -91,6 +102,7 @@ $(LOCALBIN):
 GOIMPORT ?= $(LOCALBIN)/goimports
 KO ?= $(LOCALBIN)/ko
 GOLANGCILINT ?=  $(LOCALBIN)/golangci-lint
+TINYGO ?=  $(LOCALBIN)/tinygo
 
 .PHONY: goimport
 goimport: $(GOIMPORT)

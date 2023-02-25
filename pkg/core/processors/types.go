@@ -51,5 +51,11 @@ func (s *Step) Reify(ctx api.Context) (*actor.PID, error) {
 		return nil, camelerrors.InternalError("non reifiable step")
 	}
 
+	if o, ok := s.t.(api.OutputAware); ok {
+		for _, pid := range s.Outputs() {
+			o.Next(pid)
+		}
+	}
+
 	return r.Reify(ctx)
 }
