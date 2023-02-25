@@ -2,11 +2,12 @@ package kafka
 
 import (
 	"context"
+	"strings"
+
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strings"
 )
 
 type Producer struct {
@@ -68,8 +69,6 @@ func (p *Producer) Receive(ctx actor.Context) {
 		if err := p.publish(msg); err != nil {
 			panic(err)
 		}
-
-		break
 	}
 }
 

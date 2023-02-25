@@ -87,7 +87,7 @@ type Processor = func(Message)
 type Producer interface {
 	Service
 	OutputAware
-	
+
 	actor.Actor
 
 	Endpoint() Endpoint

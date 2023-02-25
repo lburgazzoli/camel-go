@@ -4,9 +4,10 @@ package timer
 
 import (
 	"context"
-	"github.com/asynkron/protoactor-go/actor"
 	"sync/atomic"
 	"time"
+
+	"github.com/asynkron/protoactor-go/actor"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"

@@ -5,12 +5,13 @@ package engine
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/lburgazzoli/camel-go/pkg/components/timer"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strings"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	cameltest "github.com/lburgazzoli/camel-go/test/support"
@@ -100,7 +101,7 @@ func TestSimpleYAML(t *testing.T) {
 	}
 }
 
-const simpleKafka = `
+const _ = `
 - route:
     from:
       uri: "timer:foo"
