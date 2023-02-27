@@ -2,13 +2,14 @@ package wasm
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 	"github.com/stretchr/testify/assert"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
-	"os"
-	"testing"
 )
 
 func TestInterop(t *testing.T) {
@@ -59,6 +60,9 @@ func TestInterop(t *testing.T) {
 	decoded, err := serdes.Decode(bytes)
 	assert.Nil(t, err)
 	assert.Equal(t, m.GetID(), decoded.GetID())
-	assert.Equal(t, "hello from wasm", string(decoded.Content().([]byte)))
+
+	c, ok := decoded.Content().([]byte)
+	assert.True(t, ok)
+	assert.Equal(t, "hello from wasm", string(c))
 
 }

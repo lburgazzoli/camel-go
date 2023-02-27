@@ -62,7 +62,12 @@ deps:
 
 .PHONY: lint
 lint: golangci-lint
-	GOGC=$(LINT_GOGC) $(LOCALBIN)/golangci-lint run --config .golangci.yml --out-format tab --deadline $(LINT_DEADLINE)
+	GOGC=$(LINT_GOGC) $(LOCALBIN)/golangci-lint run \
+		--deadline $(LINT_DEADLINE) \
+		--config .golangci.yml \
+		--out-format tab \
+		--skip-dirs etc \
+		--skip-dirs pkg/wasm/interop \
 
 ##@ Build
 

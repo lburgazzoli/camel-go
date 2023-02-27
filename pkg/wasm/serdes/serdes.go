@@ -3,6 +3,8 @@ package serdes
 import (
 	"time"
 
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
+
 	"github.com/lburgazzoli/camel-go/pkg/wasm/interop"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -20,7 +22,10 @@ var writerPool = sync.Pool{
 }
 
 func Encode(message api.Message) ([]byte, error) {
-	writer := writerPool.Get().(*karmem.Writer)
+	writer, ok := writerPool.Get().(*karmem.Writer)
+	if !ok {
+		panic("no writable pool")
+	}
 	defer func() {
 		writer.Reset()
 		writerPool.Put(writer)
@@ -37,8 +42,14 @@ func Encode(message api.Message) ([]byte, error) {
 	}
 
 	if message.Content() != nil {
-		// assume content is []byte
-		content.Content = message.Content().([]byte)
+		switch d := message.Content().(type) {
+		case []byte:
+			content.Content = d
+		case string:
+			content.Content = []byte(d)
+		default:
+			return nil, camelerrors.InternalErrorf("unsupported type %v", message.Content())
+		}
 	}
 
 	if _, err := content.WriteAsRoot(writer); err != nil {
