@@ -49,7 +49,11 @@ func TestSimple(t *testing.T) {
 		},
 	}
 
-	f.Next(cameltest.Reify(t, c, &process.Process{Ref: "consumer"}))
+	id, err := cameltest.Reify(t, c, &process.Process{Identity: uuid.New(), Ref: "consumer"})
+	assert.Nil(t, err)
+	assert.NotEmpty(t, id)
+
+	f.Next(id)
 
 	fromPid, err := f.Reify(c)
 	assert.Nil(t, err)

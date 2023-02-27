@@ -15,7 +15,9 @@ const TAG = "process"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Process{}
+		return &Process{
+			Identity: uuid.New(),
+		}
 	}
 }
 
@@ -25,48 +27,41 @@ type Process struct {
 
 	Identity string `yaml:"id"`
 	Ref      string `yaml:"ref"`
+
+	context   api.Context
+	processor api.Processor
 }
 
 func (p *Process) ID() string {
 	return p.Identity
 }
 
-func (p *Process) Reify(ctx api.Context) (*actor.PID, error) {
+func (p *Process) Reify(ctx api.Context) (string, error) {
 
 	if p.Ref == "" {
-		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
+		return "", camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
 	}
 
 	proc, ok := registry.GetAs[api.Processor](ctx.Registry(), p.Ref)
 	if !ok {
-		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
+		return "", camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
 	}
 
-	id := p.Identity
-	if id == "" {
-		id = uuid.New()
-	}
+	p.context = ctx
+	p.processor = proc
 
-	return ctx.Spawn(id, &processActor{
-		context:   ctx,
-		processor: proc,
-		outputs:   p.Outputs(),
-	})
+	return p.Identity, ctx.Spawn(p)
 }
 
-type processActor struct {
-	context   api.Context
-	processor api.Processor
-	outputs   []*actor.PID
-}
-
-func (p *processActor) Receive(c actor.Context) {
+func (p *Process) Receive(c actor.Context) {
 	msg, ok := c.Message().(api.Message)
 	if ok {
 		p.processor(msg)
 
-		for i := range p.outputs {
-			c.Send(p.outputs[i], msg)
+		for _, pid := range p.Outputs() {
+			if err := p.context.Send(pid, msg); err != nil {
+				panic(err)
+			}
 		}
 	}
 }

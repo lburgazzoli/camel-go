@@ -3,7 +3,6 @@ package processors
 import (
 	"fmt"
 
-	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/pkg/errors"
@@ -11,7 +10,7 @@ import (
 )
 
 type Reifyable interface {
-	Reify(api.Context) (*actor.PID, error)
+	Reify(api.Context) (string, error)
 }
 
 type Step struct {
@@ -45,10 +44,10 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *Step) Reify(ctx api.Context) (*actor.PID, error) {
+func (s *Step) Reify(ctx api.Context) (string, error) {
 	r, ok := s.t.(Reifyable)
 	if !ok {
-		return nil, camelerrors.InternalError("non reifiable step")
+		return "", camelerrors.InternalError("non reifiable step")
 	}
 
 	if o, ok := s.t.(api.OutputAware); ok {

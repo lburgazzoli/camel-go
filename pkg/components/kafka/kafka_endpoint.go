@@ -3,6 +3,7 @@ package kafka
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Endpoint struct {
@@ -20,6 +21,7 @@ func (e *Endpoint) Stop() error {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
+		id:       uuid.New(),
 		endpoint: e,
 	}
 

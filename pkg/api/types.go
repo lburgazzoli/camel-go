@@ -34,20 +34,15 @@ type Context interface {
 	// Spawn ---
 	// TODO: must be hidden
 	// TODO: each route must have its own context/supervisor
-	Spawn(string, actor.Actor) (*actor.PID, error)
-
-	// SpawnFn ---
-	// TODO: must be hidden
-	// TODO: each route must have its own context/supervisor
-	SpawnFn(string, actor.ReceiveFunc) (*actor.PID, error)
+	Spawn(Verticle) error
 
 	// Send ---
 	// TODO: must use name instead of PID
-	Send(*actor.PID, Message)
+	Send(string, Message) error
 
 	// Receive ---
 	// TODO: must use name instead of PID
-	Receive(*actor.PID, time.Duration) Message
+	Receive(string, time.Duration) (Message, error)
 }
 
 type Component interface {
@@ -86,9 +81,7 @@ type Processor = func(Message)
 
 type Producer interface {
 	Service
-	OutputAware
-
-	actor.Actor
+	Verticle
 
 	Endpoint() Endpoint
 }
@@ -99,9 +92,7 @@ type ProducerFactory interface {
 
 type Consumer interface {
 	Service
-	OutputAware
-
-	actor.Actor
+	Verticle
 
 	Endpoint() Endpoint
 }
@@ -113,31 +104,31 @@ type ConsumerFactory interface {
 // OutputAware ---
 // TODO: use name or other abstractions instead of PIO.
 type OutputAware interface {
-	Next(*actor.PID)
-	Outputs() []*actor.PID
+	Next(string)
+	Outputs() []string
 }
 
 // WithOutputs ---
 // TODO: move to helper package.
 type WithOutputs struct {
-	outputs *actor.PIDSet
+	outputs []string
 }
 
-func (o *WithOutputs) Next(pid *actor.PID) {
-	if pid == nil {
+func (o *WithOutputs) Next(id string) {
+	if id == "" {
 		return
 	}
-	if o.outputs == nil {
-		o.outputs = actor.NewPIDSet()
-	}
 
-	o.outputs.Add(pid)
+	o.outputs = append(o.outputs, id)
 }
 
-func (o *WithOutputs) Outputs() []*actor.PID {
-	if o.outputs == nil {
-		return nil
-	}
+func (o *WithOutputs) Outputs() []string {
+	return o.outputs
+}
 
-	return o.outputs.Values()
+type Verticle interface {
+	Identifiable
+	OutputAware
+
+	actor.Actor
 }

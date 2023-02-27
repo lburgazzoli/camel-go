@@ -1,7 +1,6 @@
 package route
 
 import (
-	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/from"
@@ -27,6 +26,6 @@ func (r *Route) ID() string {
 	return r.Identity
 }
 
-func (r *Route) Reify(ctx api.Context) (*actor.PID, error) {
+func (r *Route) Reify(ctx api.Context) (string, error) {
 	return r.From.Reify(ctx)
 }

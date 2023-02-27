@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/asynkron/protoactor-go/actor"
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
@@ -26,26 +27,22 @@ func TestSimpleProcessor(t *testing.T) {
 		message.SetContent(content)
 	})
 
-	consumer, err := c.SpawnFn(uuid.New(), func(c actor.Context) {
-		msg, ok := c.Message().(api.Message)
-		if ok {
-			wg <- msg
-		}
-	})
+	v := support.NewChannelVerticle(wg)
+	err := c.Spawn(v)
 
 	assert.Nil(t, err)
 
-	p := Process{Ref: "p"}
-	p.Next(consumer)
+	p := Process{Identity: uuid.New(), Ref: "p"}
+	p.Next(v.ID())
 
-	pid, err := p.Reify(c)
+	id, err := p.Reify(c)
 	assert.Nil(t, err)
-	assert.NotNil(t, pid)
+	assert.NotNil(t, id)
 
 	msg, err := message.New()
 	assert.Nil(t, err)
 
-	c.Send(pid, msg)
+	assert.Nil(t, c.Send(id, msg))
 
 	select {
 	case msg := <-wg:

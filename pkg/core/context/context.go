@@ -4,6 +4,10 @@ import (
 	"io"
 	"time"
 
+	"github.com/pkg/errors"
+
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/route"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/registry"
@@ -15,18 +19,25 @@ import (
 
 func NewDefaultContext() api.Context {
 	ctx := defaultContext{
-		id:       uuid.New(),
-		system:   actor.NewActorSystem(),
-		registry: registry.NewDefaultRegistry(),
+		id:        uuid.New(),
+		system:    actor.NewActorSystem(),
+		registry:  registry.NewDefaultRegistry(),
+		verticles: make(map[string]vh),
 	}
 
 	return &ctx
 }
 
+type vh struct {
+	V api.Verticle
+	P *actor.PID
+}
+
 type defaultContext struct {
-	id       string
-	system   *actor.ActorSystem
-	registry api.Registry
+	id        string
+	system    *actor.ActorSystem
+	registry  api.Registry
+	verticles map[string]vh
 }
 
 func (c *defaultContext) ID() string {
@@ -52,24 +63,35 @@ func (c *defaultContext) Registry() api.Registry {
 	return c.registry
 }
 
-func (c *defaultContext) Spawn(name string, a actor.Actor) (*actor.PID, error) {
+func (c *defaultContext) Spawn(v api.Verticle) error {
 	p := actor.PropsFromProducer(func() actor.Actor {
-		return a
+		return v
 	})
 
-	return c.system.Root.SpawnNamed(p, name)
-}
+	pid, err := c.system.Root.SpawnNamed(p, v.ID())
+	if err != nil {
+		return errors.Wrapf(err, "unable to spawn verticle with id %s", v.ID())
+	}
 
-func (c *defaultContext) SpawnFn(name string, a actor.ReceiveFunc) (*actor.PID, error) {
-	p := actor.PropsFromFunc(a)
+	c.verticles[v.ID()] = vh{
+		V: v,
+		P: pid,
+	}
 
-	return c.system.Root.SpawnNamed(p, name)
-}
-
-func (c *defaultContext) Send(pid *actor.PID, message api.Message) {
-	c.system.Root.Send(pid, message)
-}
-
-func (c *defaultContext) Receive(*actor.PID, time.Duration) api.Message {
 	return nil
+}
+
+func (c *defaultContext) Send(id string, message api.Message) error {
+	v, ok := c.verticles[id]
+	if !ok {
+		return camelerrors.NotFoundf("verticle with id %s not found in registry", id)
+	}
+
+	c.system.Root.Send(v.P, message)
+
+	return nil
+}
+
+func (c *defaultContext) Receive(_ string, _ time.Duration) (api.Message, error) {
+	return nil, camelerrors.NotImplemented("Receive")
 }

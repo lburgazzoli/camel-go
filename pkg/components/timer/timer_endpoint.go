@@ -5,6 +5,7 @@ package timer
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Endpoint struct {
@@ -23,6 +24,7 @@ func (e *Endpoint) Stop() error {
 
 func (e *Endpoint) Consumer() (api.Consumer, error) {
 	c := Consumer{
+		id:       uuid.New(),
 		endpoint: e,
 	}
 

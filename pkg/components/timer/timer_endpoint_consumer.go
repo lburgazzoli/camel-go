@@ -17,6 +17,7 @@ import (
 type Consumer struct {
 	api.WithOutputs
 
+	id        string
 	endpoint  *Endpoint
 	scheduler chrono.TaskScheduler
 	task      chrono.ScheduledTask
@@ -26,6 +27,10 @@ type Consumer struct {
 
 func (c *Consumer) Endpoint() api.Endpoint {
 	return c.endpoint
+}
+
+func (c *Consumer) ID() string {
+	return c.id
 }
 
 func (c *Consumer) Start() error {
@@ -84,6 +89,8 @@ func (c *Consumer) run(_ context.Context) {
 		m.SetAnnotation(AnnotationTimerFiredCount, atomic.AddUint64(&c.counter, 1))
 		m.SetAnnotation(AnnotationTimerStarted, c.started)
 
-		context.Send(o, m)
+		if err := context.Send(o, m); err != nil {
+			panic(err)
+		}
 	}
 }

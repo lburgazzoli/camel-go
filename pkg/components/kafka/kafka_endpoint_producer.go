@@ -13,8 +13,13 @@ import (
 type Producer struct {
 	api.WithOutputs
 
+	id       string
 	endpoint *Endpoint
 	client   *kgo.Client
+}
+
+func (p *Producer) ID() string {
+	return p.id
 }
 
 func (p *Producer) Endpoint() api.Endpoint {
