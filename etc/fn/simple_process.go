@@ -13,10 +13,8 @@ import (
 func main() {}
 
 // process message
-func process(message interop.Message) interop.Message {
-	message.Content = []byte("hello from wasm")
-
-	return message
+func process(in *interop.Message) {
+	in.Content = []byte("hello from wasm")
 }
 
 //export process
@@ -24,7 +22,8 @@ func _process(ptr uint32, size uint32) uint64 {
 	in := ptrToMessage(ptr, size)
 
 	out := in
-	out.Content = []byte("hello from wasm")
+
+	process(&in)
 
 	p, s := messageToPtr(out)
 
