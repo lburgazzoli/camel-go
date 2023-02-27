@@ -3,9 +3,10 @@ package kafka
 import (
 	"context"
 	"fmt"
-	"github.com/twmb/franz-go/pkg/kadm"
 	"os"
 	"strconv"
+
+	"github.com/twmb/franz-go/pkg/kadm"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/test/support/containers"

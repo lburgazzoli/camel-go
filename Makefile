@@ -10,6 +10,8 @@ KO_CONFIG_PATH := ${PROJECT_PATH}/etc/ko.yaml
 KO_DOCKER_REPO := "quay.io/lburgazzoli/cos-fleetshard"
 CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
+LINT_GOGC := 10
+LINT_DEADLINE := 10m
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -60,7 +62,7 @@ deps:
 
 .PHONY: lint
 lint: golangci-lint
-	$(LOCALBIN)/golangci-lint run --config .golangci.yml --out-format tab
+	GOGC=$(LINT_GOGC) $(LOCALBIN)/golangci-lint run --config .golangci.yml --out-format tab --deadline $(LINT_DEADLINE)
 
 ##@ Build
 
