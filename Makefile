@@ -89,10 +89,16 @@ image/kind: ko
 
 .PHONY: wasm
 wasm:
-	$(LOCALBIN)/tinygo build \
-		-o $(PROJECT_PATH)/etc/fn/simple_process.wasm \
-		-target=wasi \
-		$(PROJECT_PATH)/etc/fn/simple_process.go
+	docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/src:Z \
+		-w /src \
+		tinygo/tinygo:0.27.0 \
+		tinygo build \
+			-o etc/fn/simple_process.wasm  \
+			-target=wasi \
+			etc/fn/simple_process.go
 
 
 .PHONY: generate
