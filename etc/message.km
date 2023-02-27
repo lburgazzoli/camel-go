@@ -1,4 +1,4 @@
-karmem app @packed(true) @golang.package(`serdes`);
+karmem app @packed(true) @golang.package(`interop`);
 
 
 struct Message table {

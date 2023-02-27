@@ -54,7 +54,7 @@ fmt: goimport
 
 .PHONY: test
 test:
-	go test $(BUILD_TAGS) ./...
+	go test $(BUILD_TAGS) ./pkg/... ./test/...
 
 .PHONY: deps
 deps:
@@ -82,20 +82,17 @@ image/local: ko
 image/kind: ko
 	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
-.PHONY: examples
-examples:
-	docker run \
-		--rm \
-		--volume $(PROJECT_PATH):/src \
-		tinygo/tinygo:0.27.0 \
-			tinygo build \
-			-o wasm.wasm \
-			-target=wasm examples/wasm/export
+.PHONY: wasm
+wasm:
+	$(LOCALBIN)/tinygo build \
+		-o $(PROJECT_PATH)/etc/fn/simple_process.wasm \
+		-target=wasi \
+		$(PROJECT_PATH)/etc/fn/simple_process.go
 
 
 .PHONY: generate
 generate:
-	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/serdes" etc/message.km
+	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
 
 
 ##@ Build Dependencies

@@ -74,6 +74,7 @@ func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerR
 		Env:          map[string]string{},
 		WaitingFor:   wait.ForLog("Started Kafka API server"),
 		Cmd:          []string{"redpanda", "start", "--mode dev-container"},
+		SkipReaper:   os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
 	}
 	// }
 

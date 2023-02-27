@@ -1,8 +1,9 @@
-package serdes
+package interop
 
 import (
-	karmem "karmem.org/golang"
 	"unsafe"
+
+	karmem "karmem.org/golang"
 )
 
 var _ unsafe.Pointer

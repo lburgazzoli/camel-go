@@ -21,6 +21,7 @@ require (
 	github.com/twmb/franz-go v1.12.1
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 	gopkg.in/yaml.v3 v3.0.1
+	karmem.org v1.2.9
 )
 
 require (
@@ -90,5 +91,4 @@ require (
 	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
 	google.golang.org/grpc v1.52.3 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	karmem.org v1.2.9 // indirect
 )

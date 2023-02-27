@@ -1,9 +1,10 @@
 package serdes
 
 import (
+	"testing"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestSerde(t *testing.T) {

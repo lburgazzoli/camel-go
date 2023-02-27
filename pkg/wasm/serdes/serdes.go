@@ -1,12 +1,16 @@
 package serdes
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"time"
 
-	karmem "karmem.org/golang"
+	"github.com/lburgazzoli/camel-go/pkg/wasm/interop"
+
+	"github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/core/message"
+
 	"sync"
+
+	karmem "karmem.org/golang"
 )
 
 var writerPool = sync.Pool{
@@ -22,7 +26,7 @@ func Encode(message api.Message) ([]byte, error) {
 		writerPool.Put(writer)
 	}()
 
-	content := Message{
+	content := interop.Message{
 		ID:            message.GetID(),
 		Source:        message.GetSource(),
 		Type:          message.GetType(),
@@ -30,6 +34,11 @@ func Encode(message api.Message) ([]byte, error) {
 		ContentType:   message.GetDataContentType(),
 		ContentSchema: message.GetDataSchema(),
 		Time:          message.GetTime().UnixMilli(),
+	}
+
+	if message.Content() != nil {
+		// assume content is []byte
+		content.Content = message.Content().([]byte)
 	}
 
 	if _, err := content.WriteAsRoot(writer); err != nil {
@@ -41,7 +50,7 @@ func Encode(message api.Message) ([]byte, error) {
 
 func Decode(encoded []byte) (api.Message, error) {
 	reader := karmem.NewReader(encoded)
-	decoded := NewMessageViewer(reader, 0)
+	decoded := interop.NewMessageViewer(reader, 0)
 
 	msg, err := message.New()
 	if err != nil {
@@ -55,6 +64,8 @@ func Decode(encoded []byte) (api.Message, error) {
 	_ = msg.SetDataContentType(decoded.ContentType(reader))
 	_ = msg.SetDataSchema(decoded.ContentSchema(reader))
 	_ = msg.SetTime(time.UnixMilli(decoded.Time()))
+
+	msg.SetContent(decoded.Content(reader))
 
 	return msg, nil
 }
