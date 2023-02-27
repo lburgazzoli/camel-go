@@ -90,4 +90,5 @@ require (
 	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
 	google.golang.org/grpc v1.52.3 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	karmem.org v1.2.9 // indirect
 )

@@ -93,6 +93,11 @@ examples:
 			-target=wasm examples/wasm/export
 
 
+.PHONY: generate
+generate:
+	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/serdes" etc/message.km
+
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to

@@ -1,0 +1,13 @@
+karmem app @packed(true) @golang.package(`serdes`);
+
+
+struct Message table {
+    ID            []char;
+    Source        []char;
+    Type          []char;
+    Subject       []char;
+    ContentType   []char;
+    ContentSchema []char;
+    Time          int64;
+    Content       []byte;
+}

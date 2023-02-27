@@ -16,6 +16,7 @@ func New() (api.Message, error) {
 		annotations:  nil,
 	}
 
+	ce.NewEvent()
 	if err := m.SetID(uuid.New()); err != nil {
 		return nil, err
 	}
