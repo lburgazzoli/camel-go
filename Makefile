@@ -7,7 +7,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 LOCAL_BIN_PATH := ${PROJECT_PATH}/bin
 KO_CONFIG_PATH := ${PROJECT_PATH}/etc/ko.yaml
-KO_DOCKER_REPO := "quay.io/lburgazzoli/cos-fleetshard"
+KO_DOCKER_REPO := "quay.io/lburgazzoli/gamel"
 CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
 LINT_GOGC := 10
@@ -61,13 +61,19 @@ deps:
 	go mod tidy
 
 .PHONY: lint
-lint: golangci-lint
-	GOGC=$(LINT_GOGC) $(LOCALBIN)/golangci-lint run \
-		--deadline $(LINT_DEADLINE) \
-		--config .golangci.yml \
-		--out-format tab \
-		--skip-dirs etc \
-		--skip-dirs pkg/wasm/interop \
+lint:
+	@docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/app:Z \
+		-e GOGC=$(LINT_GOGC) \
+		-w /app \
+		golangci/golangci-lint:v1.51.2 golangci-lint run \
+			--config .golangci.yml \
+			--out-format tab \
+			--skip-dirs etc \
+			--skip-dirs pkg/wasm/interop \
+			--deadline $(LINT_DEADLINE)
 
 ##@ Build
 
@@ -87,9 +93,9 @@ image/local: ko
 image/kind: ko
 	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
-.PHONY: wasm
-wasm:
-	docker run \
+.PHONY: build/wasm
+bild/wasm:
+	@docker run \
 		--rm \
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
@@ -99,7 +105,6 @@ wasm:
 			-o etc/fn/simple_process.wasm  \
 			-target=wasi \
 			etc/fn/simple_process.go
-
 
 .PHONY: generate
 generate:
@@ -116,20 +121,12 @@ $(LOCALBIN):
 ## Tool Binaries
 GOIMPORT ?= $(LOCALBIN)/goimports
 KO ?= $(LOCALBIN)/ko
-GOLANGCILINT ?=  $(LOCALBIN)/golangci-lint
-TINYGO ?=  $(LOCALBIN)/tinygo
 
 .PHONY: goimport
 goimport: $(GOIMPORT)
 $(GOIMPORT): $(LOCALBIN)
 	@test -s $(LOCALBIN)/goimport || \
 	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
-
-.PHONY: golangci-lint
-golangci-lint: $(GOLANGCILINT)
-$(GOLANGCILINT): $(LOCALBIN)
-	@test -s $(LOCALBIN)/golangci-lint || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
 
 .PHONY: ko
 ko: $(KO)
