@@ -27,6 +27,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/from"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/process"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,7 +70,7 @@ func TestSimple(t *testing.T) {
 	}
 }
 
-const simpleRoute = `
+const simpleYAML = `
 - route:
     from:
       uri: "timer:foo"
@@ -94,7 +95,7 @@ func TestSimpleYAML(t *testing.T) {
 		wg <- message
 	})
 
-	err := c.LoadRoutes(strings.NewReader(simpleRoute))
+	err := c.LoadRoutes(strings.NewReader(simpleYAML))
 	assert.Nil(t, err)
 
 	select {
@@ -103,6 +104,49 @@ func TestSimpleYAML(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, uint64(1), a)
 		assert.Equal(t, content, msg.Content())
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
+}
+
+const simpleWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - transform:
+            wasm: 
+              path: "../../etc/fn/simple_process.wasm"
+        - process:
+            ref: "consumer-2"
+`
+
+func TestSimpleWASM(t *testing.T) {
+	wg := make(chan api.Message)
+
+	c := core.NewContext()
+	assert.NotNil(t, c)
+
+	c.Registry().Set("consumer-1", func(message api.Message) {
+		message.SetSubject("consumer-1")
+	})
+	c.Registry().Set("consumer-2", func(message api.Message) {
+		wg <- message
+	})
+
+	err := c.LoadRoutes(strings.NewReader(simpleWASM))
+	assert.Nil(t, err)
+
+	select {
+	case msg := <-wg:
+		assert.Equal(t, "consumer-1", msg.GetSubject())
+
+		c, ok := msg.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, "hello from wasm", string(c))
+
 	case <-time.After(5 * time.Second):
 		assert.Fail(t, "timeout")
 	}
@@ -174,5 +218,70 @@ func TestSimpleKafka(t *testing.T) {
 		Expect(f.Errors()).To(BeEmpty())
 		Expect(f.NumRecords()).To(Equal(1))
 		Expect(string(f.Records()[0].Value)).To(Equal(content))
+	}).Should(Succeed())
+}
+
+const simpleKafkaWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - transform:
+            wasm: 
+              path: "../../etc/fn/simple_process.wasm"
+        - to:
+            uri: "kafka:foo"
+            parameters:
+              brokers: "localhost:9092"
+              topics: "foo"
+`
+
+func TestSimpleKafkaWASM(t *testing.T) {
+	ctx := context.Background()
+
+	container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		if err := container.Stop(ctx); err != nil {
+			t.Fatal(err.Error())
+		}
+	}()
+
+	assert.Nil(t, container.Start(ctx))
+
+	cl, err := container.Client(
+		ctx,
+		kgo.ConsumeTopics("foo"),
+		kgo.ConsumerGroup(uuid.New()),
+	)
+
+	assert.Nil(t, err)
+
+	defer cl.Close()
+
+	ac, err := container.Admin(ctx)
+	assert.Nil(t, err)
+
+	tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
+	assert.Nil(t, err)
+	assert.Nil(t, tp.Err)
+
+	c := core.NewContext()
+	assert.NotNil(t, c)
+
+	err = c.LoadRoutes(strings.NewReader(simpleKafkaWASM))
+	assert.Nil(t, err)
+
+	RegisterTestingT(t)
+
+	Eventually(func(g Gomega) {
+		f := cl.PollFetches(ctx)
+
+		Expect(f.Errors()).To(BeEmpty())
+		Expect(f.NumRecords()).To(Equal(1))
+		Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
 	}).Should(Succeed())
 }
