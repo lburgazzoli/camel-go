@@ -5,9 +5,10 @@ package wasm
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/util/serdes"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/mitchellh/mapstructure"
 )
 
 const Scheme = "wasm"
@@ -17,7 +18,7 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	if err := mapstructure.Decode(config, &component.config); err != nil {
+	if err := serdes.DecodeStruct(&config, &component.config); err != nil {
 		return nil, err
 	}
 

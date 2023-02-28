@@ -5,7 +5,7 @@ package timer
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/mitchellh/mapstructure"
+	"github.com/lburgazzoli/camel-go/pkg/util/serdes"
 )
 
 const (
@@ -21,21 +21,7 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		WeaklyTypedInput: true,
-		Result:           &component.config,
-
-		// custom hooks
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeDurationHookFunc(),
-		),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if err := dec.Decode(config); err != nil {
+	if err := serdes.DecodeStruct(&config, &component.config); err != nil {
 		return nil, err
 	}
 
