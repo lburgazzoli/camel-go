@@ -9,7 +9,7 @@ require (
 	github.com/dapr/go-sdk v1.7.0
 	github.com/imdario/mergo v0.3.13
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/onsi/gomega v1.27.1
+	github.com/onsi/gomega v1.27.2
 	github.com/pkg/errors v0.9.1
 	github.com/procyon-projects/chrono v1.1.2
 	github.com/rs/xid v1.4.0
@@ -20,6 +20,7 @@ require (
 	github.com/tetratelabs/wazero v1.0.0-pre.9
 	github.com/twmb/franz-go v1.12.1
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
+	go.uber.org/multierr v1.8.0
 	gopkg.in/yaml.v3 v3.0.1
 	karmem.org v1.2.9
 )
@@ -83,7 +84,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.12.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
