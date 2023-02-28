@@ -2,6 +2,7 @@ package wasm
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
@@ -16,7 +17,10 @@ func TestWASM(t *testing.T) {
 
 	defer func() { _ = r.Close(ctx) }()
 
-	p, err := r.Load(ctx, "../../etc/fn/simple_process.wasm")
+	f, err := os.Open("../../etc/fn/simple_process.wasm")
+	assert.Nil(t, err)
+
+	p, err := r.Load(ctx, f)
 	assert.Nil(t, err)
 
 	in, err := message.New()

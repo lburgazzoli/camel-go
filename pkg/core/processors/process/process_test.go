@@ -18,6 +18,7 @@ import (
 
 func TestProcessor(t *testing.T) {
 	support.Run(t, "simple", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
 
 		content := uuid.New()
 		wg := make(chan camel.Message)

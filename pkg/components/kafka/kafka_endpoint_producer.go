@@ -52,9 +52,9 @@ func (p *Producer) Stop(context.Context) error {
 func (p *Producer) Receive(ctx actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case *actor.Started:
-		_ = p.Start(nil)
+		_ = p.Start(context.Background())
 	case *actor.Stopping:
-		_ = p.Stop(nil)
+		_ = p.Stop(context.Background())
 	case api.Message:
 		if err := p.publish(msg); err != nil {
 			panic(err)

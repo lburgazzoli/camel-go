@@ -1,6 +1,7 @@
 package support
 
 import (
+	"context"
 	"testing"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -11,7 +12,7 @@ import (
 func Reify(t *testing.T, c camel.Context, r processors.Reifyable) (string, error) {
 	t.Helper()
 
-	id, err := r.Reify(nil, c)
+	id, err := r.Reify(context.Background(), c)
 	assert.Nil(t, err)
 	assert.NotNil(t, id)
 

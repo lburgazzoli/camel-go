@@ -56,7 +56,7 @@ func TestSimple(t *testing.T) {
 
 	f.Next(id)
 
-	fromPid, err := f.Reify(nil, c)
+	fromPid, err := f.Reify(context.Background(), c)
 	assert.Nil(t, err)
 	assert.NotNil(t, fromPid)
 

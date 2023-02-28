@@ -4,6 +4,14 @@ package transform
 
 import (
 	"context"
+	"os"
+	"path"
+	"strings"
+
+	"oras.land/oras-go/v2"
+	"oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/asynkron/protoactor-go/actor"
 
@@ -13,6 +21,8 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
+
+	"oras.land/oras-go/v2/registry/remote"
 )
 
 const TAG = "transform"
@@ -42,7 +52,8 @@ type Language struct {
 }
 
 type LanguageWasm struct {
-	Path string `yaml:"path"`
+	Path  string `yaml:"path"`
+	Image string `yaml:"image,omitempty"`
 }
 
 func (t *Transform) ID() string {
@@ -58,12 +69,36 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 		return "", camelerrors.MissingParameterf("wasm.path", "failure processing %s", TAG)
 	}
 
+	rootPath := ""
+
+	if t.Wasm.Image != "" {
+		fp, err := t.pull(ctx)
+		if err != nil {
+			return "", err
+		}
+
+		rootPath = fp
+	}
+
+	defer func() {
+		if rootPath != "" {
+			_ = os.RemoveAll(rootPath)
+		}
+	}()
+
+	f, err := os.Open(path.Join(rootPath, t.Wasm.Path))
+	if err != nil {
+		return "", err
+	}
+
+	defer func() { _ = f.Close() }()
+
 	r, err := wasm.NewRuntime(ctx, wasm.Options{})
 	if err != nil {
 		return "", err
 	}
 
-	m, err := r.Load(ctx, t.Wasm.Path)
+	m, err := r.Load(ctx, f)
 	if err != nil {
 		return "", err
 	}
@@ -89,4 +124,37 @@ func (t *Transform) Receive(c actor.Context) {
 			}
 		}
 	}
+}
+
+func (t *Transform) pull(ctx context.Context) (string, error) {
+	repo := strings.SplitAfter(t.Language.Wasm.Image, ":")[0]
+	repo = strings.TrimSuffix(repo, ":")
+
+	tag := strings.SplitAfter(t.Language.Wasm.Image, ":")[1]
+
+	r, err := remote.NewRepository(repo)
+	if err != nil {
+		return "", err
+	}
+
+	r.Client = &auth.Client{
+		Client: retry.DefaultClient,
+		Cache:  auth.DefaultCache,
+	}
+
+	f, err := os.MkdirTemp("", "camel-")
+	if err != nil {
+		return "", err
+	}
+
+	store, err := file.New(f)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err = oras.Copy(ctx, r, tag, store, tag, oras.DefaultCopyOptions); err != nil {
+		return "", err
+	}
+
+	return f, nil
 }

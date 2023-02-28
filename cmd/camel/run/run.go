@@ -8,6 +8,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/spf13/cobra"
 
+	// import processors.
 	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/timer"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
@@ -48,7 +49,7 @@ func NewRunCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVar(&o.Routes, "route", nil, "routes")
-	cmd.MarkFlagRequired("routes")
+	_ = cmd.MarkFlagRequired("routes")
 
 	return &cmd
 }

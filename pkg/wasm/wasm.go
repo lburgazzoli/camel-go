@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -77,8 +76,8 @@ func (r *Runtime) Close(ctx context.Context) error {
 	return err
 }
 
-func (r *Runtime) Load(ctx context.Context, path string) (*Processor, error) {
-	content, err := os.ReadFile(path)
+func (r *Runtime) Load(ctx context.Context, reader io.Reader) (*Processor, error) {
+	content, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}

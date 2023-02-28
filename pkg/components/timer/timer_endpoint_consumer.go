@@ -68,9 +68,9 @@ func (c *Consumer) Stop(context.Context) error {
 func (c *Consumer) Receive(ctx actor.Context) {
 	switch ctx.Message().(type) {
 	case *actor.Started:
-		_ = c.Start(nil)
+		_ = c.Start(context.Background())
 	case *actor.Stopping:
-		_ = c.Stop(nil)
+		_ = c.Stop(context.Background())
 	}
 }
 
