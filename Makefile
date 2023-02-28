@@ -64,7 +64,7 @@ deps:
 lint:
 	@docker run \
 		--rm \
-		-ti \
+		-t \
 		-v $(PROJECT_PATH):/app:Z \
 		-e GOGC=$(LINT_GOGC) \
 		-w /app \
