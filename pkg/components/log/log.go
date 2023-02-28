@@ -1,16 +1,14 @@
-////go:build components_http || components_all
+////go:build components_log || components_all
 
-package http
+package log
 
 import (
-	"context"
-
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/mitchellh/mapstructure"
 )
 
-const Scheme = "http"
+const Scheme = "log"
 
 func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component, error) {
 	component := Component{
@@ -36,17 +34,4 @@ func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
 	}
 
 	return &e, nil
-}
-
-type Endpoint struct {
-	config Config
-	components.DefaultEndpoint
-}
-
-func (e *Endpoint) Start(context.Context) error {
-	return nil
-}
-
-func (e *Endpoint) Stop(context.Context) error {
-	return nil
 }

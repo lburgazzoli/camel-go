@@ -3,15 +3,18 @@ package wasm
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/fs"
+	"os"
+
+	"github.com/pkg/errors"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 	wapi "github.com/tetratelabs/wazero/api"
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	wsys "github.com/tetratelabs/wazero/sys"
 	"go.uber.org/multierr"
-	"io"
-	"io/fs"
-	"os"
 
 	"github.com/tetratelabs/wazero"
 )
@@ -19,10 +22,17 @@ import (
 func NewRuntime(ctx context.Context, opt Options) (*Runtime, error) {
 	cache := wazero.NewCompilationCache()
 
-	config := wazero.NewModuleConfig().
-		WithStdout(opt.Stdout).
-		WithStderr(opt.Stderr).
-		WithFS(opt.FS)
+	config := wazero.NewModuleConfig()
+
+	if opt.Stdout != nil {
+		config = config.WithStdout(opt.Stdout)
+	}
+	if opt.Stderr != nil {
+		config = config.WithStderr(opt.Stderr)
+	}
+	if opt.FS != nil {
+		config = config.WithFS(opt.FS)
+	}
 
 	runtime := wazero.NewRuntimeWithConfig(ctx, wazero.NewRuntimeConfig().
 		WithCompilationCache(cache))
@@ -53,11 +63,11 @@ type Runtime struct {
 func (r *Runtime) Close(ctx context.Context) error {
 	var err error
 
-	//if r.wz != nil {
-	//	if e := r.wz.Close(ctx); e != nil {
-	//		err = multierr.Append(err, e)
-	//	}
-	//}
+	if r.wz != nil {
+		if e := r.wz.Close(ctx); e != nil {
+			err = multierr.Append(err, e)
+		}
+	}
 	if r.cache != nil {
 		if e := r.cache.Close(ctx); e != nil {
 			err = multierr.Append(err, e)
@@ -82,11 +92,13 @@ func (r *Runtime) Load(ctx context.Context, path string) (*Processor, error) {
 	if err != nil {
 		// Note: Most compilers do not exit the module after running "_start",
 		// unless there was an Error. This allows you to call exported functions.
-		if exitErr, ok := err.(*wsys.ExitError); ok && exitErr.ExitCode() != 0 {
+		var exitErr wsys.ExitError
+
+		if errors.As(err, &exitErr) && exitErr.ExitCode() != 0 {
 			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
-		} else if !ok {
-			return nil, err
 		}
+
+		return nil, err
 	}
 
 	p := Processor{

@@ -5,5 +5,6 @@ package timer
 import "time"
 
 type Config struct {
-	Interval time.Duration `mapstructure:"interval"`
+	Remaining string        `mapstructure:"remaining"`
+	Interval  time.Duration `mapstructure:"interval"`
 }

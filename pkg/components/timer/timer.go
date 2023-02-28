@@ -11,8 +11,9 @@ import (
 const (
 	Scheme = "timer"
 
-	AnnotationTimerStarted    = "timer.started"
-	AnnotationTimerFiredCount = "timer.fired.count"
+	AnnotationTimerName       = "camel.apache.org/timer.name"
+	AnnotationTimerStarted    = "camel.apache.org/timer.started"
+	AnnotationTimerFiredCount = "camel.apache.org/timer.fired.count"
 )
 
 func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component, error) {
@@ -20,7 +21,21 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	if err := mapstructure.WeakDecode(config, &component.config); err != nil {
+	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Result:           &component.config,
+
+		// custom hooks
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeDurationHookFunc(),
+		),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := dec.Decode(config); err != nil {
 		return nil, err
 	}
 

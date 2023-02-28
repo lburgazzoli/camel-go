@@ -3,15 +3,15 @@ package support
 import (
 	"testing"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/stretchr/testify/assert"
 )
 
-func Reify(t *testing.T, c api.Context, r processors.Reifyable) (string, error) {
+func Reify(t *testing.T, c camel.Context, r processors.Reifyable) (string, error) {
 	t.Helper()
 
-	id, err := r.Reify(c)
+	id, err := r.Reify(nil, c)
 	assert.Nil(t, err)
 	assert.NotNil(t, id)
 

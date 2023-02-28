@@ -1,7 +1,10 @@
 package from
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	"context"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -26,7 +29,7 @@ type From struct {
 	Steps []processors.Step `yaml:"steps,omitempty"`
 }
 
-func (f *From) Reify(ctx api.Context) (string, error) {
+func (f *From) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
 
 	var last string
 
@@ -35,7 +38,7 @@ func (f *From) Reify(ctx api.Context) (string, error) {
 			f.Steps[i].Next(last)
 		}
 
-		pid, err := f.Steps[i].Reify(ctx)
+		pid, err := f.Steps[i].Reify(ctx, camelContext)
 		if err != nil {
 			return "", errors.Wrapf(err, "error creating step")
 		}
@@ -47,10 +50,10 @@ func (f *From) Reify(ctx api.Context) (string, error) {
 		f.Endpoint.Next(last)
 	}
 
-	consumer, err := f.Endpoint.Consumer(ctx)
+	consumer, err := f.Endpoint.Consumer(camelContext)
 	if err != nil {
 		return "", errors.Wrapf(err, "error creating consumer")
 	}
 
-	return consumer.ID(), ctx.Spawn(consumer)
+	return consumer.ID(), camelContext.Spawn(consumer)
 }

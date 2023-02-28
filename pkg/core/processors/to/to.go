@@ -1,7 +1,9 @@
 package from
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	"context"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -24,11 +26,11 @@ type To struct {
 	endpoint.Endpoint `yaml:",inline"`
 }
 
-func (t *To) Reify(ctx api.Context) (string, error) {
-	producer, err := t.Endpoint.Producer(ctx)
+func (t *To) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+	producer, err := t.Endpoint.Producer(camelContext)
 	if err != nil {
 		return "", errors.Wrapf(err, "error creating consumer")
 	}
 
-	return producer.ID(), ctx.Spawn(producer)
+	return producer.ID(), camelContext.Spawn(producer)
 }

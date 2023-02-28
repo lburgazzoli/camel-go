@@ -1,6 +1,5 @@
-////go:build components_timer || components_all
-
-package timer
+// //go:build components_log || components_all
+package log
 
 import (
 	"context"
@@ -11,9 +10,8 @@ import (
 )
 
 type Endpoint struct {
-	components.DefaultEndpoint
-
 	config Config
+	components.DefaultEndpoint
 }
 
 func (e *Endpoint) Start(context.Context) error {
@@ -24,8 +22,8 @@ func (e *Endpoint) Stop(context.Context) error {
 	return nil
 }
 
-func (e *Endpoint) Consumer() (api.Consumer, error) {
-	c := Consumer{
+func (e *Endpoint) Producer() (api.Producer, error) {
+	c := Producer{
 		id:       uuid.New(),
 		endpoint: e,
 	}

@@ -4,9 +4,12 @@ package transform
 
 import (
 	"context"
+
 	"github.com/asynkron/protoactor-go/actor"
-	"github.com/lburgazzoli/camel-go/pkg/api"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
@@ -23,13 +26,13 @@ func init() {
 }
 
 type Transform struct {
-	api.Identifiable
-	api.WithOutputs
+	camel.Identifiable
+	camel.WithOutputs
 
 	Identity string `yaml:"id"`
 	Language `yaml:",inline"`
 
-	context   api.Context
+	context   camel.Context
 	processor *wasm.Processor
 	runtime   *wasm.Runtime
 }
@@ -46,7 +49,7 @@ func (t *Transform) ID() string {
 	return t.Identity
 }
 
-func (t *Transform) Reify(ctx api.Context) (string, error) {
+func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
 
 	if t.Wasm == nil {
 		return "", camelerrors.MissingParameterf("wasm", "failure processing %s", TAG)
@@ -55,27 +58,25 @@ func (t *Transform) Reify(ctx api.Context) (string, error) {
 		return "", camelerrors.MissingParameterf("wasm.path", "failure processing %s", TAG)
 	}
 
-	c := context.Background()
-
-	r, err := wasm.NewRuntime(c, wasm.Options{})
+	r, err := wasm.NewRuntime(ctx, wasm.Options{})
 	if err != nil {
 		return "", err
 	}
 
-	m, err := r.Load(c, t.Wasm.Path)
+	m, err := r.Load(ctx, t.Wasm.Path)
 	if err != nil {
 		return "", err
 	}
 
 	t.runtime = r
-	t.context = ctx
+	t.context = camelContext
 	t.processor = m
 
-	return t.Identity, ctx.Spawn(t)
+	return t.Identity, camelContext.Spawn(t)
 }
 
 func (t *Transform) Receive(c actor.Context) {
-	msg, ok := c.Message().(api.Message)
+	msg, ok := c.Message().(camel.Message)
 	if ok {
 		out, err := t.processor.Process(context.Background(), msg)
 		if err != nil {

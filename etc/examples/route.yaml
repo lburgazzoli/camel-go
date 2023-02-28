@@ -1,0 +1,9 @@
+- route:
+    from:
+      uri: "timer:foo?interval=1s"
+      steps:
+        - transform:
+            wasm:
+              path: "etc/fn/simple_process.wasm"
+        - to:
+            uri: "log:info"

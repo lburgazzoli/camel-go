@@ -31,7 +31,7 @@ type defaultMessage struct {
 	ce.EventContext
 
 	err         error
-	annotations map[string]interface{}
+	annotations map[string]string
 	content     interface{}
 }
 
@@ -43,17 +43,17 @@ func (m *defaultMessage) Error() error {
 	return nil
 }
 
-func (m *defaultMessage) SetAnnotation(key string, val interface{}) {
+func (m *defaultMessage) SetAnnotation(key string, val string) {
 	if m.annotations == nil {
-		m.annotations = make(map[string]interface{})
+		m.annotations = make(map[string]string)
 	}
 
 	m.annotations[key] = val
 }
 
-func (m *defaultMessage) Annotation(key string) (interface{}, bool) {
+func (m *defaultMessage) Annotation(key string) (string, bool) {
 	if m.annotations == nil {
-		return nil, false
+		return "", false
 	}
 
 	r, ok := m.annotations[key]

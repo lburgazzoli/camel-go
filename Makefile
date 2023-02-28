@@ -94,7 +94,7 @@ image/kind: ko
 	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
 .PHONY: build/wasm
-bild/wasm:
+build/wasm:
 	@docker run \
 		--rm \
 		-ti \
@@ -102,8 +102,8 @@ bild/wasm:
 		-w /src \
 		tinygo/tinygo:0.27.0 \
 		tinygo build \
-			-o etc/fn/simple_process.wasm  \
 			-target=wasi \
+			-o etc/fn/simple_process.wasm  \
 			etc/fn/simple_process.go
 
 .PHONY: generate

@@ -26,7 +26,7 @@ func (p *Producer) Endpoint() api.Endpoint {
 	return p.endpoint
 }
 
-func (p *Producer) Start() error {
+func (p *Producer) Start(context.Context) error {
 	cl, err := kgo.NewClient(
 		kgo.SeedBrokers(strings.Split(p.endpoint.config.Brokers, ",")...),
 	)
@@ -40,7 +40,7 @@ func (p *Producer) Start() error {
 	return nil
 }
 
-func (p *Producer) Stop() error {
+func (p *Producer) Stop(context.Context) error {
 	if p.client != nil {
 		p.client.Close()
 		p.client = nil
@@ -52,9 +52,9 @@ func (p *Producer) Stop() error {
 func (p *Producer) Receive(ctx actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case *actor.Started:
-		_ = p.Start()
+		_ = p.Start(nil)
 	case *actor.Stopping:
-		_ = p.Stop()
+		_ = p.Stop(nil)
 	case api.Message:
 		if err := p.publish(msg); err != nil {
 			panic(err)

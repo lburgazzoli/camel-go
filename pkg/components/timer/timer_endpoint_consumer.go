@@ -4,6 +4,7 @@ package timer
 
 import (
 	"context"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -33,7 +34,7 @@ func (c *Consumer) ID() string {
 	return c.id
 }
 
-func (c *Consumer) Start() error {
+func (c *Consumer) Start(context.Context) error {
 	c.counter = 0
 	c.started = time.Now()
 	c.scheduler = chrono.NewDefaultTaskScheduler()
@@ -48,7 +49,7 @@ func (c *Consumer) Start() error {
 	return nil
 }
 
-func (c *Consumer) Stop() error {
+func (c *Consumer) Stop(context.Context) error {
 	if c.task != nil {
 		c.task.Cancel()
 		c.task = nil
@@ -67,9 +68,9 @@ func (c *Consumer) Stop() error {
 func (c *Consumer) Receive(ctx actor.Context) {
 	switch ctx.Message().(type) {
 	case *actor.Started:
-		_ = c.Start()
+		_ = c.Start(nil)
 	case *actor.Stopping:
-		_ = c.Stop()
+		_ = c.Stop(nil)
 	}
 }
 
@@ -86,8 +87,9 @@ func (c *Consumer) run(_ context.Context) {
 		_ = m.SetType("camel.timer.triggered")
 		_ = m.SetSource(component.Scheme())
 
-		m.SetAnnotation(AnnotationTimerFiredCount, atomic.AddUint64(&c.counter, 1))
-		m.SetAnnotation(AnnotationTimerStarted, c.started)
+		m.SetAnnotation(AnnotationTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
+		m.SetAnnotation(AnnotationTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
+		m.SetAnnotation(AnnotationTimerName, c.endpoint.config.Remaining)
 
 		if err := context.Send(o, m); err != nil {
 			panic(err)

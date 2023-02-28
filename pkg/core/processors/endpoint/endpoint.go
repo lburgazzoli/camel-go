@@ -92,11 +92,15 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 	}
 
 	for k, v := range u.Query() {
-		params[k] = v
+		if len(v) > 0 {
+			params[k] = v[0]
+		}
 	}
 	for k, v := range e.Parameters {
 		params[k] = v
 	}
+
+	params["remaining"] = u.Opaque
 
 	f, ok := components.Factories[u.Scheme]
 	if !ok {

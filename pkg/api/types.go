@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"io"
 	"time"
 
@@ -11,9 +12,14 @@ import (
 
 type Parameters map[string]interface{}
 
+type Closer interface {
+	// Close closes the resource.
+	Close(context.Context) error
+}
+
 type Service interface {
-	Start() error
-	Stop() error
+	Start(context.Context) error
+	Stop(context.Context) error
 }
 
 type Identifiable interface {
@@ -27,9 +33,11 @@ type Registry interface {
 
 type Context interface {
 	Identifiable
+	Service
+	Closer
 
 	Registry() Registry
-	LoadRoutes(in io.Reader) error
+	LoadRoutes(ctx context.Context, in io.Reader) error
 
 	// Spawn ---
 	// TODO: must be hidden
@@ -68,8 +76,8 @@ type Message interface {
 
 	// Annotation ---
 	// TODO: add options Annotation("foo", opt.WithDefault("bar"), opt.AsType(baz{})).
-	Annotation(string) (interface{}, bool)
-	SetAnnotation(string, interface{})
+	Annotation(string) (string, bool)
+	SetAnnotation(string, string)
 
 	// Content ---
 	// TODO: add options Content(opt.AsType(baz{})).

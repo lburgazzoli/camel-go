@@ -1,7 +1,10 @@
 package route
 
 import (
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	"context"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/from"
 )
@@ -15,7 +18,7 @@ func init() {
 }
 
 type Route struct {
-	api.Identifiable
+	camel.Identifiable
 
 	Identity string    `yaml:"id,omitempty"`
 	Group    string    `yaml:"group,omitempty"`
@@ -26,6 +29,6 @@ func (r *Route) ID() string {
 	return r.Identity
 }
 
-func (r *Route) Reify(ctx api.Context) (string, error) {
-	return r.From.Reify(ctx)
+func (r *Route) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
+	return r.From.Reify(ctx, camelContext)
 }

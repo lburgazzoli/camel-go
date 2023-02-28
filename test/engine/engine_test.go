@@ -56,7 +56,7 @@ func TestSimple(t *testing.T) {
 
 	f.Next(id)
 
-	fromPid, err := f.Reify(c)
+	fromPid, err := f.Reify(nil, c)
 	assert.Nil(t, err)
 	assert.NotNil(t, fromPid)
 
@@ -64,7 +64,7 @@ func TestSimple(t *testing.T) {
 	case msg := <-wg:
 		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
 		assert.True(t, ok)
-		assert.Equal(t, uint64(1), a)
+		assert.Equal(t, "1", a)
 	case <-time.After(5 * time.Second):
 		assert.Fail(t, "timeout")
 	}
@@ -85,6 +85,8 @@ func TestSimpleYAML(t *testing.T) {
 	content := uuid.New()
 	wg := make(chan api.Message)
 
+	ctx := context.Background()
+
 	c := core.NewContext()
 	assert.NotNil(t, c)
 
@@ -95,14 +97,14 @@ func TestSimpleYAML(t *testing.T) {
 		wg <- message
 	})
 
-	err := c.LoadRoutes(strings.NewReader(simpleYAML))
+	err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
 	assert.Nil(t, err)
 
 	select {
 	case msg := <-wg:
 		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
 		assert.True(t, ok)
-		assert.Equal(t, uint64(1), a)
+		assert.Equal(t, "1", a)
 		assert.Equal(t, content, msg.Content())
 	case <-time.After(5 * time.Second):
 		assert.Fail(t, "timeout")
@@ -126,17 +128,19 @@ const simpleWASM = `
 func TestSimpleWASM(t *testing.T) {
 	wg := make(chan api.Message)
 
+	ctx := context.Background()
+
 	c := core.NewContext()
 	assert.NotNil(t, c)
 
 	c.Registry().Set("consumer-1", func(message api.Message) {
-		message.SetSubject("consumer-1")
+		_ = message.SetSubject("consumer-1")
 	})
 	c.Registry().Set("consumer-2", func(message api.Message) {
 		wg <- message
 	})
 
-	err := c.LoadRoutes(strings.NewReader(simpleWASM))
+	err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
 	assert.Nil(t, err)
 
 	select {
@@ -207,7 +211,7 @@ func TestSimpleKafka(t *testing.T) {
 		message.SetContent(content)
 	})
 
-	err = c.LoadRoutes(strings.NewReader(simpleKafka))
+	err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
 	assert.Nil(t, err)
 
 	RegisterTestingT(t)
@@ -272,7 +276,7 @@ func TestSimpleKafkaWASM(t *testing.T) {
 	c := core.NewContext()
 	assert.NotNil(t, c)
 
-	err = c.LoadRoutes(strings.NewReader(simpleKafkaWASM))
+	err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
 	assert.Nil(t, err)
 
 	RegisterTestingT(t)

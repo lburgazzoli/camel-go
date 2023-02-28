@@ -1,6 +1,8 @@
 package kafka
 
 import (
+	"context"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -11,11 +13,11 @@ type Endpoint struct {
 	components.DefaultEndpoint
 }
 
-func (e *Endpoint) Start() error {
+func (e *Endpoint) Start(context.Context) error {
 	return nil
 }
 
-func (e *Endpoint) Stop() error {
+func (e *Endpoint) Stop(context.Context) error {
 	return nil
 }
 

@@ -1,21 +1,22 @@
 package processors
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
 type Reifyable interface {
-	Reify(api.Context) (string, error)
+	Reify(context.Context, camel.Context) (string, error)
 }
 
 type Step struct {
 	Reifyable
-	api.WithOutputs
+	camel.WithOutputs
 
 	t interface{}
 }
@@ -44,17 +45,17 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *Step) Reify(ctx api.Context) (string, error) {
+func (s *Step) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
 	r, ok := s.t.(Reifyable)
 	if !ok {
 		return "", camelerrors.InternalError("non reifiable step")
 	}
 
-	if o, ok := s.t.(api.OutputAware); ok {
+	if o, ok := s.t.(camel.OutputAware); ok {
 		for _, pid := range s.Outputs() {
 			o.Next(pid)
 		}
 	}
 
-	return r.Reify(ctx)
+	return r.Reify(ctx, camelContext)
 }
