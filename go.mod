@@ -16,7 +16,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.18.0
-	github.com/tetratelabs/wazero v1.0.0-pre.9
+	github.com/tetratelabs/wazero v1.0.0-rc.1
 	github.com/twmb/franz-go v1.12.1
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 	go.uber.org/multierr v1.9.0
