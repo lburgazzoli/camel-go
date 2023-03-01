@@ -2,10 +2,11 @@ package wasm
 
 import (
 	"context"
-	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 	"os"
 	"testing"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/stretchr/testify/assert"

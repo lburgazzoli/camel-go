@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	"github.com/lburgazzoli/camel-go/pkg/components/timer"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -288,4 +289,46 @@ func TestSimpleKafkaWASM(t *testing.T) {
 		Expect(f.NumRecords()).To(Equal(1))
 		Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
 	}).Should(Succeed())
+}
+
+const simpleComponentWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - to:
+            uri: "wasm:foo?path=../../etc/fn/simple_logger.wasm"
+        - process:
+            ref: "consumer-2"
+`
+
+func TestSimpleComponentWASM(t *testing.T) {
+	wg := make(chan api.Message)
+
+	ctx := context.Background()
+
+	c := core.NewContext()
+	assert.NotNil(t, c)
+
+	c.Registry().Set("consumer-1", func(message api.Message) {
+		message.SetContent("consumer-1")
+	})
+	c.Registry().Set("consumer-2", func(message api.Message) {
+		wg <- message
+	})
+
+	err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentWASM))
+	assert.Nil(t, err)
+
+	select {
+	case msg := <-wg:
+		c, ok := msg.Content().(string)
+		assert.True(t, ok)
+		assert.Equal(t, "consumer-1", c)
+
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }

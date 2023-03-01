@@ -105,7 +105,6 @@ build/wasm:
 			-target=wasi \
 			-o etc/fn/simple_process.wasm  \
 			etc/fn/simple_process.go
-
 	@docker run \
 		--rm \
 		-ti \

@@ -3,8 +3,6 @@ package wasm
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
 	"path"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/registry"
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
 	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
-	"github.com/tetratelabs/wazero/api"
 )
 
 type Producer struct {
@@ -66,15 +63,16 @@ func (p *Producer) Start(ctx context.Context) error {
 		return err
 	}
 
-	//if err := r.Export(ctx, "http", p.http); err != nil {
-	//	return err
-	//}
+	// if err := r.Export(ctx, "http", p.http); err != nil {
+	//     return err
+	// }
 
 	f, err := r.Load(ctx, "process", fd)
 	if err != nil {
 		return err
 	}
 
+	p.context = p.endpoint.Component().Context()
 	p.runtime = r
 	p.processor = &wasmProcessor{f: f}
 
@@ -90,8 +88,12 @@ func (p *Producer) Stop(ctx context.Context) error {
 }
 
 func (p *Producer) Receive(ctx actor.Context) {
-	msg, ok := ctx.Message().(camel.Message)
-	if ok {
+	switch msg := ctx.Message().(type) {
+	case *actor.Started:
+		_ = p.Start(context.Background())
+	case *actor.Stopping:
+		_ = p.Stop(context.Background())
+	case camel.Message:
 		annotations := msg.Annotations()
 
 		// TODO: find a type safe way to propagate parameters to the engine
@@ -132,9 +134,14 @@ func (p *wasmProcessor) Process(ctx context.Context, m camel.Message) (camel.Mes
 		return nil, err
 	}
 
+	if len(data) == 0 {
+		return m, nil
+	}
+
 	return serdes.DecodeMessage(data)
 }
 
+/*
 func (p *Producer) http(_ context.Context, m api.Module, offset uint32, byteCount uint32) (uint32, uint32) {
 	buf, ok := m.Memory().Read(offset, byteCount)
 	if !ok {
@@ -144,3 +151,4 @@ func (p *Producer) http(_ context.Context, m api.Module, offset uint32, byteCoun
 
 	return 0, 0
 }
+*/

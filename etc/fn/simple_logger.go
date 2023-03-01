@@ -2,11 +2,11 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 
 	"github.com/lburgazzoli/camel-go/pkg/wasm/interop"
-	karmem "karmem.org/golang"
 )
 
 // main is required for TinyGo to compile to Wasm.
@@ -14,7 +14,7 @@ func main() {}
 
 // process message
 func process(in *interop.Message) {
-
+	fmt.Println("Processing message ", in.ID)
 }
 
 //export process
@@ -33,19 +33,5 @@ func ptrToMessage(ptr uint32, size uint32) interop.Message {
 		Cap:  uintptr(size), // ^^ See https://github.com/tinygo-org/tinygo/issues/1284
 	}))
 
-	reader := karmem.NewReader(data)
-	decoded := interop.NewMessageViewer(reader, 0)
-
-	out := interop.Message{
-		ID:            decoded.ID(reader),
-		Source:        decoded.Source(reader),
-		Type:          decoded.Type(reader),
-		Subject:       decoded.Subject(reader),
-		ContentType:   decoded.ContentType(reader),
-		ContentSchema: decoded.ContentSchema(reader),
-		Time:          decoded.Time(),
-		Content:       decoded.Content(reader),
-	}
-
-	return out
+	return interop.DecodeMessage(data)
 }

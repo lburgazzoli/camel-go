@@ -12,7 +12,7 @@ import (
 	"oras.land/oras-go/v2/registry/remote/retry"
 )
 
-// Pull download an image from the given registry and copy the content to a local temporary folder
+// Pull download an image from the given registry and copy the content to a local temporary folder.
 func Pull(ctx context.Context, image string) (string, error) {
 	repo := strings.SplitAfter(image, ":")[0]
 	repo = strings.TrimSuffix(repo, ":")
