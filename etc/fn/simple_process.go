@@ -21,11 +21,9 @@ func process(in *interop.Message) {
 func _process(ptr uint32, size uint32) uint64 {
 	in := ptrToMessage(ptr, size)
 
-	out := in
+	process(&in)
 
-	process(&out)
-
-	p, s := messageToPtr(out)
+	p, s := messageToPtr(in)
 
 	return (uint64(p) << uint64(32)) | uint64(s)
 }

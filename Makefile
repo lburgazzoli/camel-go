@@ -93,6 +93,12 @@ image/local: ko
 image/kind: ko
 	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
+.PHONY: image/wasm
+image/wasm:
+	 oras push docker.io/lburgazzoli/camel-go:latest \
+ 		etc/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+
 .PHONY: build/wasm
 build/wasm:
 	@docker run \
@@ -105,6 +111,7 @@ build/wasm:
 			-target=wasi \
 			-o etc/fn/simple_process.wasm  \
 			etc/fn/simple_process.go
+
 	@docker run \
 		--rm \
 		-ti \
@@ -116,15 +123,21 @@ build/wasm:
 			-o etc/fn/simple_logger.wasm  \
 			etc/fn/simple_logger.go
 
+	@docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/src:Z \
+		-w /src \
+		tinygo/tinygo:0.27.0 \
+		tinygo build \
+			-target=wasi \
+			-o etc/components/slack.wasm  \
+			etc/components/slack.go
+
 .PHONY: generate
 generate:
 	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
 
-.PHONY: image/wasm
-image/wasm:
-	 oras push docker.io/lburgazzoli/camel-go:latest \
- 		etc/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 ##@ Build Dependencies
 

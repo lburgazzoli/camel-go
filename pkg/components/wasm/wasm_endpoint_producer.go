@@ -2,11 +2,18 @@
 package wasm
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"log"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
+	"strings"
+
+	"github.com/lburgazzoli/camel-go/pkg/wasm/interop"
+	karmem "karmem.org/golang"
 
 	"github.com/tetratelabs/wazero/api"
 
@@ -67,7 +74,7 @@ func (p *Producer) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := r.Export(ctx, "http", p.http); err != nil {
+	if err := r.Export(ctx, "http", p.callHttp); err != nil {
 		return err
 	}
 
@@ -145,12 +152,80 @@ func (p *wasmProcessor) Process(ctx context.Context, m camel.Message) (camel.Mes
 	return serdes.DecodeMessage(data)
 }
 
-func (p *Producer) http(_ context.Context, m api.Module, offset uint32, byteCount uint32) (uint32, uint32) {
+func (p *Producer) callHttp(ctx context.Context, m api.Module, offset uint32, byteCount uint32) uint64 {
 	buf, ok := m.Memory().Read(offset, byteCount)
 	if !ok {
-		log.Panicf("Memory.Read(%d, %d) out of range", offset, byteCount)
+		panic(fmt.Errorf(
+			"memory.Read(%d, %d) out of range of memory size %d",
+			offset,
+			byteCount,
+			m.Memory().Size()))
 	}
-	fmt.Println(string(buf))
 
-	return 0, 0
+	req := interop.DecodeHttpRequest(buf)
+
+	var httpr *http.Request
+
+	if len(req.Params) == 0 {
+		hreq, err := http.NewRequest(req.Method, req.URL, bytes.NewReader(req.Content))
+		if err != nil {
+			panic(err)
+		}
+
+		httpr = hreq
+	} else {
+		data := url.Values{}
+		for i := range req.Params {
+			data.Set(req.Params[i].Key, req.Params[i].Val)
+		}
+
+		hreq, err := http.NewRequest(req.Method, req.URL, strings.NewReader(data.Encode()))
+		if err != nil {
+			panic(err)
+		}
+
+		httpr = hreq
+
+	}
+
+	for i := range req.Headers {
+		httpr.Header.Set(req.Headers[i].Key, req.Headers[i].Val)
+	}
+
+	client := &http.Client{}
+	httpResp, err := client.Do(httpr)
+	if err != nil {
+		panic(err)
+	}
+
+	defer httpResp.Body.Close()
+
+	res := interop.HttpResponse{}
+
+	if httpResp != nil {
+		res.Code = int32(httpResp.StatusCode)
+	}
+
+	if httpResp != nil && httpResp.Body != nil {
+		all, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			panic(err)
+		}
+
+		res.Content = all
+	}
+
+	writer := karmem.NewWriter(1024)
+
+	if _, err := res.WriteAsRoot(writer); err != nil {
+		panic(err)
+	}
+
+	d := writer.Bytes()
+	ptr, err := wasm.WriteMemory(ctx, m, d)
+	if err != nil {
+		panic(err)
+	}
+
+	return (ptr << uint64(32)) | uint64(len(d))
 }
