@@ -69,7 +69,8 @@ func TestCallbackWASM(t *testing.T) {
 	r, err := NewRuntime(ctx, Options{})
 	assert.Nil(t, err)
 
-	r.Export(ctx, "http", http_call)
+	err = r.Export(ctx, "http", callHTTP)
+	assert.Nil(t, err)
 
 	defer func() { _ = r.Close(ctx) }()
 
@@ -92,10 +93,9 @@ func TestCallbackWASM(t *testing.T) {
 	c, ok := out.Content().([]byte)
 	assert.True(t, ok)
 	assert.Contains(t, string(c), "invalid_auth")
-
 }
 
-func http_call(ctx context.Context, m api.Module, offset uint32, byteCount uint32) uint64 {
+func callHTTP(ctx context.Context, m api.Module, offset uint32, byteCount uint32) uint64 {
 	buf, ok := m.Memory().Read(offset, byteCount)
 	if !ok {
 		panic(fmt.Errorf(
@@ -141,7 +141,11 @@ func http_call(ctx context.Context, m api.Module, offset uint32, byteCount uint3
 		panic(err)
 	}
 
-	defer httpResp.Body.Close()
+	defer func() {
+		if httpResp != nil {
+			_ = httpResp.Body.Close()
+		}
+	}()
 
 	res := interop.HttpResponse{}
 

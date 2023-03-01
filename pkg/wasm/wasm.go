@@ -97,6 +97,7 @@ func (r *Runtime) Load(ctx context.Context, name string, reader io.Reader) (*Fun
 	if err != nil {
 		// Note: Most compilers do not exit the module after running "_start",
 		// unless there was an Error. This allows you to call exported functions.
+		//nolint:errorlint
 		if exitErr, ok := err.(*sys.ExitError); ok && exitErr.ExitCode() != 0 {
 			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
 		}

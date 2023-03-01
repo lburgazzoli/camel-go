@@ -74,7 +74,7 @@ func (p *Producer) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := r.Export(ctx, "http", p.callHttp); err != nil {
+	if err := r.Export(ctx, "http", p.callHTTP); err != nil {
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (p *wasmProcessor) Process(ctx context.Context, m camel.Message) (camel.Mes
 	return serdes.DecodeMessage(data)
 }
 
-func (p *Producer) callHttp(ctx context.Context, m api.Module, offset uint32, byteCount uint32) uint64 {
+func (p *Producer) callHTTP(ctx context.Context, m api.Module, offset uint32, byteCount uint32) uint64 {
 	buf, ok := m.Memory().Read(offset, byteCount)
 	if !ok {
 		panic(fmt.Errorf(
@@ -198,7 +198,11 @@ func (p *Producer) callHttp(ctx context.Context, m api.Module, offset uint32, by
 		panic(err)
 	}
 
-	defer httpResp.Body.Close()
+	defer func() {
+		if httpResp != nil {
+			_ = httpResp.Body.Close()
+		}
+	}()
 
 	res := interop.HttpResponse{}
 
