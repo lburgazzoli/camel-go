@@ -51,7 +51,7 @@ func (p *Producer) Start(ctx context.Context) error {
 		}
 	}()
 
-	fd, err := os.Open(path.Join(rootPath, p.endpoint.config.Path))
+	fd, err := os.Open(path.Join(rootPath, p.endpoint.config.Remaining))
 	if err != nil {
 		return err
 	}

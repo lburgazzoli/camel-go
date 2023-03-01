@@ -24,7 +24,7 @@ func (e *Endpoint) Stop(context.Context) error {
 }
 
 func (e *Endpoint) Producer() (api.Producer, error) {
-	if e.config.Path == "" {
+	if e.config.Remaining == "" {
 		return nil, camelerrors.MissingParameterf("path", "failure processing %s", Scheme)
 	}
 

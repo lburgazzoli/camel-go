@@ -299,7 +299,7 @@ const simpleComponentWASM = `
         - process:
             ref: "consumer-1"
         - to:
-            uri: "wasm:foo?path=../../etc/fn/simple_logger.wasm"
+            uri: "wasm:../../etc/fn/simple_logger.wasm"
         - process:
             ref: "consumer-2"
 `
@@ -320,6 +320,48 @@ func TestSimpleComponentWASM(t *testing.T) {
 	})
 
 	err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentWASM))
+	assert.Nil(t, err)
+
+	select {
+	case msg := <-wg:
+		c, ok := msg.Content().(string)
+		assert.True(t, ok)
+		assert.Equal(t, "consumer-1", c)
+
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
+}
+
+const simpleComponentImageWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - to:
+            uri: "wasm:etc/fn/simple_logger.wasm?image=docker.io/lburgazzoli/camel-go:latest"
+        - process:
+            ref: "consumer-2"
+`
+
+func TestSimpleComponentImageWASM(t *testing.T) {
+	wg := make(chan api.Message)
+
+	ctx := context.Background()
+
+	c := core.NewContext()
+	assert.NotNil(t, c)
+
+	c.Registry().Set("consumer-1", func(message api.Message) {
+		message.SetContent("consumer-1")
+	})
+	c.Registry().Set("consumer-2", func(message api.Message) {
+		wg <- message
+	})
+
+	err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentImageWASM))
 	assert.Nil(t, err)
 
 	select {

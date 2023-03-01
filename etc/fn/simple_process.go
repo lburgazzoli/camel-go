@@ -23,7 +23,7 @@ func _process(ptr uint32, size uint32) uint64 {
 
 	out := in
 
-	process(&in)
+	process(&out)
 
 	p, s := messageToPtr(out)
 

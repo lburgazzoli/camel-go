@@ -120,6 +120,11 @@ build/wasm:
 generate:
 	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
 
+.PHONY: image/wasm
+image/wasm:
+	 oras push docker.io/lburgazzoli/camel-go:latest \
+ 		etc/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 ##@ Build Dependencies
 
