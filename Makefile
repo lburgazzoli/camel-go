@@ -106,6 +106,17 @@ build/wasm:
 			-o etc/fn/simple_process.wasm  \
 			etc/fn/simple_process.go
 
+	@docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/src:Z \
+		-w /src \
+		tinygo/tinygo:0.27.0 \
+		tinygo build \
+			-target=wasi \
+			-o etc/fn/simple_logger.wasm  \
+			etc/fn/simple_logger.go
+
 .PHONY: generate
 generate:
 	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km

@@ -61,6 +61,30 @@ func (m *defaultMessage) Annotation(key string) (string, bool) {
 	return r, ok
 }
 
+func (m *defaultMessage) Annotations() map[string]string {
+	answer := make(map[string]string)
+
+	for k, v := range m.annotations {
+		answer[k] = v
+	}
+
+	return answer
+
+}
+func (m *defaultMessage) SetAnnotations(annotations map[string]string) {
+	m.annotations = make(map[string]string)
+
+	for k, v := range annotations {
+		m.annotations[k] = v
+	}
+}
+
+func (m *defaultMessage) ForEachAnnotation(fn func(string, string)) {
+	for k, v := range m.annotations {
+		fn(k, v)
+	}
+}
+
 func (m *defaultMessage) Content() interface{} {
 	return m.content
 }

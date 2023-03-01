@@ -6,14 +6,10 @@ import (
 	"context"
 	"os"
 	"path"
-	"strings"
-
-	"oras.land/oras-go/v2"
-	"oras.land/oras-go/v2/content/file"
-	"oras.land/oras-go/v2/registry/remote/auth"
-	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/asynkron/protoactor-go/actor"
+	"github.com/lburgazzoli/camel-go/pkg/util/registry"
+	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -21,8 +17,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
-
-	"oras.land/oras-go/v2/registry/remote"
 )
 
 const TAG = "transform"
@@ -42,9 +36,10 @@ type Transform struct {
 	Identity string `yaml:"id"`
 	Language `yaml:",inline"`
 
-	context   camel.Context
-	processor *wasm.Processor
-	runtime   *wasm.Runtime
+	context camel.Context
+	runtime *wasm.Runtime
+
+	processor *wasmProcessor
 }
 
 type Language struct {
@@ -72,7 +67,7 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 	rootPath := ""
 
 	if t.Wasm.Image != "" {
-		fp, err := t.pull(ctx)
+		fp, err := registry.Pull(ctx, t.Language.Wasm.Image)
 		if err != nil {
 			return "", err
 		}
@@ -86,26 +81,26 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 		}
 	}()
 
-	f, err := os.Open(path.Join(rootPath, t.Wasm.Path))
+	fd, err := os.Open(path.Join(rootPath, t.Wasm.Path))
 	if err != nil {
 		return "", err
 	}
 
-	defer func() { _ = f.Close() }()
+	defer func() { _ = fd.Close() }()
 
 	r, err := wasm.NewRuntime(ctx, wasm.Options{})
 	if err != nil {
 		return "", err
 	}
 
-	m, err := r.Load(ctx, f)
+	f, err := r.Load(ctx, "process", fd)
 	if err != nil {
 		return "", err
 	}
 
 	t.runtime = r
 	t.context = camelContext
-	t.processor = m
+	t.processor = &wasmProcessor{f: f}
 
 	return t.Identity, camelContext.Spawn(t)
 }
@@ -113,10 +108,15 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 func (t *Transform) Receive(c actor.Context) {
 	msg, ok := c.Message().(camel.Message)
 	if ok {
+		annotations := msg.Annotations()
+
 		out, err := t.processor.Process(context.Background(), msg)
 		if err != nil {
 			panic(err)
 		}
+
+		// temporary override annotations
+		out.SetAnnotations(annotations)
 
 		for _, pid := range t.Outputs() {
 			if err := t.context.Send(pid, out); err != nil {
@@ -126,35 +126,20 @@ func (t *Transform) Receive(c actor.Context) {
 	}
 }
 
-func (t *Transform) pull(ctx context.Context) (string, error) {
-	repo := strings.SplitAfter(t.Language.Wasm.Image, ":")[0]
-	repo = strings.TrimSuffix(repo, ":")
+type wasmProcessor struct {
+	f *wasm.Function
+}
 
-	tag := strings.SplitAfter(t.Language.Wasm.Image, ":")[1]
-
-	r, err := remote.NewRepository(repo)
+func (p *wasmProcessor) Process(ctx context.Context, m camel.Message) (camel.Message, error) {
+	encoded, err := serdes.EncodeMessage(m)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	r.Client = &auth.Client{
-		Client: retry.DefaultClient,
-		Cache:  auth.DefaultCache,
-	}
-
-	f, err := os.MkdirTemp("", "camel-")
+	data, err := p.f.Invoke(ctx, encoded)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	store, err := file.New(f)
-	if err != nil {
-		return "", err
-	}
-
-	if _, err = oras.Copy(ctx, r, tag, store, tag, oras.DefaultCopyOptions); err != nil {
-		return "", err
-	}
-
-	return f, nil
+	return serdes.DecodeMessage(data)
 }

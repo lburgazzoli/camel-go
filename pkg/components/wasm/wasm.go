@@ -3,8 +3,6 @@
 package wasm
 
 import (
-	"context"
-
 	"github.com/lburgazzoli/camel-go/pkg/util/serdes"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -37,17 +35,4 @@ func (c *Component) Endpoint(api.Parameters) (api.Endpoint, error) {
 	}
 
 	return &e, nil
-}
-
-type Endpoint struct {
-	config Config
-	components.DefaultEndpoint
-}
-
-func (e *Endpoint) Start(context.Context) error {
-	return nil
-}
-
-func (e *Endpoint) Stop(context.Context) error {
-	return nil
 }

@@ -8,8 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 	wapi "github.com/tetratelabs/wazero/api"
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	wsys "github.com/tetratelabs/wazero/sys"
@@ -59,6 +57,16 @@ type Runtime struct {
 	config wazero.ModuleConfig
 }
 
+func (r *Runtime) Export(ctx context.Context, name string, fn interface{}) error {
+	_, err := r.wz.NewHostModuleBuilder("camel").
+		NewFunctionBuilder().
+		WithFunc(fn).
+		Export(name).
+		Instantiate(ctx)
+
+	return err
+}
+
 func (r *Runtime) Close(ctx context.Context) error {
 	var err error
 
@@ -76,7 +84,7 @@ func (r *Runtime) Close(ctx context.Context) error {
 	return err
 }
 
-func (r *Runtime) Load(ctx context.Context, reader io.Reader) (*Processor, error) {
+func (r *Runtime) Load(ctx context.Context, name string, reader io.Reader) (*Function, error) {
 	content, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -100,9 +108,9 @@ func (r *Runtime) Load(ctx context.Context, reader io.Reader) (*Processor, error
 		return nil, err
 	}
 
-	p := Processor{
+	p := Function{
 		m:      module,
-		f:      module.ExportedFunction("process"),
+		f:      module.ExportedFunction(name),
 		malloc: module.ExportedFunction("malloc"),
 		free:   module.ExportedFunction("free"),
 	}
@@ -110,55 +118,67 @@ func (r *Runtime) Load(ctx context.Context, reader io.Reader) (*Processor, error
 	return &p, nil
 }
 
-type Processor struct {
+type Function struct {
 	m      wapi.Module
 	f      wapi.Function
 	malloc wapi.Function
 	free   wapi.Function
 }
 
-func (p *Processor) Process(ctx context.Context, m api.Message) (api.Message, error) {
-	encoded, err := serdes.Encode(m)
-	if err != nil {
-		return nil, err
-	}
-
-	encodedSize := uint64(len(encoded))
-
-	results, err := p.malloc.Call(ctx, encodedSize)
-	if err != nil {
-		return nil, err
-	}
-
-	encodedPtr := results[0]
-
-	defer func() { _, _ = p.free.Call(ctx, encodedPtr) }()
-
-	if ok := p.m.Memory().Write(uint32(encodedPtr), encoded); !ok {
-		return nil, fmt.Errorf(
+func (f *Function) write(ptr uint32, data []byte) error {
+	if ok := f.m.Memory().Write(ptr, data); !ok {
+		return fmt.Errorf(
 			"memory.Write(%d, %d) out of range of memory size %d",
-			encodedPtr,
-			encodedSize,
-			p.m.Memory().Size())
+			ptr,
+			len(data),
+			f.m.Memory().Size())
 	}
 
-	ptrSize, err := p.f.Call(ctx, encodedPtr, encodedSize)
+	return nil
+}
+
+func (f *Function) read(ptr uint32, size uint32) ([]byte, error) {
+	bytes, ok := f.m.Memory().Read(ptr, size)
+	if !ok {
+		return nil, fmt.Errorf(
+			"memory.Read(%d, %d) out of range of memory size %d",
+			ptr,
+			size,
+			f.m.Memory().Size())
+	}
+
+	return bytes, nil
+}
+
+func (f *Function) Invoke(ctx context.Context, data []byte) ([]byte, error) {
+
+	dataSize := uint64(len(data))
+
+	results, err := f.malloc.Call(ctx, dataSize)
 	if err != nil {
 		return nil, err
+	}
+
+	dataPtr := results[0]
+
+	defer func() { _, _ = f.free.Call(ctx, dataPtr) }()
+
+	if err := f.write(uint32(dataPtr), data); err != nil {
+		return nil, err
+	}
+
+	ptrSize, err := f.f.Call(ctx, dataPtr, dataSize)
+	if err != nil {
+		return nil, err
+	}
+
+	if ptrSize[0] == 0 {
+		return nil, nil
 	}
 
 	// Note: This pointer is still owned by TinyGo, so don't try to free it!
 	outPtr := uint32(ptrSize[0] >> 32)
 	outSize := uint32(ptrSize[0])
 
-	bytes, ok := p.m.Memory().Read(outPtr, outSize)
-	if !ok {
-		return nil, fmt.Errorf(
-			"memory.Read(%d, %d) out of range of memory size %d",
-			outPtr,
-			outSize,
-			p.m.Memory().Size())
-	}
-
-	return serdes.Decode(bytes)
+	return f.read(outPtr, outSize)
 }

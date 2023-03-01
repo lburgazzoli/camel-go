@@ -11,11 +11,11 @@ func TestSerde(t *testing.T) {
 	m, err := message.New()
 	assert.Nil(t, err)
 
-	encoded, err := Encode(m)
+	encoded, err := EncodeMessage(m)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, encoded)
 
-	decoded, err := Decode(encoded)
+	decoded, err := DecodeMessage(encoded)
 	assert.Nil(t, err)
 
 	assert.Equal(t, m.GetID(), decoded.GetID())

@@ -7,7 +7,7 @@ import (
 
 	"github.com/lburgazzoli/camel-go/pkg/wasm/interop"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 
 	"sync"
@@ -21,7 +21,7 @@ var writerPool = sync.Pool{
 	},
 }
 
-func Encode(message api.Message) ([]byte, error) {
+func EncodeMessage(message camel.Message) ([]byte, error) {
 	writer, ok := writerPool.Get().(*karmem.Writer)
 	if !ok {
 		panic("no writable pool")
@@ -41,6 +41,13 @@ func Encode(message api.Message) ([]byte, error) {
 		Time:          message.GetTime().UnixMilli(),
 	}
 
+	message.ForEachAnnotation(func(k string, v string) {
+		content.Annotations = append(content.Annotations, interop.Annotation{
+			Key: k,
+			Val: v,
+		})
+	})
+
 	if message.Content() != nil {
 		switch d := message.Content().(type) {
 		case []byte:
@@ -59,7 +66,7 @@ func Encode(message api.Message) ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-func Decode(encoded []byte) (api.Message, error) {
+func DecodeMessage(encoded []byte) (camel.Message, error) {
 	reader := karmem.NewReader(encoded)
 	decoded := interop.NewMessageViewer(reader, 0)
 
@@ -77,6 +84,13 @@ func Decode(encoded []byte) (api.Message, error) {
 	_ = msg.SetTime(time.UnixMilli(decoded.Time()))
 
 	msg.SetContent(decoded.Content(reader))
+
+	for _, a := range decoded.Annotations(reader) {
+		msg.SetAnnotation(
+			a.Key(reader),
+			a.Val(reader),
+		)
+	}
 
 	return msg, nil
 }

@@ -79,6 +79,10 @@ type Message interface {
 	Annotation(string) (string, bool)
 	SetAnnotation(string, string)
 
+	Annotations() map[string]string
+	SetAnnotations(map[string]string)
+	ForEachAnnotation(func(string, string))
+
 	// Content ---
 	// TODO: add options Content(opt.AsType(baz{})).
 	Content() interface{}

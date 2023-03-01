@@ -1,6 +1,11 @@
 karmem app @packed(true) @golang.package(`interop`);
 
 
+struct Annotation inline {
+    Key []char;
+    Val []char;
+}
+
 struct Message table {
     ID            []char;
     Source        []char;
@@ -10,4 +15,5 @@ struct Message table {
     ContentSchema []char;
     Time          int64;
     Content       []byte;
+    Annotations   []Annotation;
 }

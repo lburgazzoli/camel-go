@@ -8,7 +8,7 @@ import (
 
 var _ unsafe.Pointer
 
-var _Null = make([]byte, 104)
+var _Null = make([]byte, 112)
 var _NullReader = karmem.NewReader(_Null)
 
 type (
@@ -16,8 +16,82 @@ type (
 )
 
 const (
-	PacketIdentifierMessage = 14302180353067076632
+	PacketIdentifierAnnotation = 15131271518347909233
+	PacketIdentifierMessage    = 14302180353067076632
 )
+
+type Annotation struct {
+	Key string
+	Val string
+}
+
+func NewAnnotation() Annotation {
+	return Annotation{}
+}
+
+func (x *Annotation) PacketIdentifier() PacketIdentifier {
+	return PacketIdentifierAnnotation
+}
+
+func (x *Annotation) Reset() {
+	x.Read((*AnnotationViewer)(unsafe.Pointer(&_Null)), _NullReader)
+}
+
+func (x *Annotation) WriteAsRoot(writer *karmem.Writer) (offset uint, err error) {
+	return x.Write(writer, 0)
+}
+
+func (x *Annotation) Write(writer *karmem.Writer, start uint) (offset uint, err error) {
+	offset = start
+	size := uint(32)
+	if offset == 0 {
+		offset, err = writer.Alloc(size)
+		if err != nil {
+			return 0, err
+		}
+	}
+	__KeySize := uint(1 * len(x.Key))
+	__KeyOffset, err := writer.Alloc(__KeySize)
+	if err != nil {
+		return 0, err
+	}
+	writer.Write4At(offset+0, uint32(__KeyOffset))
+	writer.Write4At(offset+0+4, uint32(__KeySize))
+	writer.Write4At(offset+0+4+4, 1)
+	__KeySlice := [3]uint{*(*uint)(unsafe.Pointer(&x.Key)), __KeySize, __KeySize}
+	writer.WriteAt(__KeyOffset, *(*[]byte)(unsafe.Pointer(&__KeySlice)))
+	__ValSize := uint(1 * len(x.Val))
+	__ValOffset, err := writer.Alloc(__ValSize)
+	if err != nil {
+		return 0, err
+	}
+	writer.Write4At(offset+12, uint32(__ValOffset))
+	writer.Write4At(offset+12+4, uint32(__ValSize))
+	writer.Write4At(offset+12+4+4, 1)
+	__ValSlice := [3]uint{*(*uint)(unsafe.Pointer(&x.Val)), __ValSize, __ValSize}
+	writer.WriteAt(__ValOffset, *(*[]byte)(unsafe.Pointer(&__ValSlice)))
+
+	return offset, nil
+}
+
+func (x *Annotation) ReadAsRoot(reader *karmem.Reader) {
+	x.Read(NewAnnotationViewer(reader, 0), reader)
+}
+
+func (x *Annotation) Read(viewer *AnnotationViewer, reader *karmem.Reader) {
+	__KeyString := viewer.Key(reader)
+	if x.Key != __KeyString {
+		__KeyStringCopy := make([]byte, len(__KeyString))
+		copy(__KeyStringCopy, __KeyString)
+		x.Key = *(*string)(unsafe.Pointer(&__KeyStringCopy))
+	}
+	__ValString := viewer.Val(reader)
+	if x.Val != __ValString {
+		__ValStringCopy := make([]byte, len(__ValString))
+		copy(__ValStringCopy, __ValString)
+		x.Val = *(*string)(unsafe.Pointer(&__ValStringCopy))
+	}
+}
 
 type Message struct {
 	ID            string
@@ -28,6 +102,7 @@ type Message struct {
 	ContentSchema string
 	Time          int64
 	Content       []byte
+	Annotations   []Annotation
 }
 
 func NewMessage() Message {
@@ -48,14 +123,14 @@ func (x *Message) WriteAsRoot(writer *karmem.Writer) (offset uint, err error) {
 
 func (x *Message) Write(writer *karmem.Writer, start uint) (offset uint, err error) {
 	offset = start
-	size := uint(104)
+	size := uint(112)
 	if offset == 0 {
 		offset, err = writer.Alloc(size)
 		if err != nil {
 			return 0, err
 		}
 	}
-	writer.Write4At(offset, uint32(96))
+	writer.Write4At(offset, uint32(108))
 	__IDSize := uint(1 * len(x.ID))
 	__IDOffset, err := writer.Alloc(__IDSize)
 	if err != nil {
@@ -130,6 +205,20 @@ func (x *Message) Write(writer *karmem.Writer, start uint) (offset uint, err err
 	__ContentSlice[1] = __ContentSize
 	__ContentSlice[2] = __ContentSize
 	writer.WriteAt(__ContentOffset, *(*[]byte)(unsafe.Pointer(&__ContentSlice)))
+	__AnnotationsSize := uint(32 * len(x.Annotations))
+	__AnnotationsOffset, err := writer.Alloc(__AnnotationsSize)
+	if err != nil {
+		return 0, err
+	}
+	writer.Write4At(offset+96, uint32(__AnnotationsOffset))
+	writer.Write4At(offset+96+4, uint32(__AnnotationsSize))
+	writer.Write4At(offset+96+4+4, 32)
+	for i := range x.Annotations {
+		if _, err := x.Annotations[i].Write(writer, __AnnotationsOffset); err != nil {
+			return offset, err
+		}
+		__AnnotationsOffset += 32
+	}
 
 	return offset, nil
 }
@@ -186,10 +275,62 @@ func (x *Message) Read(viewer *MessageViewer, reader *karmem.Reader) {
 	}
 	copy(x.Content, __ContentSlice)
 	x.Content = x.Content[:__ContentLen]
+	__AnnotationsSlice := viewer.Annotations(reader)
+	__AnnotationsLen := len(__AnnotationsSlice)
+	if __AnnotationsLen > cap(x.Annotations) {
+		x.Annotations = append(x.Annotations, make([]Annotation, __AnnotationsLen-len(x.Annotations))...)
+	}
+	if __AnnotationsLen > len(x.Annotations) {
+		x.Annotations = x.Annotations[:__AnnotationsLen]
+	}
+	for i := 0; i < __AnnotationsLen; i++ {
+		x.Annotations[i].Read(&__AnnotationsSlice[i], reader)
+	}
+	x.Annotations = x.Annotations[:__AnnotationsLen]
+}
+
+type AnnotationViewer struct {
+	_data [32]byte
+}
+
+func NewAnnotationViewer(reader *karmem.Reader, offset uint32) (v *AnnotationViewer) {
+	if !reader.IsValidOffset(offset, 32) {
+		return (*AnnotationViewer)(unsafe.Pointer(&_Null))
+	}
+	v = (*AnnotationViewer)(unsafe.Add(reader.Pointer, offset))
+	return v
+}
+
+func (x *AnnotationViewer) size() uint32 {
+	return 32
+}
+func (x *AnnotationViewer) Key(reader *karmem.Reader) (v string) {
+	offset := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 0))
+	size := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 0+4))
+	if !reader.IsValidOffset(offset, size) {
+		return ""
+	}
+	length := uintptr(size / 1)
+	slice := [3]uintptr{
+		uintptr(unsafe.Add(reader.Pointer, offset)), length, length,
+	}
+	return *(*string)(unsafe.Pointer(&slice))
+}
+func (x *AnnotationViewer) Val(reader *karmem.Reader) (v string) {
+	offset := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 12))
+	size := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 12+4))
+	if !reader.IsValidOffset(offset, size) {
+		return ""
+	}
+	length := uintptr(size / 1)
+	slice := [3]uintptr{
+		uintptr(unsafe.Add(reader.Pointer, offset)), length, length,
+	}
+	return *(*string)(unsafe.Pointer(&slice))
 }
 
 type MessageViewer struct {
-	_data [104]byte
+	_data [112]byte
 }
 
 func NewMessageViewer(reader *karmem.Reader, offset uint32) (v *MessageViewer) {
@@ -316,4 +457,19 @@ func (x *MessageViewer) Content(reader *karmem.Reader) (v []byte) {
 		uintptr(unsafe.Add(reader.Pointer, offset)), length, length,
 	}
 	return *(*[]byte)(unsafe.Pointer(&slice))
+}
+func (x *MessageViewer) Annotations(reader *karmem.Reader) (v []AnnotationViewer) {
+	if 96+12 > x.size() {
+		return []AnnotationViewer{}
+	}
+	offset := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 96))
+	size := *(*uint32)(unsafe.Add(unsafe.Pointer(&x._data), 96+4))
+	if !reader.IsValidOffset(offset, size) {
+		return []AnnotationViewer{}
+	}
+	length := uintptr(size / 32)
+	slice := [3]uintptr{
+		uintptr(unsafe.Add(reader.Pointer, offset)), length, length,
+	}
+	return *(*[]AnnotationViewer)(unsafe.Pointer(&slice))
 }
