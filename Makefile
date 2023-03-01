@@ -97,7 +97,8 @@ image/kind: ko
 image/wasm:
 	 oras push docker.io/lburgazzoli/camel-go:latest \
  		etc/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+ 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/components/slack.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 .PHONY: build/wasm
 build/wasm:
