@@ -6,7 +6,6 @@ require (
 	github.com/asynkron/protoactor-go v0.0.0-20230131112514-d86fc29cd86d
 	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/cucumber/godog v0.12.6
-	github.com/dapr/go-sdk v1.7.0
 	github.com/imdario/mergo v0.3.13
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/gomega v1.27.2
@@ -17,7 +16,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.18.0
-	github.com/tetratelabs/wazero v1.0.0-pre.9
+	github.com/tetratelabs/wazero v1.0.0-rc.1
 	github.com/twmb/franz-go v1.12.1
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 	go.uber.org/multierr v1.8.0
