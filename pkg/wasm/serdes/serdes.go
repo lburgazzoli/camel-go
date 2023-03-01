@@ -42,7 +42,7 @@ func EncodeMessage(message camel.Message) ([]byte, error) {
 	}
 
 	message.ForEachAnnotation(func(k string, v string) {
-		content.Annotations = append(content.Annotations, interop.Annotation{
+		content.Annotations = append(content.Annotations, interop.Pair{
 			Key: k,
 			Val: v,
 		})

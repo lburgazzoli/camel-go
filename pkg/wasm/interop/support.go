@@ -20,7 +20,7 @@ func DecodeMessage(data []byte) Message {
 	decoded.Annotations(reader)
 
 	for _, a := range decoded.Annotations(reader) {
-		m.Annotations = append(m.Annotations, Annotation{
+		m.Annotations = append(m.Annotations, Pair{
 			Key: a.Key(reader),
 			Val: a.Val(reader),
 		})

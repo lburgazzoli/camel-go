@@ -3,8 +3,12 @@ package wasm
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 	"path"
+
+	"github.com/tetratelabs/wazero/api"
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -63,9 +67,9 @@ func (p *Producer) Start(ctx context.Context) error {
 		return err
 	}
 
-	// if err := r.Export(ctx, "http", p.http); err != nil {
-	//     return err
-	// }
+	if err := r.Export(ctx, "http", p.http); err != nil {
+		return err
+	}
 
 	f, err := r.Load(ctx, "process", fd)
 	if err != nil {
@@ -141,7 +145,6 @@ func (p *wasmProcessor) Process(ctx context.Context, m camel.Message) (camel.Mes
 	return serdes.DecodeMessage(data)
 }
 
-/*
 func (p *Producer) http(_ context.Context, m api.Module, offset uint32, byteCount uint32) (uint32, uint32) {
 	buf, ok := m.Memory().Read(offset, byteCount)
 	if !ok {
@@ -151,4 +154,3 @@ func (p *Producer) http(_ context.Context, m api.Module, offset uint32, byteCoun
 
 	return 0, 0
 }
-*/
