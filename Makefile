@@ -110,6 +110,8 @@ build/wasm:
 		tinygo/tinygo:0.27.0 \
 		tinygo build \
 			-target=wasi \
+			-scheduler=none \
+			-gc=leaking \
 			-o etc/fn/simple_process.wasm  \
 			etc/fn/simple_process.go
 
@@ -121,6 +123,8 @@ build/wasm:
 		tinygo/tinygo:0.27.0 \
 		tinygo build \
 			-target=wasi \
+			-scheduler=none \
+			-gc=leaking \
 			-o etc/fn/simple_logger.wasm  \
 			etc/fn/simple_logger.go
 
@@ -132,6 +136,8 @@ build/wasm:
 		tinygo/tinygo:0.27.0 \
 		tinygo build \
 			-target=wasi \
+			-scheduler=none \
+			-gc=leaking \
 			-o etc/components/slack.wasm  \
 			etc/components/slack.go
 
