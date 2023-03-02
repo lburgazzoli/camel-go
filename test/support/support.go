@@ -2,9 +2,10 @@ package support
 
 import (
 	"context"
+	"testing"
+
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
 	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
-	"testing"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"

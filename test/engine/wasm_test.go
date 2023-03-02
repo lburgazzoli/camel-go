@@ -2,10 +2,11 @@ package engine
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/wasm"
-	"github.com/lburgazzoli/camel-go/test/support"
 	"os"
 	"testing"
+
+	"github.com/lburgazzoli/camel-go/pkg/wasm"
+	"github.com/lburgazzoli/camel-go/test/support"
 
 	"github.com/lburgazzoli/camel-go/pkg/wasm/functions"
 

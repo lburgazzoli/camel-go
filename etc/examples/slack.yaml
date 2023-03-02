@@ -7,6 +7,6 @@
               image: "docker.io/lburgazzoli/camel-go:latest"
               path: "etc/fn/simple_process.wasm"
         - to:
-            uri: "wasm:etc/components/slack.wasm?token=foo&channel=ar"
+            uri: "wasm:etc/components/slack.wasm?webhook=https://hooks.slack.com/services/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"
         - to:
             uri: "log:info"

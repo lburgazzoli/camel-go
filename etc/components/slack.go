@@ -32,25 +32,20 @@ func _http(ptr uint32, size uint32) uint64
 
 // process message
 func process(in *interop.Message) {
-	token := ""
-	channel := ""
+	webhook := ""
 
 	for _, a := range in.Annotations {
 		switch a.Key {
-		case "slack.token":
-			token = a.Val
-		case "slack.channel":
-			channel = a.Val
+		case "webhook":
+			webhook = a.Val
 		}
 	}
 
 	req := interop.NewHttpRequest()
-	req.URL = "https://slack.com/api/chat.postMessage"
+	req.URL = webhook
 	req.Method = "POST"
-	req.Headers = append(req.Headers, interop.Pair{Key: "Authorization", Val: "Bearer " + token})
 	req.Headers = append(req.Headers, interop.Pair{Key: "Content-Type", Val: "application/json"})
-	req.Params = append(req.Params, interop.Pair{Key: "text", Val: string(in.Content)})
-	req.Params = append(req.Params, interop.Pair{Key: "channel", Val: channel})
+	req.Content = []byte(`{ "text": "` + string(in.Content) + `" }`)
 
 	res := http(&req)
 
