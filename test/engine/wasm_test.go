@@ -5,13 +5,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
+
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
 	"github.com/lburgazzoli/camel-go/test/support"
 
 	"github.com/lburgazzoli/camel-go/pkg/wasm/functions"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -60,9 +61,7 @@ func TestCallbackWASM(t *testing.T) {
 
 	in, err := message.New()
 	assert.Nil(t, err)
-
-	in.SetAnnotation("slack.token", uuid.New())
-	in.SetAnnotation("slack.channel", uuid.New())
+	in.SetAnnotation("webhook", "https://hooks.slack.com/services/"+uuid.New()+"/"+uuid.New()+"/"+uuid.New())
 	in.SetContent("hello from gamel")
 
 	out, err := support.Process(ctx, f, in)
@@ -70,5 +69,5 @@ func TestCallbackWASM(t *testing.T) {
 
 	c, ok := out.Content().([]byte)
 	assert.True(t, ok)
-	assert.Contains(t, string(c), "invalid_auth")
+	assert.Contains(t, string(c), "no_team")
 }

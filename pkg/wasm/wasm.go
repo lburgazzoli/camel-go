@@ -2,11 +2,8 @@ package wasm
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"io/fs"
-
-	"github.com/tetratelabs/wazero/sys"
 
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"go.uber.org/multierr"
@@ -93,24 +90,11 @@ func (r *Runtime) Load(ctx context.Context, name string, reader io.Reader) (*Fun
 		return nil, err
 	}
 
-	module, err := r.wz.InstantiateModule(ctx, code, r.config)
-	if err != nil {
-		// Note: Most compilers do not exit the module after running "_start",
-		// unless there was an Error. This allows you to call exported functions.
-		//nolint:errorlint
-		if exitErr, ok := err.(*sys.ExitError); ok && exitErr.ExitCode() != 0 {
-			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
-		}
-
-		return nil, err
+	f := Function{
+		r:    r,
+		cm:   code,
+		name: name,
 	}
 
-	p := Function{
-		m:      module,
-		f:      module.ExportedFunction(name),
-		malloc: module.ExportedFunction("malloc"),
-		free:   module.ExportedFunction("free"),
-	}
-
-	return &p, nil
+	return &f, nil
 }

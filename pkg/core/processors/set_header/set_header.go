@@ -31,8 +31,7 @@ type Process struct {
 	Name     string `yaml:"name"`
 	Language `yaml:",inline"`
 
-	context   camel.Context
-	processor camel.Processor
+	context camel.Context
 }
 
 type Language struct {
@@ -66,7 +65,7 @@ func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, 
 func (p *Process) Receive(c actor.Context) {
 	msg, ok := c.Message().(camel.Message)
 	if ok {
-		msg.SetExtension(p.Name, p.Constant.Value)
+		_ = msg.SetExtension(p.Name, p.Constant.Value)
 
 		for _, pid := range p.Outputs() {
 			if err := p.context.Send(pid, msg); err != nil {

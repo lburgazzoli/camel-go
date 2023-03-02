@@ -30,8 +30,7 @@ type Process struct {
 	Identity string `yaml:"id"`
 	Language `yaml:",inline"`
 
-	context   camel.Context
-	processor camel.Processor
+	context camel.Context
 }
 
 type Language struct {
