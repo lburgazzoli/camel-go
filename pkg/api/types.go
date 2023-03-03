@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"io"
+	"reflect"
 	"time"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -11,6 +12,7 @@ import (
 )
 
 type Parameters map[string]interface{}
+type TypeConverterFn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
 
 type Closer interface {
 	// Close closes the resource.
@@ -150,4 +152,7 @@ type Verticle interface {
 	OutputAware
 
 	actor.Actor
+}
+
+type TypeConverter interface {
 }

@@ -8,6 +8,18 @@ import (
 
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/spf13/cobra"
+
+	// helper to include everything
+	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/timer"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/from"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/process"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/route"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/set_body"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/set_header"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
 )
 
 func NewRunCmd() *cobra.Command {
