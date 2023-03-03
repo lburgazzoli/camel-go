@@ -2,7 +2,7 @@ package serdes
 
 import "github.com/mitchellh/mapstructure"
 
-func DecodeStruct(input interface{}, result interface{}) error {
+func Convert(input interface{}, result interface{}) error {
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           result,

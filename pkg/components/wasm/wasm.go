@@ -16,7 +16,7 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	if err := serdes.DecodeStruct(&config, &component.config); err != nil {
+	if err := serdes.Convert(&config, &component.config); err != nil {
 		return nil, err
 	}
 
