@@ -31,12 +31,19 @@ type Registry interface {
 	Set(string, interface{})
 }
 
+type Properties interface {
+	AddSource(string) error
+	String(string) string
+}
+
 type Context interface {
 	Identifiable
 	Service
 	Closer
 
 	Registry() Registry
+	Properties() Properties
+
 	LoadRoutes(ctx context.Context, in io.Reader) error
 
 	// Spawn ---

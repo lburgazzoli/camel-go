@@ -93,11 +93,19 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 
 	for k, v := range u.Query() {
 		if len(v) > 0 {
-			params[k] = v[0]
+			params[k] = ctx.Properties().String(v[0])
 		}
 	}
+
 	for k, v := range e.Parameters {
-		params[k] = v
+		switch val := v.(type) {
+		case string:
+			params[k] = ctx.Properties().String(val)
+		case []byte:
+			params[k] = ctx.Properties().String(string(val))
+		default:
+			params[k] = val
+		}
 	}
 
 	params["remaining"] = u.Opaque

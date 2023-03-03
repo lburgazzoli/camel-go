@@ -6,13 +6,13 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 )
 
-func NewDefaultRegistry() api.Registry {
+func NewDefaultRegistry() (api.Registry, error) {
 	r := defaultRegistry{
 		store:     make(map[string]interface{}),
 		storeLock: &sync.RWMutex{},
 	}
 
-	return &r
+	return &r, nil
 }
 
 type defaultRegistry struct {

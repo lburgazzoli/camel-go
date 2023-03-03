@@ -5,6 +5,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/properties"
+
 	"github.com/pkg/errors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -19,11 +21,24 @@ import (
 )
 
 func NewDefaultContext() camel.Context {
+	p, err := properties.NewDefaultProperties()
+	if err != nil {
+		// TODO: must return an error
+		panic(err)
+	}
+
+	r, err := registry.NewDefaultRegistry()
+	if err != nil {
+		// TODO: must return an error
+		panic(err)
+	}
+
 	ctx := defaultContext{
-		id:        uuid.New(),
-		system:    actor.NewActorSystem(),
-		registry:  registry.NewDefaultRegistry(),
-		verticles: make(map[string]vh),
+		id:         uuid.New(),
+		system:     actor.NewActorSystem(),
+		registry:   r,
+		properties: p,
+		verticles:  make(map[string]vh),
 	}
 
 	return &ctx
@@ -35,10 +50,11 @@ type vh struct {
 }
 
 type defaultContext struct {
-	id        string
-	system    *actor.ActorSystem
-	registry  camel.Registry
-	verticles map[string]vh
+	id         string
+	system     *actor.ActorSystem
+	registry   camel.Registry
+	properties camel.Properties
+	verticles  map[string]vh
 }
 
 func (c *defaultContext) ID() string {
@@ -107,4 +123,8 @@ func (c *defaultContext) Send(id string, message camel.Message) error {
 
 func (c *defaultContext) Receive(_ string, _ time.Duration) (camel.Message, error) {
 	return nil, camelerrors.NotImplemented("Receive")
+}
+
+func (c *defaultContext) Properties() camel.Properties {
+	return c.properties
 }

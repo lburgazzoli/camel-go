@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransform(t *testing.T) {
+func TestTransformWASM(t *testing.T) {
 	support.Run(t, "wasm_local", func(t *testing.T, ctx context.Context, c camel.Context) {
 		t.Helper()
 

@@ -6,7 +6,13 @@
             wasm:
               image: "docker.io/lburgazzoli/camel-go:latest"
               path: "etc/fn/simple_process.wasm"
+        - transform:
+            mustache:
+              template: "content from wasm: {{message.content}}"
         - to:
-            uri: "wasm:etc/components/slack.wasm?webhook=foo"
+            uri: "wasm:etc/components/slack.wasm"
+            parameters:
+              image: "docker.io/lburgazzoli/camel-go:latest"
+              webhook: "{{slack.webhook}}"
         - to:
             uri: "log:info"
