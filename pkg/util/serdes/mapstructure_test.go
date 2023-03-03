@@ -1,9 +1,10 @@
 package serdes
 
 import (
+	"testing"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestSimpleEndpoint(t *testing.T) {
