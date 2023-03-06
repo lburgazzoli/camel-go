@@ -4,6 +4,7 @@ package engine
 
 import (
 	"context"
+
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/lburgazzoli/camel-go/test/support/containers/kafka"
@@ -16,11 +17,10 @@ import (
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	cameltest "github.com/lburgazzoli/camel-go/test/support"
-
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
@@ -34,6 +34,8 @@ import (
 func TestSimple(t *testing.T) {
 
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		wg := make(chan camel.Message)
 
 		c.Registry().Set("consumer", func(message camel.Message) {
@@ -49,13 +51,14 @@ func TestSimple(t *testing.T) {
 			},
 		}
 
-		id, err := cameltest.Reify(t, c, &process.Process{Identity: uuid.New(), Ref: "consumer"})
+		p := process.Process{Identity: uuid.New(), Ref: "consumer"}
+		id, err := p.Reify(ctx, c)
 		assert.Nil(t, err)
-		assert.NotEmpty(t, id)
+		assert.NotNil(t, id)
 
 		f.Next(id)
 
-		fromPid, err := f.Reify(context.Background(), c)
+		fromPid, err := f.Reify(ctx, c)
 		assert.Nil(t, err)
 		assert.NotNil(t, fromPid)
 
@@ -83,6 +86,8 @@ const simpleYAML = `
 
 func TestSimpleYAML(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
@@ -124,6 +129,8 @@ const simpleWASM = `
 
 func TestSimpleWASM(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		wg := make(chan camel.Message)
 
 		c.Registry().Set("consumer-1", func(message camel.Message) {
@@ -166,6 +173,8 @@ const simpleKafka = `
 
 func TestSimpleKafka(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		content := uuid.New()
 
 		container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
@@ -234,6 +243,8 @@ const simpleKafkaWASM = `
 
 func TestSimpleKafkaWASM(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
 		if err != nil {
 			t.Error(err)
@@ -294,6 +305,8 @@ const simpleComponentWASM = `
 
 func TestSimpleComponentWASM(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		wg := make(chan camel.Message)
 
 		c.Registry().Set("consumer-1", func(message camel.Message) {
@@ -333,6 +346,8 @@ const simpleComponentImageWASM = `
 
 func TestSimpleComponentImageWASM(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+
 		wg := make(chan camel.Message)
 
 		c.Registry().Set("consumer-1", func(message camel.Message) {

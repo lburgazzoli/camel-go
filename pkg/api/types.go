@@ -38,6 +38,7 @@ type Properties interface {
 	String(string) string
 }
 
+//nolint:interfacebloat
 type Context interface {
 	Identifiable
 	Service

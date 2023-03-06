@@ -2,10 +2,11 @@ package registry
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestOrasCopyFS(t *testing.T) {

@@ -37,6 +37,17 @@ func DecodeMessage(data []byte) Message {
 	return m
 }
 
+func EncodeMessage(msg Message, buffer []byte) error {
+	b := buffer[:0]
+
+	w := karmem.NewFixedWriter(b)
+	if _, err := msg.WriteAsRoot(w); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func DecodeHttpRequest(data []byte) HttpRequest {
 	reader := karmem.NewReader(data)
 	decoded := NewHttpRequestViewer(reader, 0)

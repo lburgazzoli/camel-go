@@ -7,9 +7,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type TypeConverterFn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
+type Fn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
 
-var TypeConverters = make([]TypeConverterFn, 0)
+var TypeConverters = make([]Fn, 0)
 
 func NewDefaultTypeConverter() (camel.TypeConverter, error) {
 

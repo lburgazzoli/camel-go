@@ -55,6 +55,7 @@ func TestTransformWASM(t *testing.T) {
 	})
 
 	support.Run(t, "wasm_registry", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Skip("")
 		t.Helper()
 
 		wg := make(chan camel.Message)

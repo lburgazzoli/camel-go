@@ -2,8 +2,9 @@ package support
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
