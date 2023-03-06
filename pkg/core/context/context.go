@@ -5,6 +5,10 @@ import (
 	"io"
 	"time"
 
+	"go.uber.org/zap"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/properties"
 
 	"github.com/pkg/errors"
@@ -20,7 +24,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
-func NewDefaultContext() camel.Context {
+func NewDefaultContext(logger *zap.Logger) camel.Context {
 	p, err := properties.NewDefaultProperties()
 	if err != nil {
 		// TODO: must return an error
@@ -33,12 +37,22 @@ func NewDefaultContext() camel.Context {
 		panic(err)
 	}
 
+	tc, err := typeconverter.NewDefaultTypeConverter()
+	if err != nil {
+		// TODO: must return an error
+		panic(err)
+	}
+
+	id := uuid.New()
+
 	ctx := defaultContext{
-		id:         uuid.New(),
-		system:     actor.NewActorSystem(),
-		registry:   r,
-		properties: p,
-		verticles:  make(map[string]vh),
+		id:            id,
+		system:        actor.NewActorSystem(),
+		registry:      r,
+		properties:    p,
+		typeConverter: tc,
+		verticles:     make(map[string]vh),
+		logger:        logger.With(zap.String("context.id", id)),
 	}
 
 	return &ctx
@@ -50,11 +64,13 @@ type vh struct {
 }
 
 type defaultContext struct {
-	id         string
-	system     *actor.ActorSystem
-	registry   camel.Registry
-	properties camel.Properties
-	verticles  map[string]vh
+	id            string
+	system        *actor.ActorSystem
+	registry      camel.Registry
+	properties    camel.Properties
+	typeConverter camel.TypeConverter
+	verticles     map[string]vh
+	logger        *zap.Logger
 }
 
 func (c *defaultContext) ID() string {
@@ -127,4 +143,12 @@ func (c *defaultContext) Receive(_ string, _ time.Duration) (camel.Message, erro
 
 func (c *defaultContext) Properties() camel.Properties {
 	return c.properties
+}
+
+func (c *defaultContext) TypeConverter() camel.TypeConverter {
+	return c.typeConverter
+}
+
+func (c *defaultContext) Logger() *zap.Logger {
+	return c.logger
 }

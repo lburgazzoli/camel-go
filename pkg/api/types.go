@@ -3,8 +3,9 @@ package api
 import (
 	"context"
 	"io"
-	"reflect"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
 
@@ -12,7 +13,6 @@ import (
 )
 
 type Parameters map[string]interface{}
-type TypeConverterFn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
 
 type Closer interface {
 	// Close closes the resource.
@@ -45,6 +45,7 @@ type Context interface {
 
 	Registry() Registry
 	Properties() Properties
+	TypeConverter() TypeConverter
 
 	LoadRoutes(ctx context.Context, in io.Reader) error
 
@@ -60,6 +61,8 @@ type Context interface {
 	// Receive ---
 	// TODO: must use name instead of PID
 	Receive(string, time.Duration) (Message, error)
+
+	Logger() *zap.Logger
 }
 
 type Component interface {
@@ -68,6 +71,8 @@ type Component interface {
 	Context() Context
 	Scheme() string
 	Endpoint(Parameters) (Endpoint, error)
+
+	Logger() *zap.Logger
 }
 
 type Endpoint interface {
@@ -75,6 +80,8 @@ type Endpoint interface {
 	Service
 
 	Component() Component
+
+	Logger() *zap.Logger
 }
 
 type Message interface {
@@ -155,4 +162,5 @@ type Verticle interface {
 }
 
 type TypeConverter interface {
+	Convert(interface{}, interface{}) (bool, error)
 }

@@ -5,7 +5,6 @@ package log
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/lburgazzoli/camel-go/pkg/util/serdes"
 )
 
 const Scheme = "log"
@@ -15,7 +14,7 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	if err := serdes.Convert(&config, &component.config); err != nil {
+	if _, err := ctx.TypeConverter().Convert(&config, &component.config); err != nil {
 		return nil, err
 	}
 

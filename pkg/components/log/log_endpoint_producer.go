@@ -3,10 +3,10 @@ package log
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"go.uber.org/zap"
 )
 
 type Producer struct {
@@ -14,6 +14,7 @@ type Producer struct {
 
 	id       string
 	endpoint *Endpoint
+	logger   *zap.Logger
 }
 
 func (p *Producer) ID() string {
@@ -35,6 +36,15 @@ func (p *Producer) Stop(context.Context) error {
 func (p *Producer) Receive(ctx actor.Context) {
 	msg, ok := ctx.Message().(camel.Message)
 	if ok {
-		fmt.Printf("(%s) %s/%s -> %s\n", p.endpoint.config.Remaining, msg.GetType(), msg.GetID(), msg.Content())
+		var content string
+
+		if _, err := p.endpoint.Component().Context().TypeConverter().Convert(msg.Content(), &content); err != nil {
+			panic(err)
+		}
+
+		p.logger.Info(
+			content,
+			zap.String("message.type", msg.GetType()),
+			zap.String("message.id", msg.GetID()))
 	}
 }

@@ -6,6 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"go.uber.org/zap"
+
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/spf13/cobra"
 
@@ -24,8 +26,9 @@ import (
 
 func NewRunCmd() *cobra.Command {
 	type opts struct {
-		Routes  []string
-		Configs []string
+		Routes      []string
+		Configs     []string
+		Development bool
 	}
 
 	var o opts
@@ -34,11 +37,33 @@ func NewRunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var logger *zap.Logger
+
+			if o.Development {
+				l, err := zap.NewDevelopment()
+				if err != nil {
+					return err
+				}
+
+				logger = l
+			} else {
+				l, err := zap.NewProduction()
+				if err != nil {
+					return err
+				}
+
+				logger = l
+			}
+
+			defer func() {
+				_ = logger.Sync()
+			}()
+
 			done := make(chan os.Signal, 1)
 			signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
 			ctx := context.Background()
-			camelContext := core.NewContext()
+			camelContext := core.NewContext(logger)
 
 			for i := range o.Configs {
 				if err := camelContext.Properties().AddSource(o.Configs[i]); err != nil {
@@ -69,6 +94,7 @@ func NewRunCmd() *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&o.Routes, "route", nil, "routes")
 	cmd.Flags().StringSliceVar(&o.Configs, "config", nil, "configs")
+	cmd.Flags().BoolVar(&o.Development, "dev", false, "development")
 
 	_ = cmd.MarkFlagRequired("routes")
 
