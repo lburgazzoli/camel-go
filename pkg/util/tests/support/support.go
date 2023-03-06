@@ -2,6 +2,7 @@ package support
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"testing"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -40,8 +41,11 @@ func Run(t *testing.T, name string, fn func(*testing.T, context.Context, camel.C
 	t.Helper()
 
 	t.Run(name, func(t *testing.T) {
+		l, err := zap.NewDevelopment()
+		assert.Nil(t, err)
+
 		ctx := context.Background()
-		camelContext := core.NewContext()
+		camelContext := core.NewContext(l)
 
 		assert.NotNil(t, camelContext)
 

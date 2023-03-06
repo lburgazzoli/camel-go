@@ -4,7 +4,7 @@ package engine
 
 import (
 	"context"
-
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/lburgazzoli/camel-go/test/support/containers/kafka"
 	. "github.com/onsi/gomega"
@@ -22,8 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/endpoint"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/from"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors/process"
@@ -33,42 +32,42 @@ import (
 )
 
 func TestSimple(t *testing.T) {
-	wg := make(chan api.Message)
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		wg := make(chan camel.Message)
 
-	c.Registry().Set("consumer", func(message api.Message) {
-		wg <- message
-	})
+		c.Registry().Set("consumer", func(message camel.Message) {
+			wg <- message
+		})
 
-	f := from.From{
-		Endpoint: endpoint.Endpoint{
-			URI: "timer:foo",
-			Parameters: map[string]interface{}{
-				"interval": 1 * time.Second,
+		f := from.From{
+			Endpoint: endpoint.Endpoint{
+				URI: "timer:foo",
+				Parameters: map[string]interface{}{
+					"interval": 1 * time.Second,
+				},
 			},
-		},
-	}
+		}
 
-	id, err := cameltest.Reify(t, c, &process.Process{Identity: uuid.New(), Ref: "consumer"})
-	assert.Nil(t, err)
-	assert.NotEmpty(t, id)
+		id, err := cameltest.Reify(t, c, &process.Process{Identity: uuid.New(), Ref: "consumer"})
+		assert.Nil(t, err)
+		assert.NotEmpty(t, id)
 
-	f.Next(id)
+		f.Next(id)
 
-	fromPid, err := f.Reify(context.Background(), c)
-	assert.Nil(t, err)
-	assert.NotNil(t, fromPid)
+		fromPid, err := f.Reify(context.Background(), c)
+		assert.Nil(t, err)
+		assert.NotNil(t, fromPid)
 
-	select {
-	case msg := <-wg:
-		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
-		assert.True(t, ok)
-		assert.Equal(t, "1", a)
-	case <-time.After(5 * time.Second):
-		assert.Fail(t, "timeout")
-	}
+		select {
+		case msg := <-wg:
+			a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
+			assert.True(t, ok)
+			assert.Equal(t, "1", a)
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
+	})
 }
 
 const simpleYAML = `
@@ -83,33 +82,30 @@ const simpleYAML = `
 `
 
 func TestSimpleYAML(t *testing.T) {
-	content := uuid.New()
-	wg := make(chan api.Message)
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		content := uuid.New()
+		wg := make(chan camel.Message)
 
-	ctx := context.Background()
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			message.SetContent(content)
+		})
+		c.Registry().Set("consumer-2", func(message camel.Message) {
+			wg <- message
+		})
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
+		assert.Nil(t, err)
 
-	c.Registry().Set("consumer-1", func(message api.Message) {
-		message.SetContent(content)
+		select {
+		case msg := <-wg:
+			a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
+			assert.True(t, ok)
+			assert.Equal(t, "1", a)
+			assert.Equal(t, content, msg.Content())
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
 	})
-	c.Registry().Set("consumer-2", func(message api.Message) {
-		wg <- message
-	})
-
-	err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
-	assert.Nil(t, err)
-
-	select {
-	case msg := <-wg:
-		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
-		assert.True(t, ok)
-		assert.Equal(t, "1", a)
-		assert.Equal(t, content, msg.Content())
-	case <-time.After(5 * time.Second):
-		assert.Fail(t, "timeout")
-	}
 }
 
 const simpleWASM = `
@@ -127,34 +123,31 @@ const simpleWASM = `
 `
 
 func TestSimpleWASM(t *testing.T) {
-	wg := make(chan api.Message)
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		wg := make(chan camel.Message)
 
-	ctx := context.Background()
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			_ = message.SetSubject("consumer-1")
+		})
+		c.Registry().Set("consumer-2", func(message camel.Message) {
+			wg <- message
+		})
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
+		assert.Nil(t, err)
 
-	c.Registry().Set("consumer-1", func(message api.Message) {
-		_ = message.SetSubject("consumer-1")
+		select {
+		case msg := <-wg:
+			assert.Equal(t, "consumer-1", msg.GetSubject())
+
+			c, ok := msg.Content().([]byte)
+			assert.True(t, ok)
+			assert.Equal(t, "hello from wasm", string(c))
+
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
 	})
-	c.Registry().Set("consumer-2", func(message api.Message) {
-		wg <- message
-	})
-
-	err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
-	assert.Nil(t, err)
-
-	select {
-	case msg := <-wg:
-		assert.Equal(t, "consumer-1", msg.GetSubject())
-
-		c, ok := msg.Content().([]byte)
-		assert.True(t, ok)
-		assert.Equal(t, "hello from wasm", string(c))
-
-	case <-time.After(5 * time.Second):
-		assert.Fail(t, "timeout")
-	}
 }
 
 const simpleKafka = `
@@ -172,58 +165,56 @@ const simpleKafka = `
 `
 
 func TestSimpleKafka(t *testing.T) {
-	content := uuid.New()
-	ctx := context.Background()
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		content := uuid.New()
 
-	container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
-	if err != nil {
-		t.Error(err)
-	}
-
-	defer func() {
-		if err := container.Stop(ctx); err != nil {
-			t.Fatal(err.Error())
+		container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
+		if err != nil {
+			t.Error(err)
 		}
-	}()
 
-	assert.Nil(t, container.Start(ctx))
+		defer func() {
+			if err := container.Stop(ctx); err != nil {
+				t.Fatal(err.Error())
+			}
+		}()
 
-	cl, err := container.Client(
-		ctx,
-		kgo.ConsumeTopics("foo"),
-		kgo.ConsumerGroup(uuid.New()),
-	)
+		assert.Nil(t, container.Start(ctx))
 
-	assert.Nil(t, err)
+		cl, err := container.Client(
+			ctx,
+			kgo.ConsumeTopics("foo"),
+			kgo.ConsumerGroup(uuid.New()),
+		)
 
-	defer cl.Close()
+		assert.Nil(t, err)
 
-	ac, err := container.Admin(ctx)
-	assert.Nil(t, err)
+		defer cl.Close()
 
-	tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-	assert.Nil(t, err)
-	assert.Nil(t, tp.Err)
+		ac, err := container.Admin(ctx)
+		assert.Nil(t, err)
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
+		assert.Nil(t, err)
+		assert.Nil(t, tp.Err)
 
-	c.Registry().Set("consumer-1", func(message api.Message) {
-		message.SetContent(content)
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			message.SetContent(content)
+		})
+
+		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
+		assert.Nil(t, err)
+
+		RegisterTestingT(t)
+
+		Eventually(func(g Gomega) {
+			f := cl.PollFetches(ctx)
+
+			Expect(f.Errors()).To(BeEmpty())
+			Expect(f.NumRecords()).To(Equal(1))
+			Expect(string(f.Records()[0].Value)).To(Equal(content))
+		}).Should(Succeed())
 	})
-
-	err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
-	assert.Nil(t, err)
-
-	RegisterTestingT(t)
-
-	Eventually(func(g Gomega) {
-		f := cl.PollFetches(ctx)
-
-		Expect(f.Errors()).To(BeEmpty())
-		Expect(f.NumRecords()).To(Equal(1))
-		Expect(string(f.Records()[0].Value)).To(Equal(content))
-	}).Should(Succeed())
 }
 
 const simpleKafkaWASM = `
@@ -242,53 +233,50 @@ const simpleKafkaWASM = `
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {
-	ctx := context.Background()
-
-	container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
-	if err != nil {
-		t.Error(err)
-	}
-
-	defer func() {
-		if err := container.Stop(ctx); err != nil {
-			t.Fatal(err.Error())
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
+		if err != nil {
+			t.Error(err)
 		}
-	}()
 
-	assert.Nil(t, container.Start(ctx))
+		defer func() {
+			if err := container.Stop(ctx); err != nil {
+				t.Fatal(err.Error())
+			}
+		}()
 
-	cl, err := container.Client(
-		ctx,
-		kgo.ConsumeTopics("foo"),
-		kgo.ConsumerGroup(uuid.New()),
-	)
+		assert.Nil(t, container.Start(ctx))
 
-	assert.Nil(t, err)
+		cl, err := container.Client(
+			ctx,
+			kgo.ConsumeTopics("foo"),
+			kgo.ConsumerGroup(uuid.New()),
+		)
 
-	defer cl.Close()
+		assert.Nil(t, err)
 
-	ac, err := container.Admin(ctx)
-	assert.Nil(t, err)
+		defer cl.Close()
 
-	tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-	assert.Nil(t, err)
-	assert.Nil(t, tp.Err)
+		ac, err := container.Admin(ctx)
+		assert.Nil(t, err)
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
+		assert.Nil(t, err)
+		assert.Nil(t, tp.Err)
 
-	err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
-	assert.Nil(t, err)
+		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
+		assert.Nil(t, err)
 
-	RegisterTestingT(t)
+		RegisterTestingT(t)
 
-	Eventually(func(g Gomega) {
-		f := cl.PollFetches(ctx)
+		Eventually(func(g Gomega) {
+			f := cl.PollFetches(ctx)
 
-		Expect(f.Errors()).To(BeEmpty())
-		Expect(f.NumRecords()).To(Equal(1))
-		Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
-	}).Should(Succeed())
+			Expect(f.Errors()).To(BeEmpty())
+			Expect(f.NumRecords()).To(Equal(1))
+			Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
+		}).Should(Succeed())
+	})
 }
 
 const simpleComponentWASM = `
@@ -305,32 +293,29 @@ const simpleComponentWASM = `
 `
 
 func TestSimpleComponentWASM(t *testing.T) {
-	wg := make(chan api.Message)
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		wg := make(chan camel.Message)
 
-	ctx := context.Background()
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			message.SetContent("consumer-1")
+		})
+		c.Registry().Set("consumer-2", func(message camel.Message) {
+			wg <- message
+		})
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentWASM))
+		assert.Nil(t, err)
 
-	c.Registry().Set("consumer-1", func(message api.Message) {
-		message.SetContent("consumer-1")
+		select {
+		case msg := <-wg:
+			c, ok := msg.Content().(string)
+			assert.True(t, ok)
+			assert.Equal(t, "consumer-1", c)
+
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
 	})
-	c.Registry().Set("consumer-2", func(message api.Message) {
-		wg <- message
-	})
-
-	err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentWASM))
-	assert.Nil(t, err)
-
-	select {
-	case msg := <-wg:
-		c, ok := msg.Content().(string)
-		assert.True(t, ok)
-		assert.Equal(t, "consumer-1", c)
-
-	case <-time.After(5 * time.Second):
-		assert.Fail(t, "timeout")
-	}
 }
 
 const simpleComponentImageWASM = `
@@ -347,30 +332,27 @@ const simpleComponentImageWASM = `
 `
 
 func TestSimpleComponentImageWASM(t *testing.T) {
-	wg := make(chan api.Message)
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		wg := make(chan camel.Message)
 
-	ctx := context.Background()
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			message.SetContent("consumer-1")
+		})
+		c.Registry().Set("consumer-2", func(message camel.Message) {
+			wg <- message
+		})
 
-	c := core.NewContext()
-	assert.NotNil(t, c)
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentImageWASM))
+		assert.Nil(t, err)
 
-	c.Registry().Set("consumer-1", func(message api.Message) {
-		message.SetContent("consumer-1")
+		select {
+		case msg := <-wg:
+			c, ok := msg.Content().(string)
+			assert.True(t, ok)
+			assert.Equal(t, "consumer-1", c)
+
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
 	})
-	c.Registry().Set("consumer-2", func(message api.Message) {
-		wg <- message
-	})
-
-	err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentImageWASM))
-	assert.Nil(t, err)
-
-	select {
-	case msg := <-wg:
-		c, ok := msg.Content().(string)
-		assert.True(t, ok)
-		assert.Equal(t, "consumer-1", c)
-
-	case <-time.After(5 * time.Second):
-		assert.Fail(t, "timeout")
-	}
 }
