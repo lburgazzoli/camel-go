@@ -115,7 +115,7 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 		return nil, camelerrors.NotFoundf("not component for scheme %s", u.Scheme)
 	}
 
-	c, err := f(ctx, params)
+	c, err := f(ctx, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}

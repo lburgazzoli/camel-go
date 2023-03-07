@@ -1,8 +1,9 @@
 package interop
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSupport(t *testing.T) {

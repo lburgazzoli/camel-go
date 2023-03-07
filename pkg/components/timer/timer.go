@@ -20,23 +20,20 @@ func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}
 
-	if _, err := ctx.TypeConverter().Convert(&config, &component.config); err != nil {
-		return nil, err
-	}
-
 	return &component, nil
 }
 
 type Component struct {
 	components.DefaultComponent
-
-	config Config
 }
 
-func (c *Component) Endpoint(params api.Parameters) (api.Endpoint, error) {
+func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 	e := Endpoint{
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
-		config:          c.config,
+	}
+
+	if _, err := c.Context().TypeConverter().Convert(&config, &e.config); err != nil {
+		return nil, err
 	}
 
 	return &e, nil
