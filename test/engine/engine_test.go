@@ -369,3 +369,42 @@ func TestSimpleComponentImageWASM(t *testing.T) {
 		}
 	})
 }
+
+const simpleMQTT = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - to:
+            uri: "mqtt:foo"
+            parameters:
+              broker: "localhost:9092"
+`
+
+func TestSimpleMQTT(t *testing.T) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+		t.Helper()
+		t.Skipf("TBD")
+
+		content := uuid.New()
+
+		c.Registry().Set("consumer-1", func(message camel.Message) {
+			message.SetContent(content)
+		})
+
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleMQTT))
+		assert.Nil(t, err)
+
+		RegisterTestingT(t)
+
+		Eventually(func(g Gomega) {
+			// f := cl.PollFetches(ctx)
+
+			// Expect(f.Errors()).To(BeEmpty())
+			// Expect(f.NumRecords()).To(Equal(1))
+			// Expect(string(f.Records()[0].Value)).To(Equal(content))
+		}).Should(Succeed())
+	})
+}
