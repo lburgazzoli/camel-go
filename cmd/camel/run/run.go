@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	// helper to include everything.
+	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/timer"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"

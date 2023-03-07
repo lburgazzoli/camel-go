@@ -168,7 +168,6 @@ const simpleKafka = `
             uri: "kafka:foo"
             parameters:
               brokers: "localhost:9092"
-              topics: "foo"
 `
 
 func TestSimpleKafka(t *testing.T) {
@@ -238,7 +237,6 @@ const simpleKafkaWASM = `
             uri: "kafka:foo"
             parameters:
               brokers: "localhost:9092"
-              topics: "foo"
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {

@@ -2,12 +2,18 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
+	"net"
 	"strings"
+	"time"
+
+	"github.com/twmb/franz-go/plugin/kzap"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/pkg/sasl/plain"
 )
 
 type Producer struct {
@@ -27,9 +33,20 @@ func (p *Producer) Endpoint() api.Endpoint {
 }
 
 func (p *Producer) Start(context.Context) error {
-	cl, err := kgo.NewClient(
-		kgo.SeedBrokers(strings.Split(p.endpoint.config.Brokers, ",")...),
-	)
+
+	opts := make([]kgo.Opt, 0)
+	opts = append(opts, kgo.SeedBrokers(strings.Split(p.endpoint.config.Brokers, ",")...))
+
+	if p.endpoint.config.User != "" && p.endpoint.config.Password != "" {
+		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
+		authMechanism := plain.Auth{User: p.endpoint.config.User, Pass: p.endpoint.config.Password}.AsMechanism()
+
+		opts = append(opts, kgo.SASL(authMechanism))
+		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
+		opts = append(opts, kgo.WithLogger(kzap.New(p.endpoint.Logger())))
+	}
+
+	cl, err := kgo.NewClient(opts...)
 
 	if err != nil {
 		return err
@@ -64,7 +81,7 @@ func (p *Producer) Receive(ctx actor.Context) {
 
 func (p *Producer) publish(msg api.Message) error {
 	record := &kgo.Record{}
-	record.Topic = p.endpoint.config.Topics
+	record.Topic = p.endpoint.config.Remaining
 	record.Headers = []kgo.RecordHeader{
 		{Key: "event.id", Value: []byte(msg.GetID())},
 		{Key: "event.type", Value: []byte(msg.GetType())},

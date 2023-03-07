@@ -88,6 +88,7 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect
+	github.com/twmb/franz-go/plugin/kzap v1.1.1 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	go.opentelemetry.io/otel v1.12.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.35.0 // indirect

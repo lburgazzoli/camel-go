@@ -3,7 +3,9 @@
 package kafka
 
 type Config struct {
+	Remaining     string `mapstructure:"remaining"`
 	Brokers       string `mapstructure:"brokers"`
-	Topics        string `mapstructure:"topics"`
 	ConsumerGroup string `mapstructure:"consumerGroup"`
+	User          string `mapstructure:"user"`
+	Password      string `mapstructure:"password"`
 }

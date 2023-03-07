@@ -1,0 +1,16 @@
+- route:
+    from:
+      uri: "timer:foo?interval=1s"
+      steps:
+        - transform:
+            wasm:
+              image: "docker.io/lburgazzoli/camel-go:latest"
+              path: "etc/fn/simple_process.wasm"
+        - to:
+            uri: "kafka:lb-cos"
+            parameters:
+              brokers: "{{kafka.broker}}"
+              user: "{{kafka.user}}"
+              password: "{{kafka.password}}"
+        - to:
+            uri: "log:info"
