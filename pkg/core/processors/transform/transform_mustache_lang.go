@@ -34,6 +34,7 @@ func (p *mustacheProcessor) Process(ctx context.Context, m camel.Message) (camel
 
 	var buf bytes.Buffer
 
+	m.GetExtensions()
 	err := p.t.FRender(&buf, map[string]interface{}{
 		"message": map[string]interface{}{
 			"id":                m.GetID(),
@@ -45,6 +46,7 @@ func (p *mustacheProcessor) Process(ctx context.Context, m camel.Message) (camel
 			"time":              m.GetTime(),
 			"content":           m.Content(),
 			"annotations":       m.Annotations(),
+			"extensions":        m.GetExtensions(),
 		},
 	})
 	if err != nil {

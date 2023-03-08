@@ -37,6 +37,7 @@ type Transform struct {
 type Language struct {
 	Wasm     *LanguageWasm     `yaml:"wasm,omitempty"`
 	Mustache *LanguageMustache `yaml:"mustache,omitempty"`
+	Jq       *LanguageJq       `yaml:"jq,omitempty"`
 }
 
 func (t *Transform) ID() string {
@@ -58,6 +59,14 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 
 	case t.Mustache != nil:
 		p, err := newMustacheProcessor(ctx, t.Mustache)
+		if err != nil {
+			return "", err
+		}
+
+		t.processor = p
+
+	case t.Jq != nil:
+		p, err := newJqProcessor(ctx, t.Jq)
 		if err != nil {
 			return "", err
 		}
