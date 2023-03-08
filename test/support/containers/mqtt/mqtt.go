@@ -3,12 +3,18 @@ package mqtt
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/docker/go-connections/nat"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"os"
 )
 
 const (
@@ -36,15 +42,79 @@ func (c *Container) Stop(ctx context.Context) error {
 	return nil
 }
 
-func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
-		ExposedPorts: []string{fmt.Sprintf("%d", DefaultPort), fmt.Sprintf("%d", DefaultWebsocketPort)},
-		Env:          map[string]string{},
-		WaitingFor:   wait.ForListeningPort(nat.Port(fmt.Sprintf("%d", DefaultPort))),
-		SkipReaper:   os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+func (c *Container) Broker(ctx context.Context) (string, error) {
+	host, err := c.Host(ctx)
+	if err != nil {
+		return "", err
 	}
-	// }
+
+	port, err := c.MappedPort(ctx, nat.Port(fmt.Sprintf("%d", DefaultPort)))
+	if err != nil {
+		return "", err
+	}
+
+	return "tcp://" + net.JoinHostPort(host, port.Port()), nil
+}
+
+func (c *Container) Client(ctx context.Context) (mqtt.Client, error) {
+	broker, err := c.Broker(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := mqtt.NewClientOptions()
+	opts = opts.AddBroker(broker)
+	opts = opts.SetClientID(uuid.New())
+	opts = opts.SetKeepAlive(2 * time.Second)
+	opts = opts.SetPingTimeout(1 * time.Second)
+
+	// opts.ConnectRetry = true
+	// opts.AutoReconnect = true
+
+	// Log events
+	opts.OnConnectionLost = func(cl mqtt.Client, err error) {
+		fmt.Println("connection lost")
+	}
+	opts.OnConnect = func(mqtt.Client) {
+		fmt.Println("connection established")
+	}
+	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
+		fmt.Println("attempting to reconnect")
+	}
+
+	client := mqtt.NewClient(opts)
+
+	// TODO: must not block probably
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		return nil, token.Error()
+	}
+
+	return client, nil
+}
+
+//nolint:misspell
+func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
+	conf, err := filepath.Abs("../../etc/support/mosquitto.conf")
+	if err != nil {
+		return nil, err
+	}
+
+	req := testcontainers.ContainerRequest{
+		SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+		Image:      fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
+		Env:        map[string]string{},
+		ExposedPorts: []string{
+			fmt.Sprintf("%d", DefaultPort),
+		},
+		WaitingFor: wait.ForAll(
+			wait.ForExposedPort(),
+		),
+		Files: []testcontainers.ContainerFile{{
+			HostFilePath:      conf,
+			ContainerFilePath: "/mosquitto/config/mosquitto.conf",
+			FileMode:          664,
+		}},
+	}
 
 	kafkaRequest := Request{
 		ContainerRequest: req,

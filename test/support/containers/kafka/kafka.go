@@ -69,12 +69,14 @@ func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
 
 func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
 	req := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
-		ExposedPorts: []string{fmt.Sprintf("%d:%d", DefaultPort, DefaultPort)},
-		Env:          map[string]string{},
-		WaitingFor:   wait.ForLog("Started Kafka API server"),
-		Cmd:          []string{"redpanda", "start", "--mode dev-container"},
-		SkipReaper:   os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+		SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+		Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
+		Env:        map[string]string{},
+		WaitingFor: wait.ForLog("Started Kafka API server"),
+		Cmd:        []string{"redpanda", "start", "--mode dev-container"},
+		ExposedPorts: []string{
+			fmt.Sprintf("%d:%d", DefaultPort, DefaultPort),
+		},
 	}
 	// }
 

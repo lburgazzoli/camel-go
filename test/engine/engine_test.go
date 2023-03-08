@@ -3,7 +3,12 @@
 package engine
 
 import (
+	"bytes"
 	"context"
+	"text/template"
+
+	"github.com/lburgazzoli/camel-go/test/support/containers/mqtt"
+	"github.com/stretchr/testify/require"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"github.com/lburgazzoli/camel-go/test/support/containers"
@@ -13,6 +18,8 @@ import (
 	"strings"
 
 	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/mqtt"
 	"github.com/lburgazzoli/camel-go/pkg/components/timer"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -373,40 +380,67 @@ func TestSimpleComponentImageWASM(t *testing.T) {
 const simpleMQTT = `
 - route:
     from:
-      uri: "timer:foo"
+      uri: "mqtt:camel/iot"
+      parameters:
+        brokers: "{{.broker}}"
       steps:
+        - to:
+            uri: "log:info"
         - process:
             ref: "consumer-1"
-        - to:
-            uri: "mqtt:foo"
-            parameters:
-              broker: "localhost:9092"
 `
 
 func TestSimpleMQTT(t *testing.T) {
 	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
 		t.Helper()
-		t.Skipf("TBD")
 
 		content := uuid.New()
+		wg := make(chan camel.Message)
 
-		//docker pull eclipse-mosquitto:2.0.15
+		container, err := mqtt.NewContainer(ctx, containers.NoopOverrideContainerRequest)
+		if err != nil {
+			t.Error(err)
+		}
+
+		defer func() {
+			if err := container.Stop(ctx); err != nil {
+				t.Fatal(err.Error())
+			}
+		}()
+
+		assert.Nil(t, container.Start(ctx))
+
+		cl, err := container.Client(ctx)
+		require.NoError(t, err)
 
 		c.Registry().Set("consumer-1", func(message camel.Message) {
-			message.SetContent(content)
+			wg <- message
 		})
 
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleMQTT))
-		assert.Nil(t, err)
+		tmpl, err := template.New("route").Parse(simpleMQTT)
+		require.NoError(t, err)
 
-		RegisterTestingT(t)
+		broker, err := container.Broker(ctx)
+		require.NoError(t, err)
 
-		Eventually(func(g Gomega) {
-			// f := cl.PollFetches(ctx)
+		buffer := bytes.Buffer{}
+		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
+		require.NoError(t, err)
 
-			// Expect(f.Errors()).To(BeEmpty())
-			// Expect(f.NumRecords()).To(Equal(1))
-			// Expect(string(f.Records()[0].Value)).To(Equal(content))
-		}).Should(Succeed())
+		require.NoError(t, c.LoadRoutes(ctx, &buffer))
+
+		token := cl.Publish("camel/iot", 0, true, content)
+		token.Wait()
+		require.NoError(t, token.Error())
+
+		select {
+		case msg := <-wg:
+			c, ok := msg.Content().([]byte)
+			assert.True(t, ok)
+			assert.Equal(t, content, string(c))
+
+		case <-time.After(10 * time.Second):
+			assert.Fail(t, "timeout")
+		}
 	})
 }
