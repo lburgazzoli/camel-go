@@ -1,0 +1,12 @@
+- route:
+    from:
+      uri: "mqtt:camel/iot"
+      parameters:
+        brokers: "{{mqtt.broker}}"
+      steps:
+        - to:
+            uri: "kafka:{{kafka.topic}}"
+            parameters:
+              brokers: "{{kafka.broker}}"
+              user: "{{kafka.user}}"
+              password: "{{kafka.password}}"
