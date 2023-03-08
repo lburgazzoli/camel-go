@@ -1,0 +1,10 @@
+defaultPlatforms:
+- linux/arm64
+- linux/amd64
+
+builds:
+- id: ./cmd/camel
+  dir: .
+  main: cmd/camel
+  env:
+    - CGO_ENABLED=0

@@ -94,7 +94,7 @@ func (c *Container) Client(ctx context.Context) (mqtt.Client, error) {
 
 //nolint:misspell
 func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
-	conf, err := filepath.Abs("../../etc/support/mosquitto.conf")
+	conf, err := filepath.Abs("../../etc/support/mqtt/mosquitto.conf")
 	if err != nil {
 		return nil, err
 	}
