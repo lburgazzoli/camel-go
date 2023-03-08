@@ -39,8 +39,12 @@ func (m *defaultMessage) Fail(err error) {
 	m.err = err
 }
 
+func (m *defaultMessage) SetError(err error) {
+	m.err = err
+}
+
 func (m *defaultMessage) Error() error {
-	return nil
+	return m.err
 }
 
 func (m *defaultMessage) SetAnnotation(key string, val string) {

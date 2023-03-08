@@ -70,6 +70,10 @@ type DefaultEndpoint struct {
 	logger    *zap.Logger
 }
 
+func (e *DefaultEndpoint) Context() api.Context {
+	return e.component.Context()
+}
+
 func (e *DefaultEndpoint) Component() api.Component {
 	return e.component
 }

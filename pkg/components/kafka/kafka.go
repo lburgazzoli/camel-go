@@ -7,7 +7,12 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/components"
 )
 
-const Scheme = "kafka"
+const (
+	Scheme = "kafka"
+
+	AnnotationPartition = "camel.apache.org/kafka.partition"
+	AnnotationOffset    = "camel.apache.org/kafka.offset"
+)
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {
 	component := Component{

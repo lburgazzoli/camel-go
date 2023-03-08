@@ -1,3 +1,5 @@
+////go:build components_mqtt || components_all
+
 package mqtt
 
 import (
@@ -8,6 +10,8 @@ import (
 )
 
 func init() {
+	// TODO: do some investigation if there is a way to set per client
+	//       logging instead of a global one
 	mqtt.DEBUG = &mqttLogger{level: zapcore.DebugLevel}
 	mqtt.WARN = &mqttLogger{level: zapcore.WarnLevel}
 	mqtt.ERROR = &mqttLogger{level: zapcore.ErrorLevel}

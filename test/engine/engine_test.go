@@ -390,6 +390,8 @@ func TestSimpleMQTT(t *testing.T) {
 
 		content := uuid.New()
 
+		//docker pull eclipse-mosquitto:2.0.15
+
 		c.Registry().Set("consumer-1", func(message camel.Message) {
 			message.SetContent(content)
 		})

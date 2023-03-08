@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ type Producer struct {
 	id       string
 	endpoint *Endpoint
 	client   *kgo.Client
+	tc       api.TypeConverter
 }
 
 func (p *Producer) ID() string {
@@ -73,13 +75,25 @@ func (p *Producer) Receive(ctx actor.Context) {
 	case *actor.Stopping:
 		_ = p.Stop(context.Background())
 	case api.Message:
-		if err := p.publish(msg); err != nil {
-			panic(err)
+		component := p.endpoint.Component()
+		context := component.Context()
+
+		p.publish(msg)
+
+		// TODO: handle
+		if msg.Error() != nil {
+			panic(msg.Error())
+		}
+
+		for _, o := range p.Outputs() {
+			if err := context.Send(o, msg); err != nil {
+				panic(err)
+			}
 		}
 	}
 }
 
-func (p *Producer) publish(msg api.Message) error {
+func (p *Producer) publish(msg api.Message) {
 	record := &kgo.Record{}
 	record.Topic = p.endpoint.config.Remaining
 	record.Headers = []kgo.RecordHeader{
@@ -87,20 +101,25 @@ func (p *Producer) publish(msg api.Message) error {
 		{Key: "event.type", Value: []byte(msg.GetType())},
 	}
 
-	// TODO: must implement type converters
-	switch v := msg.Content().(type) {
-	case []byte:
-		record.Value = v
-	case string:
-		record.Value = []byte(v)
-	default:
-		panic("unsupported content type")
+	if s := msg.GetSubject(); s != "" {
+		record.Key = []byte(s)
+	}
+
+	_, err := p.tc.Convert(msg.Content(), &record.Value)
+	if err != nil {
+		msg.SetError(errors.Wrap(err, "error converting content to []byte"))
+		return
 	}
 
 	// TODO: must get a context.Context
-	if err := p.client.ProduceSync(context.TODO(), record).FirstErr(); err != nil {
-		return errors.Wrap(err, "record had a produce error while synchronously producing")
-	}
+	result := p.client.ProduceSync(context.TODO(), record)
 
-	return nil
+	r, err := result.First()
+	if err != nil {
+		msg.SetError(errors.Wrap(err, "record had a produce error while synchronously producing"))
+	}
+	if r != nil {
+		msg.SetAnnotation(AnnotationOffset, strconv.FormatInt(r.Offset, 10))
+		msg.SetAnnotation(AnnotationPartition, strconv.FormatInt(int64(r.Partition), 10))
+	}
 }

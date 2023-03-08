@@ -7,7 +7,7 @@
               image: "docker.io/lburgazzoli/camel-go:latest"
               path: "etc/fn/simple_process.wasm"
         - to:
-            uri: "kafka:lb-cos"
+            uri: "kafka:{{kafka.topic}}"
             parameters:
               brokers: "{{kafka.broker}}"
               user: "{{kafka.user}}"

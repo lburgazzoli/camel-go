@@ -90,9 +90,10 @@ func (r *defaultProperties) String(data string) string {
 		key = strings.TrimSuffix(key, placeholderEnd)
 	}
 
-	result := r.konf.String(key)
-	if result != "" {
-		return result
+	if v := r.konf.Get(key); v != nil {
+		if i, ok := v.(string); ok {
+			return i
+		}
 	}
 
 	return data

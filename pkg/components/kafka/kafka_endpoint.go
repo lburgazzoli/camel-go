@@ -25,6 +25,7 @@ func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
 		id:       uuid.New(),
 		endpoint: e,
+		tc:       e.Context().TypeConverter(),
 	}
 
 	return &c, nil

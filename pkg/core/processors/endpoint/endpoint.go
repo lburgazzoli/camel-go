@@ -12,6 +12,7 @@ import (
 )
 
 const TAG = "endpoint"
+const RemainingKey = "remaining"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
@@ -93,11 +94,17 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 
 	for k, v := range u.Query() {
 		if len(v) > 0 {
-			params[k] = ctx.Properties().String(v[0])
+			params[k] = v[0]
 		}
 	}
 
 	for k, v := range e.Parameters {
+		params[k] = v
+	}
+
+	params[RemainingKey] = ctx.Properties().String(u.Opaque)
+
+	for k, v := range params {
 		switch val := v.(type) {
 		case string:
 			params[k] = ctx.Properties().String(val)
@@ -108,11 +115,11 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 		}
 	}
 
-	params["remaining"] = u.Opaque
+	scheme := ctx.Properties().String(u.Scheme)
 
-	f, ok := components.Factories[u.Scheme]
+	f, ok := components.Factories[scheme]
 	if !ok {
-		return nil, camelerrors.NotFoundf("not component for scheme %s", u.Scheme)
+		return nil, camelerrors.NotFoundf("not component for scheme %s", scheme)
 	}
 
 	c, err := f(ctx, map[string]interface{}{})

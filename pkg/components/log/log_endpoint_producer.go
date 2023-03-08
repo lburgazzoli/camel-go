@@ -34,6 +34,9 @@ func (p *Producer) Stop(context.Context) error {
 }
 
 func (p *Producer) Receive(ctx actor.Context) {
+	component := p.endpoint.Component()
+	context := component.Context()
+
 	msg, ok := ctx.Message().(camel.Message)
 	if ok {
 		var content string
@@ -46,5 +49,11 @@ func (p *Producer) Receive(ctx actor.Context) {
 			content,
 			zap.String("message.type", msg.GetType()),
 			zap.String("message.id", msg.GetID()))
+
+		for _, o := range p.Outputs() {
+			if err := context.Send(o, msg); err != nil {
+				panic(err)
+			}
+		}
 	}
 }

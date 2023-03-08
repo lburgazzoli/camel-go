@@ -80,15 +80,19 @@ type Endpoint interface {
 	Identifiable
 	Service
 
+	Context() Context
 	Component() Component
 
 	Logger() *zap.Logger
 }
 
+//nolint:interfacebloat
 type Message interface {
 	ce.EventContext
 
 	Fail(error)
+
+	SetError(error)
 	Error() error
 
 	// Annotation ---
