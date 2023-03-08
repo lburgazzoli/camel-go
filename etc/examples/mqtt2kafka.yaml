@@ -2,7 +2,7 @@
     from:
       uri: "mqtt:camel/iot"
       parameters:
-        brokers: "{{mqtt.broker}}"
+        brokers: "tcp://test.mosquitto.org:1883"
       steps:
         - to:
             uri: "kafka:{{kafka.topic}}"

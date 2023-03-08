@@ -57,13 +57,13 @@ func (c *Container) Broker(ctx context.Context) (string, error) {
 }
 
 func (c *Container) Client(ctx context.Context) (mqtt.Client, error) {
-	broker, err := c.Broker(ctx)
-	if err != nil {
-		return nil, err
-	}
+	//_, err := c.Broker(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	opts := mqtt.NewClientOptions()
-	opts = opts.AddBroker(broker)
+	opts = opts.AddBroker("tcp://test.mosquitto.org:1883")
 	opts = opts.SetClientID(uuid.New())
 	opts = opts.SetKeepAlive(2 * time.Second)
 	opts = opts.SetPingTimeout(1 * time.Second)
