@@ -96,9 +96,9 @@ image/kind: ko
 .PHONY: image/wasm
 image/wasm:
 	 oras push --verbose docker.io/lburgazzoli/camel-go:latest \
- 		etc/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/components/slack.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+ 		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/components/slack.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 .PHONY: build/wasm
 build/wasm:
@@ -112,8 +112,8 @@ build/wasm:
 			-target=wasi \
 			-scheduler=none \
 			-gc=leaking \
-			-o etc/fn/simple_process.wasm  \
-			etc/fn/simple_process.go
+			-o etc/wasm/fn/simple_process.wasm  \
+			etc/wasm/fn/simple_process.go
 
 	@docker run \
 		--rm \
@@ -125,8 +125,8 @@ build/wasm:
 			-target=wasi \
 			-scheduler=none \
 			-gc=leaking \
-			-o etc/fn/simple_logger.wasm  \
-			etc/fn/simple_logger.go
+			-o etc/wasm/fn/simple_logger.wasm  \
+			etc/wasm/fn/simple_logger.go
 
 	@docker run \
 		--rm \
@@ -138,8 +138,8 @@ build/wasm:
 			-target=wasi \
 			-scheduler=none \
 			-gc=leaking \
-			-o etc/components/slack.wasm  \
-			etc/components/slack.go
+			-o etc/wasm/components/slack.wasm  \
+			etc/wasm/components/slack.go
 
 .PHONY: generate
 generate:

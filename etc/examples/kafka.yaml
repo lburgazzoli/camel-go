@@ -5,7 +5,7 @@
         - transform:
             wasm:
               image: "docker.io/lburgazzoli/camel-go:latest"
-              path: "etc/fn/simple_process.wasm"
+              path: "etc/wasm/fn/simple_process.wasm"
         - to:
             uri: "kafka:{{kafka.topic}}"
             parameters:

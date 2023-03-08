@@ -129,7 +129,7 @@ const simpleWASM = `
             ref: "consumer-1"
         - transform:
             wasm: 
-              path: "../../etc/fn/simple_process.wasm"
+              path: "../../etc/wasm/fn/simple_process.wasm"
         - process:
             ref: "consumer-2"
 `
@@ -239,7 +239,7 @@ const simpleKafkaWASM = `
       steps:
         - transform:
             wasm: 
-              path: "../../etc/fn/simple_process.wasm"
+              path: "../../etc/wasm/fn/simple_process.wasm"
         - to:
             uri: "kafka:foo"
             parameters:
@@ -303,7 +303,7 @@ const simpleComponentWASM = `
         - process:
             ref: "consumer-1"
         - to:
-            uri: "wasm:../../etc/fn/simple_logger.wasm"
+            uri: "wasm:../../etc/wasm/fn/simple_logger.wasm"
         - process:
             ref: "consumer-2"
 `
@@ -344,7 +344,7 @@ const simpleComponentImageWASM = `
         - process:
             ref: "consumer-1"
         - to:
-            uri: "wasm:etc/fn/simple_logger.wasm?image=docker.io/lburgazzoli/camel-go:latest"
+            uri: "wasm:etc/wasm/fn/simple_logger.wasm?image=docker.io/lburgazzoli/camel-go:latest"
         - process:
             ref: "consumer-2"
 `
