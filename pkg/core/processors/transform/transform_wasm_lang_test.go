@@ -29,7 +29,7 @@ func TestTransformWASM(t *testing.T) {
 			Identity: uuid.New(),
 			Language: Language{
 				Wasm: &LanguageWasm{
-					Path: "../../../../etc/fn/simple_process.wasm",
+					Path: "../../../../etc/wasm/fn/simple_process.wasm",
 				},
 			}}
 
@@ -68,7 +68,7 @@ func TestTransformWASM(t *testing.T) {
 			Identity: uuid.New(),
 			Language: Language{
 				Wasm: &LanguageWasm{
-					Path:  "etc/fn/simple_process.wasm",
+					Path:  "etc/wasm/fn/simple_process.wasm",
 					Image: "docker.io/lburgazzoli/camel-go:latest",
 				},
 			}}

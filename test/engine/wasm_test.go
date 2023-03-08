@@ -24,7 +24,7 @@ func TestWASM(t *testing.T) {
 
 	defer func() { _ = r.Close(ctx) }()
 
-	fd, err := os.Open("../../etc/fn/simple_process.wasm")
+	fd, err := os.Open("../../etc/wasm/fn/simple_process.wasm")
 	assert.Nil(t, err)
 
 	f, err := r.Load(ctx, "process", fd)
@@ -53,7 +53,7 @@ func TestCallbackWASM(t *testing.T) {
 
 	defer func() { _ = r.Close(ctx) }()
 
-	fd, err := os.Open("../../etc/components/slack.wasm")
+	fd, err := os.Open("../../etc/wasm/components/slack.wasm")
 	assert.Nil(t, err)
 
 	f, err := r.Load(ctx, "process", fd)
