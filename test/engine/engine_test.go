@@ -5,9 +5,9 @@ package engine
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"text/template"
 
+	"github.com/lburgazzoli/camel-go/test/support/containers/mqtt"
 	"github.com/stretchr/testify/require"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
@@ -36,8 +36,6 @@ import (
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
 	"github.com/stretchr/testify/assert"
-
-	mqttgo "github.com/eclipse/paho.mqtt.golang"
 )
 
 func TestSimple(t *testing.T) {
@@ -384,7 +382,7 @@ const simpleMQTT = `
     from:
       uri: "mqtt:camel/iot"
       parameters:
-        brokers: "tcp://test.mosquitto.org:1883"
+        brokers: "{{.broker}}"
       steps:
         - to:
             uri: "log:info"
@@ -399,7 +397,20 @@ func TestSimpleMQTT(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		cl, err := mqttClient()
+		container, err := mqtt.NewContainer(ctx, containers.NoopOverrideContainerRequest)
+		if err != nil {
+			t.Error(err)
+		}
+
+		defer func() {
+			if err := container.Stop(ctx); err != nil {
+				t.Fatal(err.Error())
+			}
+		}()
+
+		assert.Nil(t, container.Start(ctx))
+
+		cl, err := container.Client(ctx)
 		require.NoError(t, err)
 
 		c.Registry().Set("consumer-1", func(message camel.Message) {
@@ -409,8 +420,11 @@ func TestSimpleMQTT(t *testing.T) {
 		tmpl, err := template.New("route").Parse(simpleMQTT)
 		require.NoError(t, err)
 
+		broker, err := container.Broker(ctx)
+		require.NoError(t, err)
+
 		buffer := bytes.Buffer{}
-		err = tmpl.Execute(&buffer, map[string]string{"broker": "tcp://test.mosquitto.org:1883"})
+		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
 		require.NoError(t, err)
 
 		require.NoError(t, c.LoadRoutes(ctx, &buffer))
@@ -429,36 +443,4 @@ func TestSimpleMQTT(t *testing.T) {
 			assert.Fail(t, "timeout")
 		}
 	})
-}
-
-func mqttClient() (mqttgo.Client, error) {
-
-	opts := mqttgo.NewClientOptions()
-	opts = opts.AddBroker("tcp://test.mosquitto.org:1883")
-	opts = opts.SetClientID(uuid.New())
-	opts = opts.SetKeepAlive(2 * time.Second)
-	opts = opts.SetPingTimeout(1 * time.Second)
-
-	// opts.ConnectRetry = true
-	// opts.AutoReconnect = true
-
-	// Log events
-	opts.OnConnectionLost = func(cl mqttgo.Client, err error) {
-		fmt.Println("connection lost")
-	}
-	opts.OnConnect = func(mqttgo.Client) {
-		fmt.Println("connection established")
-	}
-	opts.OnReconnecting = func(mqttgo.Client, *mqttgo.ClientOptions) {
-		fmt.Println("attempting to reconnect")
-	}
-
-	client := mqttgo.NewClient(opts)
-
-	// TODO: must not block probably
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return nil, token.Error()
-	}
-
-	return client, nil
 }

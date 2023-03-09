@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
 const (
@@ -56,13 +57,13 @@ func (c *Container) Broker(ctx context.Context) (string, error) {
 	return "tcp://" + net.JoinHostPort(host, port.Port()), nil
 }
 
-func (c *Container) Client(ctx context.Context) (mqtt.Client, error) {
+func (c *Container) Client(ctx context.Context) (paho.Client, error) {
 	broker, err := c.Broker(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := mqtt.NewClientOptions()
+	opts := paho.NewClientOptions()
 	opts = opts.AddBroker(broker)
 	opts = opts.SetClientID(uuid.New())
 	opts = opts.SetKeepAlive(2 * time.Second)
@@ -72,19 +73,19 @@ func (c *Container) Client(ctx context.Context) (mqtt.Client, error) {
 	// opts.AutoReconnect = true
 
 	// Log events
-	opts.OnConnectionLost = func(cl mqtt.Client, err error) {
+	opts.OnConnectionLost = func(cl paho.Client, err error) {
 		fmt.Println("connection lost")
 	}
-	opts.OnConnect = func(mqtt.Client) {
+	opts.OnConnect = func(paho.Client) {
 		fmt.Println("connection established")
 	}
-	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
+	opts.OnReconnecting = func(paho.Client, *paho.ClientOptions) {
 		fmt.Println("attempting to reconnect")
 	}
 
-	client := mqtt.NewClient(opts)
+	client := paho.NewClient(opts)
 
-	// TODO: must not block probably
+	// TODO: must not blocking probably
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return nil, token.Error()
 	}
