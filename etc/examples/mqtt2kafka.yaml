@@ -5,8 +5,12 @@
         brokers: "tcp://test.mosquitto.org:1883"
       steps:
         - to:
+            uri: "log:from-mqtt"
+        - to:
             uri: "kafka:{{kafka.topic}}"
             parameters:
               brokers: "{{kafka.broker}}"
               user: "{{kafka.user}}"
               password: "{{kafka.password}}"
+        - to:
+            uri: "log:from-kafka"

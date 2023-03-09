@@ -3,6 +3,8 @@
 package mqtt
 
 import (
+	"sync"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"go.uber.org/zap"
@@ -18,11 +20,15 @@ func init() {
 }
 
 type mqttLogger struct {
+	m      sync.Mutex
 	level  zapcore.Level
 	logger *zap.SugaredLogger
 }
 
 func (l *mqttLogger) Println(v ...interface{}) {
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	if core.L == nil {
 		return
 	}
@@ -42,6 +48,9 @@ func (l *mqttLogger) Println(v ...interface{}) {
 	}
 }
 func (l *mqttLogger) Printf(format string, v ...interface{}) {
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	if core.L == nil {
 		return
 	}

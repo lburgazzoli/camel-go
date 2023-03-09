@@ -8,8 +8,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
-	"github.com/lburgazzoli/camel-go/test/support"
-
 	"github.com/lburgazzoli/camel-go/pkg/wasm/functions"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
@@ -33,7 +31,7 @@ func TestWASM(t *testing.T) {
 	in, err := message.New()
 	assert.Nil(t, err)
 
-	out, err := support.Process(ctx, f, in)
+	out, err := wasm.Process(ctx, f, in)
 	assert.Nil(t, err)
 
 	c, ok := out.Content().([]byte)
@@ -64,7 +62,7 @@ func TestCallbackWASM(t *testing.T) {
 	in.SetAnnotation("webhook", "https://hooks.slack.com/services/"+uuid.New()+"/"+uuid.New()+"/"+uuid.New())
 	in.SetContent("hello from gamel")
 
-	out, err := support.Process(ctx, f, in)
+	out, err := wasm.Process(ctx, f, in)
 	assert.Nil(t, err)
 
 	c, ok := out.Content().([]byte)

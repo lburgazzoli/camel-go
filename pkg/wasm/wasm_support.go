@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
+
 	"github.com/tetratelabs/wazero/api"
 )
 
@@ -50,4 +53,18 @@ func WriteMemory(ctx context.Context, m api.Module, data []byte) (uint64, error)
 	}
 
 	return dataPtr, nil
+}
+
+func Process(ctx context.Context, f *Function, m camel.Message) (camel.Message, error) {
+	encoded, err := serdes.EncodeMessage(m)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := f.Invoke(ctx, encoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return serdes.DecodeMessage(data)
 }

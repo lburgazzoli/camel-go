@@ -38,9 +38,7 @@ func DecodeMessage(data []byte) Message {
 }
 
 func EncodeMessage(msg Message, buffer []byte) error {
-	b := buffer[:0]
-
-	w := karmem.NewFixedWriter(b)
+	w := karmem.NewFixedWriter(buffer)
 	if _, err := msg.WriteAsRoot(w); err != nil {
 		return err
 	}
