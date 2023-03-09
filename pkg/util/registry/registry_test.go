@@ -23,7 +23,7 @@ func TestOrasCopyFS(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, root)
 
-	fi, err := os.Stat(path.Join(root, "etc/fn/simple_process.wasm"))
+	fi, err := os.Stat(path.Join(root, "etc/wasm/fn/simple_process.wasm"))
 
 	assert.Nil(t, err)
 	assert.False(t, fi.IsDir())
