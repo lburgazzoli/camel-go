@@ -33,7 +33,7 @@ require (
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
 	karmem.org v1.2.9
-	oras.land/oras-go/v2 v2.0.0
+	oras.land/oras-go/v2 v2.0.1
 )
 
 require (
