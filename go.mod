@@ -17,7 +17,7 @@ require (
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/onsi/gomega v1.27.3
+	github.com/onsi/gomega v1.27.4
 	github.com/pkg/errors v0.9.1
 	github.com/procyon-projects/chrono v1.1.2
 	github.com/rs/xid v1.4.0
