@@ -26,7 +26,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.19.0
 	github.com/tetratelabs/wazero v1.0.0-rc.1
-	github.com/twmb/franz-go v1.12.1
+	github.com/twmb/franz-go v1.13.0
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 	github.com/twmb/franz-go/plugin/kzap v1.1.1
 	go.uber.org/multierr v1.10.0
@@ -66,7 +66,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.12 // indirect
+	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
@@ -102,7 +102,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.12.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
-	golang.org/x/crypto v0.3.0 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
