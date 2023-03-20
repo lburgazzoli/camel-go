@@ -1,10 +1,11 @@
-////go:build components_all || components_timer || steps_all || steps_process
+// //go:build components_all || components_timer || steps_all || steps_process
 
 package engine
 
 import (
 	"bytes"
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"text/template"
 
 	"github.com/lburgazzoli/camel-go/test/support/containers/mqtt"
@@ -58,7 +59,11 @@ func TestSimple(t *testing.T) {
 			},
 		}
 
-		p := process.Process{Identity: uuid.New(), Ref: "consumer"}
+		p := process.Process{
+			DefaultVerticle: processors.NewDefaultVerticle(),
+			Ref:             "consumer",
+		}
+
 		id, err := p.Reify(ctx, c)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)

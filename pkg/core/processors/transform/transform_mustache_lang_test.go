@@ -1,16 +1,16 @@
-////go:build steps_transform || steps_all
+// //go:build steps_transform || steps_all
 
 package transform
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"testing"
 	"time"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +26,7 @@ func TestTransformMustache(t *testing.T) {
 		assert.Nil(t, err)
 
 		p := Transform{
-			Identity: uuid.New(),
+			DefaultVerticle: processors.NewDefaultVerticle(),
 			Language: Language{
 				Mustache: &LanguageMustache{
 					Template: `hello {{message.id}}, {{message.annotations.foo}}`,

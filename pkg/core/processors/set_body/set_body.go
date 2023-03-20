@@ -1,4 +1,4 @@
-////go:build steps_process || steps_all
+// //go:build steps_process || steps_all
 
 package process
 
@@ -10,7 +10,6 @@ import (
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 const TAG = "setBody"
@@ -18,19 +17,14 @@ const TAG = "setBody"
 func init() {
 	processors.Types[TAG] = func() interface{} {
 		return &Process{
-			Identity: uuid.New(),
+			DefaultVerticle: processors.NewDefaultVerticle(),
 		}
 	}
 }
 
 type Process struct {
-	camel.Identifiable
-	camel.WithOutputs
-
-	Identity string `yaml:"id"`
-	Language `yaml:",inline"`
-
-	context camel.Context
+	processors.DefaultVerticle `yaml:",inline"`
+	Language                   `yaml:",inline"`
 }
 
 type Language struct {
@@ -39,10 +33,6 @@ type Language struct {
 
 type LanguageConstant struct {
 	Value string `yaml:"value"`
-}
-
-func (p *Process) ID() string {
-	return p.Identity
 }
 
 func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, error) {
@@ -54,7 +44,7 @@ func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, 
 		return "", camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
 	}
 
-	p.context = camelContext
+	p.SetContext(camelContext)
 
 	return p.Identity, camelContext.Spawn(p)
 }
@@ -64,10 +54,6 @@ func (p *Process) Receive(c actor.Context) {
 	if ok {
 		msg.SetContent(p.Constant.Value)
 
-		for _, pid := range p.Outputs() {
-			if err := p.context.Send(pid, msg); err != nil {
-				panic(err)
-			}
-		}
+		p.Dispatch(msg)
 	}
 }

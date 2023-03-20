@@ -1,9 +1,10 @@
-////go:build steps_process || steps_all
+// //go:build steps_process || steps_all
 
 package process
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"testing"
 	"time"
 
@@ -32,7 +33,11 @@ func TestProcessor(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		p := Process{Identity: uuid.New(), Ref: "p"}
+		p := Process{
+			DefaultVerticle: processors.NewDefaultVerticle(),
+			Ref:             "p",
+		}
+
 		p.Next(v.ID())
 
 		id, err := p.Reify(ctx, c)
