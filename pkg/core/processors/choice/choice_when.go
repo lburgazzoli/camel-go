@@ -2,6 +2,7 @@ package choice
 
 import (
 	"context"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
@@ -15,20 +16,27 @@ type When struct {
 	Steps     []processors.Step `yaml:"steps,omitempty"`
 }
 
-func (w *When) Matches(ctx context.Context, msg camel.Message) (bool, error) {
+func (w *When) Configure(ctx context.Context, camelContext camel.Context) error {
+	w.DefaultVerticle.SetContext(camelContext)
 
-	if w.predicate == nil {
-		switch {
-		case w.Jq != nil:
-			p, err := newJqPredicate(ctx, w.Jq)
-			if err != nil {
-				return false, err
-			}
-
-			w.predicate = p
-		default:
-			return false, camelerrors.MissingParameterf("jq", "failure processing %s", TAG)
+	switch {
+	case w.Jq != nil:
+		p, err := newJqPredicate(ctx, camelContext, w.Jq)
+		if err != nil {
+			return err
 		}
+
+		w.predicate = p
+	default:
+		return camelerrors.MissingParameterf("jq", "failure processing %s", TAG)
+	}
+
+	return nil
+}
+
+func (w *When) Matches(ctx context.Context, msg camel.Message) (bool, error) {
+	if w.predicate == nil {
+		return false, camelerrors.InternalErrorf("not configured")
 	}
 
 	return w.predicate.Matches(ctx, msg)

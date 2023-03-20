@@ -5,8 +5,9 @@ package engine
 import (
 	"bytes"
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"text/template"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/test/support/containers/mqtt"
 	"github.com/stretchr/testify/require"

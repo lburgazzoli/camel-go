@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -13,7 +15,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func NewChannelVerticle(channel chan camel.Message) camel.Verticle {
+type ReifyableVerticle interface {
+	camel.Verticle
+	processors.Reifyable
+}
+
+func NewChannelVerticle(channel chan camel.Message) ReifyableVerticle {
 	return &ChannelVerticle{
 		id:      uuid.New(),
 		channel: channel,
@@ -36,6 +43,14 @@ func (p *ChannelVerticle) Receive(c actor.Context) {
 	if ok {
 		p.channel <- msg
 	}
+}
+
+func (p *ChannelVerticle) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+	if err := camelContext.Spawn(p); err != nil {
+		return p.ID(), err
+	}
+
+	return p.ID(), nil
 }
 
 func Run(t *testing.T, name string, fn func(*testing.T, context.Context, camel.Context)) {

@@ -18,6 +18,10 @@ func NewDefaultTypeConverter() (camel.TypeConverter, error) {
 		hooks[i] = TypeConverters[i]
 	}
 
+	hooks = append(hooks, mapstructure.StringToTimeDurationHookFunc())
+	hooks = append(hooks, StringToRawJSON())
+	hooks = append(hooks, BytesToRawJSON())
+
 	tc := defaultTypeConverter{
 		decodeHook: mapstructure.ComposeDecodeHookFunc(hooks...),
 	}
@@ -34,11 +38,7 @@ func (tc *defaultTypeConverter) Convert(input interface{}, output interface{}) (
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           output,
-
-		// custom hooks
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeDurationHookFunc(),
-		),
+		DecodeHook:       tc.decodeHook,
 	})
 
 	if err != nil {

@@ -4,9 +4,10 @@ package transform
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"

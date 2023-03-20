@@ -18,5 +18,4 @@ func TestSimpleConversion(t *testing.T) {
 	assert.True(t, ok)
 
 	assert.Equal(t, 1, out)
-
 }

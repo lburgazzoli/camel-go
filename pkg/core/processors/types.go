@@ -15,6 +15,12 @@ type Reifyable interface {
 	Reify(context.Context, camel.Context) (string, error)
 }
 
+func NewStep(r Reifyable) Step {
+	return Step{
+		t: r,
+	}
+}
+
 type Step struct {
 	Reifyable
 	camel.WithOutputs

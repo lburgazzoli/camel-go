@@ -169,3 +169,5 @@ type Verticle interface {
 type TypeConverter interface {
 	Convert(interface{}, interface{}) (bool, error)
 }
+
+type RawJSON map[string]interface{}

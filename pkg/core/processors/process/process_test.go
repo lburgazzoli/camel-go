@@ -4,9 +4,10 @@ package process
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 
