@@ -69,7 +69,7 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 
 		t.processor = p
 	default:
-		return "", camelerrors.MissingParameterf("wasm || mustache", "failure processing %s", TAG)
+		return "", camelerrors.MissingParameterf("wasm || mustache || jq", "failure processing %s", TAG)
 
 	}
 
