@@ -2,9 +2,9 @@ package choice
 
 import (
 	"context"
+
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/pkg/errors"
 )
@@ -22,35 +22,70 @@ func init() {
 type Choice struct {
 	processors.DefaultVerticle `yaml:",inline"`
 
-	When []When `yaml:"when,omitempty"`
+	When      []*When    `yaml:"when,omitempty"`
+	Otherwise *Otherwise `yaml:"otherwise,omitempty"`
 }
 
-func (c *Choice) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+func (c *Choice) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
 	c.SetContext(camelContext)
 
-	var last string
-
 	for w := range c.When {
+		var last string
 
-		for i := len(c.When[w].Steps) - 1; i >= 0; i-- {
+		when := c.When[w]
+
+		if err := when.Configure(ctx, camelContext); err != nil {
+			return "", errors.Wrapf(err, "error configuring when %s", when.ID())
+		}
+
+		for s := len(when.Steps) - 1; s >= 0; s-- {
+			step := when.Steps[s]
+
 			if last != "" {
-				f.Steps[i].Next(last)
+				step.Next(last)
 			}
 
-			pid, err := f.Steps[i].Reify(ctx, camelContext)
+			id, err := step.Reify(ctx, camelContext)
 			if err != nil {
-				return "", errors.Wrapf(err, "error creating step")
+				return "", errors.Wrapf(err, "error creating when step")
 			}
 
-			last = pid
+			last = id
 		}
 
 		if last != "" {
-			f.Endpoint.Next(last)
+			when.Next(last)
 		}
 	}
 
-	return "", camelerrors.NotImplemented("TODO")
+	if c.Otherwise != nil {
+		if err := c.Otherwise.Configure(ctx, camelContext); err != nil {
+			return "", errors.Wrapf(err, "error configuring otherwhise %s", c.Otherwise.ID())
+		}
+
+		var last string
+
+		for s := len(c.Otherwise.Steps) - 1; s >= 0; s-- {
+			step := c.Otherwise.Steps[s]
+
+			if last != "" {
+				step.Next(last)
+			}
+
+			id, err := step.Reify(ctx, camelContext)
+			if err != nil {
+				return "", errors.Wrapf(err, "error creating otherwhise step")
+			}
+
+			last = id
+		}
+
+		if last != "" {
+			c.Otherwise.Next(last)
+		}
+	}
+
+	return c.Identity, camelContext.Spawn(c)
 }
 
 func (c *Choice) Receive(ac actor.Context) {
@@ -59,8 +94,11 @@ func (c *Choice) Receive(ac actor.Context) {
 
 		ctx := context.Background()
 
+		var matches bool
+		var err error
+
 		for i := range c.When {
-			matches, err := c.When[i].Matches(ctx, msg)
+			matches, err = c.When[i].Matches(ctx, msg)
 			if err != nil {
 				panic(err)
 			}
@@ -69,6 +107,10 @@ func (c *Choice) Receive(ac actor.Context) {
 				c.When[i].Dispatch(msg)
 				break
 			}
+		}
+
+		if !matches && c.Otherwise != nil {
+			c.Otherwise.Dispatch(msg)
 		}
 	}
 }
