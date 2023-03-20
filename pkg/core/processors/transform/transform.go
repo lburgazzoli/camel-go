@@ -1,4 +1,4 @@
-////go:build steps_transform || steps_all
+// //go:build steps_transform || steps_all
 
 package transform
 
@@ -10,7 +10,6 @@ import (
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 const TAG = "transform"
@@ -18,19 +17,16 @@ const TAG = "transform"
 func init() {
 	processors.Types[TAG] = func() interface{} {
 		return &Transform{
-			Identity: uuid.New(),
+			DefaultVerticle: processors.NewDefaultVerticle(),
 		}
 	}
 }
 
 type Transform struct {
-	camel.Identifiable
-	camel.WithOutputs
+	processors.DefaultVerticle `yaml:",inline"`
 
-	Identity string `yaml:"id"`
 	Language `yaml:",inline"`
 
-	context   camel.Context
 	processor languageProcessor
 }
 
@@ -46,7 +42,7 @@ func (t *Transform) ID() string {
 
 func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
 
-	t.context = camelContext
+	t.SetContext(camelContext)
 
 	switch {
 	case t.Wasm != nil:
@@ -93,11 +89,7 @@ func (t *Transform) Receive(c actor.Context) {
 		// temporary override annotations
 		out.SetAnnotations(annotations)
 
-		for _, pid := range t.Outputs() {
-			if err := t.context.Send(pid, out); err != nil {
-				panic(err)
-			}
-		}
+		t.Dispatch(out)
 	}
 }
 
