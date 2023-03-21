@@ -110,7 +110,8 @@ type Message interface {
 	SetContent(interface{})
 }
 
-type Processor = func(Message)
+type Processor func(Message) error
+type Predicate func(Message) bool
 
 type Producer interface {
 	Service

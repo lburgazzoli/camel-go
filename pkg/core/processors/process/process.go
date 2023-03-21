@@ -50,7 +50,10 @@ func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, 
 func (p *Process) Receive(c actor.Context) {
 	msg, ok := c.Message().(camel.Message)
 	if ok {
-		p.processor(msg)
+		if err := p.processor(msg); err != nil {
+			panic(err)
+		}
+
 		p.Dispatch(msg)
 	}
 }
