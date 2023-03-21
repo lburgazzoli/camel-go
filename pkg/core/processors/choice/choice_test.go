@@ -2,6 +2,7 @@ package choice
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
 	"testing"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
@@ -30,7 +31,7 @@ func TestChoice(t *testing.T) {
 				{
 					DefaultVerticle: processors.NewDefaultVerticle(),
 					Language: language.Language{
-						Jq: &language.Jq{Expression: `.foo == "bar"`},
+						Jq: &jq.Jq{Expression: `.foo == "bar"`},
 					},
 					Steps: []processors.Step{
 						processors.NewStep(support.NewChannelVerticle(wg1)),
@@ -39,7 +40,7 @@ func TestChoice(t *testing.T) {
 				{
 					DefaultVerticle: processors.NewDefaultVerticle(),
 					Language: language.Language{
-						Jq: &language.Jq{Expression: `.bar == "baz"`},
+						Jq: &jq.Jq{Expression: `.bar == "baz"`},
 					},
 					Steps: []processors.Step{
 						processors.NewStep(support.NewChannelVerticle(wg2)),
@@ -98,7 +99,7 @@ func TestChoice(t *testing.T) {
 				{
 					DefaultVerticle: processors.NewDefaultVerticle(),
 					Language: language.Language{
-						Jq: &language.Jq{Expression: `.foo == "bar"`},
+						Jq: &jq.Jq{Expression: `.foo == "bar"`},
 					},
 					Steps: []processors.Step{
 						processors.NewStep(support.NewChannelVerticle(wg1)),
@@ -107,7 +108,7 @@ func TestChoice(t *testing.T) {
 				{
 					DefaultVerticle: processors.NewDefaultVerticle(),
 					Language: language.Language{
-						Jq: &language.Jq{Expression: `.bar == "baz"`},
+						Jq: &jq.Jq{Expression: `.bar == "baz"`},
 					},
 					Steps: []processors.Step{
 						processors.NewStep(support.NewChannelVerticle(wg2)),

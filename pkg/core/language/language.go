@@ -1,7 +1,13 @@
 package language
 
+import (
+	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
+)
+
 type Language struct {
-	Jq       *Jq       `yaml:"jq,omitempty"`
-	Mustache *Mustache `yaml:"mustache,omitempty"`
-	Wasm     *Wasm     `yaml:"wasm,omitempty"`
+	Jq       *jq.Jq             `yaml:"jq,omitempty"`
+	Mustache *mustache.Mustache `yaml:"mustache,omitempty"`
+	Wasm     *wasm.Wasm         `yaml:"wasm,omitempty"`
 }
