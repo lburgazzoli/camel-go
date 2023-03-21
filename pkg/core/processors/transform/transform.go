@@ -5,6 +5,8 @@ package transform
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -25,15 +27,9 @@ func init() {
 type Transform struct {
 	processors.DefaultVerticle `yaml:",inline"`
 
-	Language `yaml:",inline"`
+	language.Language `yaml:",inline"`
 
-	processor languageProcessor
-}
-
-type Language struct {
-	Wasm     *LanguageWasm     `yaml:"wasm,omitempty"`
-	Mustache *LanguageMustache `yaml:"mustache,omitempty"`
-	Jq       *LanguageJq       `yaml:"jq,omitempty"`
+	processor camel.Processor
 }
 
 func (t *Transform) ID() string {
@@ -46,7 +42,7 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 
 	switch {
 	case t.Wasm != nil:
-		p, err := newWasmProcessor(ctx, t.Wasm)
+		p, err := t.Wasm.Processor(ctx, camelContext)
 		if err != nil {
 			return "", err
 		}
@@ -54,7 +50,7 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 		t.processor = p
 
 	case t.Mustache != nil:
-		p, err := newMustacheProcessor(ctx, t.Mustache)
+		p, err := t.Mustache.Processor(ctx, camelContext)
 		if err != nil {
 			return "", err
 		}
@@ -62,7 +58,7 @@ func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (stri
 		t.processor = p
 
 	case t.Jq != nil:
-		p, err := newJqProcessor(ctx, t.Jq)
+		p, err := t.Jq.Processor(ctx, camelContext)
 		if err != nil {
 			return "", err
 		}
@@ -81,18 +77,14 @@ func (t *Transform) Receive(c actor.Context) {
 	if ok {
 		annotations := msg.Annotations()
 
-		out, err := t.processor.Process(context.Background(), msg)
+		err := t.processor(context.Background(), msg)
 		if err != nil {
 			panic(err)
 		}
 
 		// temporary override annotations
-		out.SetAnnotations(annotations)
+		msg.SetAnnotations(annotations)
 
-		t.Dispatch(out)
+		t.Dispatch(msg)
 	}
-}
-
-type languageProcessor interface {
-	Process(context.Context, camel.Message) (camel.Message, error)
 }

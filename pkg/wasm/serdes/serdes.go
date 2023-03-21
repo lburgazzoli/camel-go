@@ -67,13 +67,22 @@ func EncodeMessage(message camel.Message) ([]byte, error) {
 }
 
 func DecodeMessage(encoded []byte) (camel.Message, error) {
-	reader := karmem.NewReader(encoded)
-	decoded := interop.NewMessageViewer(reader, 0)
 
 	msg, err := message.New()
 	if err != nil {
 		return nil, err
 	}
+
+	if err := DecodeMessageTo(encoded, msg); err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+func DecodeMessageTo(encoded []byte, msg camel.Message) error {
+	reader := karmem.NewReader(encoded)
+	decoded := interop.NewMessageViewer(reader, 0)
 
 	_ = msg.SetID(decoded.ID(reader))
 	_ = msg.SetSource(decoded.Source(reader))
@@ -92,5 +101,5 @@ func DecodeMessage(encoded []byte) (camel.Message, error) {
 		)
 	}
 
-	return msg, nil
+	return nil
 }

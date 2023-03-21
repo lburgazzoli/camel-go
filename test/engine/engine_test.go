@@ -47,8 +47,9 @@ func TestSimple(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("consumer", func(message camel.Message) {
+		c.Registry().Set("consumer", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		f := from.From{
@@ -104,11 +105,13 @@ func TestSimpleYAML(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
+			return nil
 		})
-		c.Registry().Set("consumer-2", func(message camel.Message) {
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
@@ -146,11 +149,13 @@ func TestSimpleWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			_ = message.SetSubject("consumer-1")
+			return nil
 		})
-		c.Registry().Set("consumer-2", func(message camel.Message) {
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
@@ -219,8 +224,9 @@ func TestSimpleKafka(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Nil(t, tp.Err)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
+			return nil
 		})
 
 		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
@@ -320,11 +326,13 @@ func TestSimpleComponentWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")
+			return nil
 		})
-		c.Registry().Set("consumer-2", func(message camel.Message) {
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentWASM))
@@ -361,11 +369,13 @@ func TestSimpleComponentImageWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")
+			return nil
 		})
-		c.Registry().Set("consumer-2", func(message camel.Message) {
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleComponentImageWASM))
@@ -419,8 +429,9 @@ func TestSimpleMQTT(t *testing.T) {
 		cl, err := container.Client(ctx)
 		require.NoError(t, err)
 
-		c.Registry().Set("consumer-1", func(message camel.Message) {
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			wg <- message
+			return nil
 		})
 
 		tmpl, err := template.New("route").Parse(simpleMQTT)

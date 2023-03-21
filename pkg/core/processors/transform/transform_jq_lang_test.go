@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -29,7 +31,7 @@ func TestTransformJQ(t *testing.T) {
 
 		p := Transform{
 			DefaultVerticle: processors.NewDefaultVerticle(),
-			Language:        Language{}}
+			Language:        language.Language{}}
 
 		p.Next(v.ID())
 

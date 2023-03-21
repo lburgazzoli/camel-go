@@ -25,8 +25,9 @@ func TestProcessor(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		c.Registry().Set("p", func(message camel.Message) {
+		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
+			return nil
 		})
 
 		v := support.NewChannelVerticle(wg)

@@ -3,6 +3,8 @@ package choice
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
@@ -10,9 +12,9 @@ import (
 
 type When struct {
 	processors.DefaultVerticle `yaml:",inline"`
-	Language                   `yaml:",inline"`
+	language.Language          `yaml:",inline"`
 
-	predicate languagePredicate
+	predicate camel.Predicate
 	Steps     []processors.Step `yaml:"steps,omitempty"`
 }
 
@@ -21,7 +23,7 @@ func (w *When) Configure(ctx context.Context, camelContext camel.Context) error 
 
 	switch {
 	case w.Jq != nil:
-		p, err := newJqPredicate(ctx, camelContext, w.Jq)
+		p, err := w.Jq.Predicate(ctx, camelContext)
 		if err != nil {
 			return err
 		}
@@ -39,13 +41,5 @@ func (w *When) Matches(ctx context.Context, msg camel.Message) (bool, error) {
 		return false, camelerrors.InternalErrorf("not configured")
 	}
 
-	return w.predicate.Matches(ctx, msg)
-}
-
-type languagePredicate interface {
-	Matches(context.Context, camel.Message) (bool, error)
-}
-
-type Language struct {
-	Jq *LanguageJq `yaml:"jq,omitempty"`
+	return w.predicate(ctx, msg)
 }

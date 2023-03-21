@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -28,8 +30,8 @@ func TestTransformWASM(t *testing.T) {
 
 		p := Transform{
 			DefaultVerticle: processors.NewDefaultVerticle(),
-			Language: Language{
-				Wasm: &LanguageWasm{
+			Language: language.Language{
+				Wasm: &language.Wasm{
 					Path: "../../../../etc/wasm/fn/simple_process.wasm",
 				},
 			}}
@@ -67,8 +69,8 @@ func TestTransformWASM(t *testing.T) {
 
 		p := Transform{
 			DefaultVerticle: processors.NewDefaultVerticle(),
-			Language: Language{
-				Wasm: &LanguageWasm{
+			Language: language.Language{
+				Wasm: &language.Wasm{
 					Path:  "etc/wasm/fn/simple_process.wasm",
 					Image: "docker.io/lburgazzoli/camel-go:latest",
 				},

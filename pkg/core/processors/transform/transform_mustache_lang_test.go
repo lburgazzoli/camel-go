@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -28,8 +30,8 @@ func TestTransformMustache(t *testing.T) {
 
 		p := Transform{
 			DefaultVerticle: processors.NewDefaultVerticle(),
-			Language: Language{
-				Mustache: &LanguageMustache{
+			Language: language.Language{
+				Mustache: &language.Mustache{
 					Template: `hello {{message.id}}, {{message.annotations.foo}}`,
 				},
 			}}
