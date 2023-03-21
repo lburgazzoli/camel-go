@@ -2,8 +2,9 @@ package choice
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
 	"testing"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 

@@ -4,9 +4,10 @@ package transform
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 

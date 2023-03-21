@@ -4,9 +4,10 @@ package transform
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 
