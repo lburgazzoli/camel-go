@@ -122,8 +122,14 @@ func (c *defaultContext) LoadRoutes(ctx context.Context, in io.Reader) error {
 	ctx = context.WithValue(ctx, camel.ContextKeyCamelContext, c)
 
 	for i := range routes {
-		if _, err := routes[i].Reify(ctx); err != nil {
+		v, err := routes[i].Reify(ctx)
+		if err != nil {
 			return err
+		}
+
+		_, err = c.Spawn(v)
+		if err != nil {
+			panic(errors.Wrapf(err, "unable to spawn route verticle with id %s", v.ID()))
 		}
 	}
 
@@ -134,13 +140,13 @@ func (c *defaultContext) Registry() camel.Registry {
 	return c.registry
 }
 
-func (c *defaultContext) Spawn(v camel.Verticle) error {
+func (c *defaultContext) Spawn(v camel.Verticle) (*actor.PID, error) {
 	f := func() actor.Actor { return v }
 	p := actor.PropsFromProducer(f)
 
 	pid, err := c.system.Root.SpawnNamed(p, v.ID())
 	if err != nil {
-		return errors.Wrapf(err, "unable to spawn verticle with id %s", v.ID())
+		return nil, errors.Wrapf(err, "unable to spawn verticle with id %s", v.ID())
 	}
 
 	c.verticles[v.ID()] = vh{
@@ -148,17 +154,20 @@ func (c *defaultContext) Spawn(v camel.Verticle) error {
 		P: pid,
 	}
 
-	return nil
+	return pid, nil
 }
 
 func (c *defaultContext) Send(id string, message camel.Message) error {
-	v, ok := c.verticles[id]
+	pid, ok := registry.GetAs[*actor.PID](c.Registry(), id)
 	if !ok {
 		return camelerrors.NotFoundf("verticle with id %s not found in registry", id)
 	}
 
-	c.system.Root.Send(v.P, message)
+	return c.SendTo(pid, message)
+}
 
+func (c *defaultContext) SendTo(pid *actor.PID, message camel.Message) error {
+	c.system.Root.Send(pid, message)
 	return nil
 }
 

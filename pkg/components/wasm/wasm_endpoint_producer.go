@@ -112,7 +112,7 @@ func (p *Producer) Receive(ctx actor.Context) {
 		out.SetAnnotations(annotations)
 
 		for _, pid := range p.Outputs() {
-			if err := p.context.Send(pid, out); err != nil {
+			if err := p.context.SendTo(pid, out); err != nil {
 				panic(err)
 			}
 		}

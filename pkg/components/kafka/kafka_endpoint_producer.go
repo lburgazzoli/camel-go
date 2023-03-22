@@ -68,16 +68,13 @@ func (p *Producer) Stop(context.Context) error {
 	return nil
 }
 
-func (p *Producer) Receive(ctx actor.Context) {
-	switch msg := ctx.Message().(type) {
+func (p *Producer) Receive(ac actor.Context) {
+	switch msg := ac.Message().(type) {
 	case *actor.Started:
 		_ = p.Start(context.Background())
 	case *actor.Stopping:
 		_ = p.Stop(context.Background())
 	case api.Message:
-		component := p.endpoint.Component()
-		cc := component.Context()
-
 		p.publish(context.Background(), msg)
 
 		// TODO: handle
@@ -86,9 +83,7 @@ func (p *Producer) Receive(ctx actor.Context) {
 		}
 
 		for _, o := range p.Outputs() {
-			if err := cc.Send(o, msg); err != nil {
-				panic(err)
-			}
+			ac.Send(o, msg)
 		}
 	}
 }

@@ -17,9 +17,20 @@ const TAG = "process"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Process{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-		}
+		return NewProcess()
+	}
+}
+
+func NewProcess() *Process {
+	return &Process{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+	}
+}
+
+func NewProcessWithRef(ref string) *Process {
+	return &Process{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		Ref:             ref,
 	}
 }
 
@@ -30,22 +41,22 @@ type Process struct {
 	processor camel.Processor
 }
 
-func (p *Process) Reify(ctx context.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.GetContext(ctx)
 
 	if p.Ref == "" {
-		return "", camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
 	}
 
 	proc, ok := registry.GetAs[camel.Processor](camelContext.Registry(), p.Ref)
 	if !ok {
-		return "", camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("ref", "unable to lookup processor %s from registry", p.Ref)
 	}
 
 	p.SetContext(camelContext)
 	p.processor = proc
 
-	return p.Identity, camelContext.Spawn(p)
+	return p, nil
 }
 
 func (p *Process) Receive(c actor.Context) {
@@ -55,6 +66,6 @@ func (p *Process) Receive(c actor.Context) {
 			panic(err)
 		}
 
-		p.Dispatch(msg)
+		p.Dispatch(c, msg)
 	}
 }

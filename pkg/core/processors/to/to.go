@@ -27,13 +27,13 @@ type To struct {
 	endpoint.Endpoint `yaml:",inline"`
 }
 
-func (t *To) Reify(ctx context.Context) (string, error) {
+func (t *To) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.GetContext(ctx)
 
 	producer, err := t.Endpoint.Producer(camelContext)
 	if err != nil {
-		return "", errors.Wrapf(err, "error creating consumer")
+		return nil, errors.Wrapf(err, "error creating consumer")
 	}
 
-	return producer.ID(), camelContext.Spawn(producer)
+	return producer, nil
 }

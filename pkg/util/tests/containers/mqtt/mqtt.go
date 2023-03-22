@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -24,8 +24,18 @@ const (
 	DefaultVersion       = "2.0.15"
 )
 
+type RequestFn func(*Request) *Request
+
 type Request struct {
 	testcontainers.ContainerRequest
+	Config string
+}
+
+func WithConfig(path string) RequestFn {
+	return func(request *Request) *Request {
+		request.Config = path
+		return request
+	}
 }
 
 type Container struct {
@@ -94,40 +104,35 @@ func (c *Container) Client(ctx context.Context) (paho.Client, error) {
 }
 
 //nolint:misspell
-func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
-	conf, err := filepath.Abs("../../etc/support/mqtt/mosquitto.conf")
-	if err != nil {
-		return nil, err
+func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
+	req := &Request{
+		ContainerRequest: testcontainers.ContainerRequest{
+			SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+			Image:      fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
+			Env:        map[string]string{},
+			ExposedPorts: []string{
+				fmt.Sprintf("%d", DefaultPort),
+			},
+			WaitingFor: wait.ForAll(
+				wait.ForExposedPort(),
+			),
+		},
 	}
 
-	req := testcontainers.ContainerRequest{
-		SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
-		Image:      fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
-		Env:        map[string]string{},
-		ExposedPorts: []string{
-			fmt.Sprintf("%d", DefaultPort),
-		},
-		WaitingFor: wait.ForAll(
-			wait.ForExposedPort(),
-		),
-		Files: []testcontainers.ContainerFile{{
-			HostFilePath:      conf,
+	for i := range opts {
+		req = opts[i](req)
+	}
+
+	if req.Config != "" {
+		req.ContainerRequest.Files = append(req.ContainerRequest.Files, testcontainers.ContainerFile{
+			HostFilePath:      req.Config,
 			ContainerFilePath: "/mosquitto/config/mosquitto.conf",
 			FileMode:          664,
-		}},
-	}
-
-	kafkaRequest := Request{
-		ContainerRequest: req,
-	}
-
-	if overrideReq != nil {
-		merged := overrideReq(kafkaRequest.ContainerRequest)
-		kafkaRequest.ContainerRequest = merged
+		})
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: kafkaRequest.ContainerRequest,
+		ContainerRequest: req.ContainerRequest,
 		Started:          true,
 	})
 	if err != nil {

@@ -45,14 +45,8 @@ func (p *ChannelVerticle) Receive(c actor.Context) {
 	}
 }
 
-func (p *ChannelVerticle) Reify(ctx context.Context) (string, error) {
-	camelContext := camel.GetContext(ctx)
-
-	if err := camelContext.Spawn(p); err != nil {
-		return p.ID(), err
-	}
-
-	return p.ID(), nil
+func (p *ChannelVerticle) Reify(_ context.Context) (camel.Verticle, error) {
+	return p, nil
 }
 
 func Run(t *testing.T, name string, fn func(*testing.T, context.Context)) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -12,7 +13,7 @@ import (
 )
 
 type Reifyable interface {
-	Reify(context.Context) (string, error)
+	Reify(context.Context) (camel.Verticle, error)
 }
 
 func NewStep(r Reifyable) Step {
@@ -21,29 +22,21 @@ func NewStep(r Reifyable) Step {
 	}
 }
 
-func ReifySteps(ctx context.Context, parent camel.OutputAware, steps []Step) error {
-	last := ""
+func ReifySteps(ctx context.Context, steps []Step) ([]camel.Verticle, error) {
+	verticles := make([]camel.Verticle, len(steps))
 
-	for s := len(steps) - 1; s >= 0; s-- {
+	for s := range steps {
 		step := steps[s]
 
-		if last != "" {
-			step.Next(last)
-		}
-
-		id, err := step.Reify(ctx)
+		v, err := step.Reify(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		last = id
+		verticles[s] = v
 	}
 
-	if last != "" {
-		parent.Next(last)
-	}
-
-	return nil
+	return verticles, nil
 }
 
 type Step struct {
@@ -77,10 +70,10 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *Step) Reify(ctx context.Context) (string, error) {
+func (s *Step) Reify(ctx context.Context) (camel.Verticle, error) {
 	r, ok := s.t.(Reifyable)
 	if !ok {
-		return "", camelerrors.InternalError("non reifiable step")
+		return nil, camelerrors.InternalError("non reifiable step")
 	}
 
 	if o, ok := s.t.(camel.OutputAware); ok {
@@ -119,11 +112,8 @@ func (v *DefaultVerticle) ID() string {
 	return v.Identity
 }
 
-func (v *DefaultVerticle) Dispatch(msg camel.Message) {
-
+func (v *DefaultVerticle) Dispatch(c actor.Context, msg camel.Message) {
 	for _, id := range v.Outputs() {
-		if err := v.context.Send(id, msg); err != nil {
-			panic(err)
-		}
+		c.Send(id, msg)
 	}
 }

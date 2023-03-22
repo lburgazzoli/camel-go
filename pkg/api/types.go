@@ -17,6 +17,7 @@ type ContextKey string
 
 const (
 	ContextKeyCamelContext = ContextKey("camel-context")
+	ContextKeyActorContext = ContextKey("actor-context")
 )
 
 func GetContext(ctx context.Context) Context {
@@ -25,12 +26,26 @@ func GetContext(ctx context.Context) Context {
 		panic(fmt.Errorf("unable to get CamelContext from context"))
 	}
 
-	camelContext, ok := value.(Context)
+	answer, ok := value.(Context)
 	if !ok {
 		panic(fmt.Errorf("type cast error %v", value))
 	}
 
-	return camelContext
+	return answer
+}
+
+func GetActorContext(ctx context.Context) actor.Context {
+	value := ctx.Value(ContextKeyActorContext)
+	if value == nil {
+		panic(fmt.Errorf("unable to get actor Context from context"))
+	}
+
+	answer, ok := value.(actor.Context)
+	if !ok {
+		panic(fmt.Errorf("type cast error %v", value))
+	}
+
+	return answer
 }
 
 type Parameters map[string]interface{}
@@ -52,6 +67,7 @@ type Identifiable interface {
 type Registry interface {
 	Get(string) (interface{}, bool)
 	Set(string, interface{})
+	Del(key string) interface{}
 }
 
 type Properties interface {
@@ -74,14 +90,16 @@ type Context interface {
 	// Spawn ---
 	// TODO: must be hidden
 	// TODO: each route must have its own context/supervisor
-	Spawn(Verticle) error
+	Spawn(Verticle) (*actor.PID, error)
 
 	// Send ---
-	// TODO: must use name instead of PID
 	Send(string, Message) error
 
+	// SendTo ---
+	// TODO: must be hidden maybe
+	SendTo(*actor.PID, Message) error
+
 	// Receive ---
-	// TODO: must use name instead of PID
 	Receive(string, time.Duration) (Message, error)
 
 	Logger() *zap.Logger
@@ -156,28 +174,24 @@ type ConsumerFactory interface {
 	Consumer() (Consumer, error)
 }
 
-// OutputAware ---
-// TODO: use name or other abstractions instead of PIO.
 type OutputAware interface {
-	Next(string)
-	Outputs() []string
+	Next(*actor.PID)
+	Outputs() []*actor.PID
 }
 
-// WithOutputs ---
-// TODO: move to helper package.
 type WithOutputs struct {
-	outputs []string
+	outputs []*actor.PID
 }
 
-func (o *WithOutputs) Next(id string) {
-	if id == "" {
+func (o *WithOutputs) Next(id *actor.PID) {
+	if id == nil {
 		return
 	}
 
 	o.outputs = append(o.outputs, id)
 }
 
-func (o *WithOutputs) Outputs() []string {
+func (o *WithOutputs) Outputs() []*actor.PID {
 	return o.outputs
 }
 

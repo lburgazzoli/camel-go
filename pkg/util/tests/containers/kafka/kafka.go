@@ -6,10 +6,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
+
 	"github.com/twmb/franz-go/pkg/kadm"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"github.com/lburgazzoli/camel-go/test/support/containers"
 	"github.com/pkg/errors"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -20,6 +21,8 @@ const (
 	DefaultPort    = 9092
 	DefaultVersion = "v22.3.13"
 )
+
+type RequestFn func(*Request) *Request
 
 type Request struct {
 	testcontainers.ContainerRequest
@@ -67,30 +70,26 @@ func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
 	return kadm.NewClient(client), nil
 }
 
-func NewContainer(ctx context.Context, overrideReq containers.OverrideContainerRequestOption) (*Container, error) {
-	req := testcontainers.ContainerRequest{
-		SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
-		Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
-		Env:        map[string]string{},
-		WaitingFor: wait.ForLog("Started Kafka API server"),
-		Cmd:        []string{"redpanda", "start", "--mode dev-container"},
-		ExposedPorts: []string{
-			fmt.Sprintf("%d:%d", DefaultPort, DefaultPort),
+func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
+	req := &Request{
+		ContainerRequest: testcontainers.ContainerRequest{
+			SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+			Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
+			Env:        map[string]string{},
+			WaitingFor: wait.ForLog("Started Kafka API server"),
+			Cmd:        []string{"redpanda", "start", "--mode dev-container"},
+			ExposedPorts: []string{
+				fmt.Sprintf("%d:%d", DefaultPort, DefaultPort),
+			},
 		},
 	}
-	// }
 
-	kafkaRequest := Request{
-		ContainerRequest: req,
-	}
-
-	if overrideReq != nil {
-		merged := overrideReq(kafkaRequest.ContainerRequest)
-		kafkaRequest.ContainerRequest = merged
+	for i := range opts {
+		req = opts[i](req)
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: kafkaRequest.ContainerRequest,
+		ContainerRequest: req.ContainerRequest,
 		Started:          true,
 	})
 	if err != nil {

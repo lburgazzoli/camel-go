@@ -36,6 +36,17 @@ func (r *defaultRegistry) Get(key string) (interface{}, bool) {
 	return answer, ok
 }
 
+func (r *defaultRegistry) Del(key string) interface{} {
+	r.storeLock.RLock()
+	defer r.storeLock.RUnlock()
+
+	answer := r.store[key]
+
+	delete(r.store, key)
+
+	return answer
+}
+
 func GetAs[T any](r api.Registry, key string) (T, bool) {
 	v1, ok := r.Get(key)
 	if !ok {

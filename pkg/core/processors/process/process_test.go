@@ -7,15 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
-	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
-
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
 func TestProcessor(t *testing.T) {
@@ -31,26 +29,27 @@ func TestProcessor(t *testing.T) {
 			return nil
 		})
 
-		v := support.NewChannelVerticle(wg)
-		err := c.Spawn(v)
+		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
+		require.Nil(t, err)
+		require.NotNil(t, wgv)
 
-		assert.Nil(t, err)
+		wgp, err := c.Spawn(wgv)
+		require.Nil(t, err)
+		require.NotNil(t, wgp)
 
-		p := Process{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-			Ref:             "p",
-		}
+		pv, err := NewProcessWithRef("p").Reify(ctx)
+		require.Nil(t, err)
+		require.NotNil(t, pv)
 
-		p.Next(v.ID())
+		pv.Next(wgp)
 
-		id, err := p.Reify(ctx)
-		assert.Nil(t, err)
-		assert.NotNil(t, id)
+		pvp, err := c.Spawn(pv)
+		require.Nil(t, err)
+		require.NotNil(t, pvp)
 
 		msg, err := message.New()
-		assert.Nil(t, err)
-
-		assert.Nil(t, c.Send(id, msg))
+		require.Nil(t, err)
+		require.Nil(t, c.SendTo(pvp, msg))
 
 		select {
 		case msg := <-wg:

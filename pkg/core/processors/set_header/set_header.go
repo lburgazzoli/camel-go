@@ -41,29 +41,29 @@ func (p *Process) ID() string {
 	return p.Identity
 }
 
-func (p *Process) Reify(ctx context.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.GetContext(ctx)
 
 	if p.Name == "" {
-		return "", camelerrors.MissingParameterf("name", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("name", "failure processing %s", TAG)
 	}
 	if p.Constant == nil {
-		return "", camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
 	}
 	if p.Constant.Value == "" {
-		return "", camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
 	}
 
 	p.SetContext(camelContext)
 
-	return p.Identity, camelContext.Spawn(p)
+	return p, nil
 }
 
-func (p *Process) Receive(c actor.Context) {
-	msg, ok := c.Message().(camel.Message)
+func (p *Process) Receive(ac actor.Context) {
+	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		_ = msg.SetExtension(p.Name, p.Constant.Value)
 
-		p.Dispatch(msg)
+		p.Dispatch(ac, msg)
 	}
 }

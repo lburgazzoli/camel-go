@@ -35,26 +35,26 @@ type LanguageConstant struct {
 	Value string `yaml:"value"`
 }
 
-func (p *Process) Reify(ctx context.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.GetContext(ctx)
 
 	if p.Constant == nil {
-		return "", camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
 	}
 	if p.Constant.Value == "" {
-		return "", camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
 	}
 
 	p.SetContext(camelContext)
 
-	return p.Identity, camelContext.Spawn(p)
+	return p, nil
 }
 
-func (p *Process) Receive(c actor.Context) {
-	msg, ok := c.Message().(camel.Message)
+func (p *Process) Receive(ac actor.Context) {
+	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		msg.SetContent(p.Constant.Value)
 
-		p.Dispatch(msg)
+		p.Dispatch(ac, msg)
 	}
 }

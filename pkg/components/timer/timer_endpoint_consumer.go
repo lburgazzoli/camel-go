@@ -91,7 +91,7 @@ func (c *Consumer) run(_ context.Context) {
 		m.SetAnnotation(AnnotationTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
 		m.SetAnnotation(AnnotationTimerName, c.endpoint.config.Remaining)
 
-		if err := context.Send(o, m); err != nil {
+		if err := context.SendTo(o, m); err != nil {
 			panic(err)
 		}
 	}

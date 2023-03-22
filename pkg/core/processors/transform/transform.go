@@ -18,9 +18,20 @@ const TAG = "transform"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Transform{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-		}
+		return NewTransform()
+	}
+}
+
+func NewTransform() *Transform {
+	return &Transform{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+	}
+}
+
+func NewTransformWithLanguage(lang language.Language) *Transform {
+	return &Transform{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		Language:        lang,
 	}
 }
 
@@ -36,7 +47,7 @@ func (t *Transform) ID() string {
 	return t.Identity
 }
 
-func (t *Transform) Reify(ctx context.Context) (string, error) {
+func (t *Transform) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.GetContext(ctx)
 
 	t.SetContext(camelContext)
@@ -45,7 +56,7 @@ func (t *Transform) Reify(ctx context.Context) (string, error) {
 	case t.Wasm != nil:
 		p, err := t.Wasm.Processor(ctx, camelContext)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		t.processor = p
@@ -53,7 +64,7 @@ func (t *Transform) Reify(ctx context.Context) (string, error) {
 	case t.Mustache != nil:
 		p, err := t.Mustache.Processor(ctx, camelContext)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		t.processor = p
@@ -61,20 +72,20 @@ func (t *Transform) Reify(ctx context.Context) (string, error) {
 	case t.Jq != nil:
 		p, err := t.Jq.Processor(ctx, camelContext)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		t.processor = p
 	default:
-		return "", camelerrors.MissingParameterf("wasm || mustache || jq", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("wasm || mustache || jq", "failure processing %s", TAG)
 
 	}
 
-	return t.Identity, camelContext.Spawn(t)
+	return t, nil
 }
 
-func (t *Transform) Receive(c actor.Context) {
-	msg, ok := c.Message().(camel.Message)
+func (t *Transform) Receive(ac actor.Context) {
+	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		annotations := msg.Annotations()
 
@@ -86,6 +97,6 @@ func (t *Transform) Receive(c actor.Context) {
 		// temporary override annotations
 		msg.SetAnnotations(annotations)
 
-		t.Dispatch(msg)
+		t.Dispatch(ac, msg)
 	}
 }

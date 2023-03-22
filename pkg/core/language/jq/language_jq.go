@@ -108,7 +108,7 @@ func (l *Jq) Processor(ctx context.Context, camelContext camel.Context) (camel.P
 		m.SetAnnotation(AnnotationJqResults, strconv.Itoa(len(out)))
 
 		if len(out) == 1 {
-			m.SetContent(out[1])
+			m.SetContent(out[0])
 		} else if len(out) > 1 {
 			m.SetContent(out)
 		}

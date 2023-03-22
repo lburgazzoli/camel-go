@@ -130,7 +130,7 @@ func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
 	m.SetContent(msg.Payload())
 
 	for _, o := range c.Outputs() {
-		if err := component.Context().Send(o, m); err != nil {
+		if err := component.Context().SendTo(o, m); err != nil {
 			panic(err)
 		}
 	}

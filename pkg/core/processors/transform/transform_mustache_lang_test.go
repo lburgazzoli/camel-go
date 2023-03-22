@@ -7,51 +7,55 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/language"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
-	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
 func TestTransformMustache(t *testing.T) {
 	support.Run(t, "mustache", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
+		wg := make(chan camel.Message)
 		c := camel.GetContext(ctx)
 
-		wg := make(chan camel.Message)
+		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
+		require.Nil(t, err)
+		require.NotNil(t, wgv)
 
-		v := support.NewChannelVerticle(wg)
-		err := c.Spawn(v)
+		wgp, err := c.Spawn(wgv)
+		require.Nil(t, err)
+		require.NotNil(t, wgp)
 
-		assert.Nil(t, err)
+		l := language.Language{
+			Mustache: &mustache.Mustache{
+				Template: `hello {{message.id}}, {{message.annotations.foo}}`,
+			},
+		}
 
-		p := Transform{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-			Language: language.Language{
-				Mustache: &mustache.Mustache{
-					Template: `hello {{message.id}}, {{message.annotations.foo}}`,
-				},
-			}}
+		pv, err := NewTransformWithLanguage(l).Reify(ctx)
+		require.Nil(t, err)
+		require.NotNil(t, pv)
 
-		p.Next(v.ID())
+		pv.Next(wgp)
 
-		id, err := p.Reify(ctx)
-		assert.Nil(t, err)
-		assert.NotNil(t, id)
+		pvp, err := c.Spawn(pv)
+		require.Nil(t, err)
+		require.NotNil(t, pvp)
 
 		msg, err := message.New()
-		assert.Nil(t, err)
+		require.Nil(t, err)
 
+		msg.SetContent(uuid.New())
 		msg.SetAnnotation("foo", "bar")
 
-		assert.Nil(t, c.Send(id, msg))
+		require.Nil(t, c.SendTo(pvp, msg))
 
 		select {
 		case msg := <-wg:

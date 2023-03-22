@@ -17,7 +17,6 @@ import (
 	_ "github.com/lburgazzoli/camel-go/pkg/components/mqtt"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/timer"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
-	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/from"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/process"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/route"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/set_body"
