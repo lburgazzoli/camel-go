@@ -7,6 +7,11 @@ import (
 	"context"
 	"text/template"
 
+	"github.com/lburgazzoli/camel-go/pkg/core"
+	camelc "github.com/lburgazzoli/camel-go/pkg/core/context"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/test/support/containers/mqtt"
@@ -474,4 +479,59 @@ func TestSimpleMQTT(t *testing.T) {
 			assert.Fail(t, "timeout")
 		}
 	})
+}
+
+func TestSimpleError(t *testing.T) {
+
+	l, err := zap.NewDevelopment()
+	assert.Nil(t, err)
+
+	camelContext := core.NewContext(l, camelc.WithLogErrorHandler())
+	ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
+
+	assert.NotNil(t, camelContext)
+
+	defer func() {
+		_ = camelContext.Close(ctx)
+	}()
+
+	wg := make(chan camel.Message)
+
+	c := camel.GetContext(ctx)
+	c.Registry().Set("panic", func(_ context.Context, message camel.Message) error {
+		return errors.New("foo")
+	})
+
+	f := from.From{
+		Endpoint: endpoint.Endpoint{
+			URI: "timer:foo",
+			Parameters: map[string]interface{}{
+				"interval": 1 * time.Second,
+			},
+		},
+	}
+
+	p := process.Process{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		Ref:             "panic",
+	}
+
+	id, err := p.Reify(ctx)
+	assert.Nil(t, err)
+	assert.NotNil(t, id)
+
+	f.Next(id)
+
+	fromPid, err := f.Reify(ctx)
+	assert.Nil(t, err)
+	assert.NotNil(t, fromPid)
+
+	select {
+	case msg := <-wg:
+		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
+		assert.True(t, ok)
+		assert.Equal(t, "1", a)
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }

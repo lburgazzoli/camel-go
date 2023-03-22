@@ -8,6 +8,6 @@ import (
 
 var L *zap.Logger
 
-func NewContext(logger *zap.Logger) camel.Context {
-	return context.NewDefaultContext(logger)
+func NewContext(logger *zap.Logger, opts ...context.Option) camel.Context {
+	return context.NewDefaultContext(logger, opts...)
 }

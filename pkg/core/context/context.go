@@ -5,6 +5,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/errors/log"
+
 	"go.uber.org/zap"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
@@ -24,7 +26,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
-func NewDefaultContext(logger *zap.Logger) camel.Context {
+func NewDefaultContext(logger *zap.Logger, opts ...Option) camel.Context {
 	p, err := properties.NewDefaultProperties()
 	if err != nil {
 		// TODO: must return an error
@@ -55,12 +57,33 @@ func NewDefaultContext(logger *zap.Logger) camel.Context {
 		logger:        logger.With(zap.String("context.id", id)),
 	}
 
+	for _, opt := range opts {
+		opt(&ctx)
+	}
+
+	if ctx.errorHandler != nil {
+		ctx.system.Root.WithGuardian(ctx.errorHandler)
+	}
+
 	return &ctx
 }
 
 type vh struct {
 	V camel.Verticle
 	P *actor.PID
+}
+
+type Option func(c *defaultContext)
+
+func WithErrorHandler(handler camelerrors.Handler) Option {
+	return func(c *defaultContext) {
+		c.errorHandler = handler
+	}
+}
+func WithLogErrorHandler() Option {
+	return func(c *defaultContext) {
+		c.errorHandler = log.NewLogHandler(c)
+	}
 }
 
 type defaultContext struct {
@@ -71,6 +94,7 @@ type defaultContext struct {
 	typeConverter camel.TypeConverter
 	verticles     map[string]vh
 	logger        *zap.Logger
+	errorHandler  camelerrors.Handler
 }
 
 func (c *defaultContext) ID() string {
