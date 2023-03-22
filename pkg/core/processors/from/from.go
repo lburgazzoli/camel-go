@@ -29,25 +29,11 @@ type From struct {
 	Steps []processors.Step `yaml:"steps,omitempty"`
 }
 
-func (f *From) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
+func (f *From) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
 
-	var last string
-
-	for i := len(f.Steps) - 1; i >= 0; i-- {
-		if last != "" {
-			f.Steps[i].Next(last)
-		}
-
-		pid, err := f.Steps[i].Reify(ctx, camelContext)
-		if err != nil {
-			return "", errors.Wrapf(err, "error creating step")
-		}
-
-		last = pid
-	}
-
-	if last != "" {
-		f.Endpoint.Next(last)
+	if err := processors.ReifySteps(ctx, &f.Endpoint, f.Steps); err != nil {
+		return "", errors.Wrapf(err, "error creating from steps")
 	}
 
 	consumer, err := f.Endpoint.Consumer(camelContext)

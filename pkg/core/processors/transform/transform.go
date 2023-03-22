@@ -36,7 +36,8 @@ func (t *Transform) ID() string {
 	return t.Identity
 }
 
-func (t *Transform) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
+func (t *Transform) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
 
 	t.SetContext(camelContext)
 

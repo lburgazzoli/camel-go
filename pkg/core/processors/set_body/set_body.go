@@ -35,7 +35,8 @@ type LanguageConstant struct {
 	Value string `yaml:"value"`
 }
 
-func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
 
 	if p.Constant == nil {
 		return "", camelerrors.MissingParameterf("constant", "failure processing %s", TAG)

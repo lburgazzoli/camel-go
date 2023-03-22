@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -11,6 +12,26 @@ import (
 
 	ce "github.com/cloudevents/sdk-go/v2"
 )
+
+type ContextKey string
+
+const (
+	ContextKeyCamelContext = ContextKey("camel-context")
+)
+
+func GetContext(ctx context.Context) Context {
+	value := ctx.Value(ContextKeyCamelContext)
+	if value == nil {
+		panic(fmt.Errorf("unable to get CamelContext from context"))
+	}
+
+	camelContext, ok := value.(Context)
+	if !ok {
+		panic(fmt.Errorf("type cast error %v", value))
+	}
+
+	return camelContext
+}
 
 type Parameters map[string]interface{}
 

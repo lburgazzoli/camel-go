@@ -17,8 +17,10 @@ import (
 )
 
 func TestChoice(t *testing.T) {
-	support.Run(t, "simple", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "simple", func(t *testing.T, ctx context.Context) {
 		t.Helper()
+
+		c := camel.GetContext(ctx)
 
 		content1 := `{ "foo": "bar" }`
 		wg1 := make(chan camel.Message)
@@ -50,7 +52,7 @@ func TestChoice(t *testing.T) {
 			},
 		}
 
-		id, err := choice.Reify(ctx, c)
+		id, err := choice.Reify(ctx)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
@@ -82,8 +84,10 @@ func TestChoice(t *testing.T) {
 		Expect(recv2.Content()).To(Equal(content2))
 	})
 
-	support.Run(t, "otherwise", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "otherwise", func(t *testing.T, ctx context.Context) {
 		t.Helper()
+
+		c := camel.GetContext(ctx)
 
 		content1 := `{ "foo": "bar" }`
 		wg1 := make(chan camel.Message)
@@ -124,7 +128,7 @@ func TestChoice(t *testing.T) {
 			},
 		}
 
-		id, err := choice.Reify(ctx, c)
+		id, err := choice.Reify(ctx)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, id)

@@ -45,7 +45,9 @@ func (p *ChannelVerticle) Receive(c actor.Context) {
 	}
 }
 
-func (p *ChannelVerticle) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+func (p *ChannelVerticle) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
+
 	if err := camelContext.Spawn(p); err != nil {
 		return p.ID(), err
 	}
@@ -53,15 +55,15 @@ func (p *ChannelVerticle) Reify(_ context.Context, camelContext camel.Context) (
 	return p.ID(), nil
 }
 
-func Run(t *testing.T, name string, fn func(*testing.T, context.Context, camel.Context)) {
+func Run(t *testing.T, name string, fn func(*testing.T, context.Context)) {
 	t.Helper()
 
 	t.Run(name, func(t *testing.T) {
 		l, err := zap.NewDevelopment()
 		assert.Nil(t, err)
 
-		ctx := context.Background()
 		camelContext := core.NewContext(l)
+		ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
 
 		assert.NotNil(t, camelContext)
 
@@ -69,6 +71,6 @@ func Run(t *testing.T, name string, fn func(*testing.T, context.Context, camel.C
 			_ = camelContext.Close(ctx)
 		}()
 
-		fn(t, ctx, camelContext)
+		fn(t, ctx)
 	})
 }

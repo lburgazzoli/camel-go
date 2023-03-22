@@ -26,35 +26,20 @@ type Choice struct {
 	Otherwise *Otherwise `yaml:"otherwise,omitempty"`
 }
 
-func (c *Choice) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
+func (c *Choice) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
+
 	c.SetContext(camelContext)
 
 	for w := range c.When {
-		var last string
-
 		when := c.When[w]
 
 		if err := when.Configure(ctx, camelContext); err != nil {
 			return "", errors.Wrapf(err, "error configuring when %s", when.ID())
 		}
 
-		for s := len(when.Steps) - 1; s >= 0; s-- {
-			step := when.Steps[s]
-
-			if last != "" {
-				step.Next(last)
-			}
-
-			id, err := step.Reify(ctx, camelContext)
-			if err != nil {
-				return "", errors.Wrapf(err, "error creating when step")
-			}
-
-			last = id
-		}
-
-		if last != "" {
-			when.Next(last)
+		if err := processors.ReifySteps(ctx, when, when.Steps); err != nil {
+			return "", errors.Wrapf(err, "error creating when steps")
 		}
 	}
 
@@ -63,25 +48,8 @@ func (c *Choice) Reify(ctx context.Context, camelContext camel.Context) (string,
 			return "", errors.Wrapf(err, "error configuring otherwhise %s", c.Otherwise.ID())
 		}
 
-		var last string
-
-		for s := len(c.Otherwise.Steps) - 1; s >= 0; s-- {
-			step := c.Otherwise.Steps[s]
-
-			if last != "" {
-				step.Next(last)
-			}
-
-			id, err := step.Reify(ctx, camelContext)
-			if err != nil {
-				return "", errors.Wrapf(err, "error creating otherwhise step")
-			}
-
-			last = id
-		}
-
-		if last != "" {
-			c.Otherwise.Next(last)
+		if err := processors.ReifySteps(ctx, c.Otherwise, c.Otherwise.Steps); err != nil {
+			return "", errors.Wrapf(err, "error creating otherwhise steps")
 		}
 	}
 

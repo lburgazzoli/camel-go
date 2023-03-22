@@ -29,6 +29,6 @@ func (r *Route) ID() string {
 	return r.Identity
 }
 
-func (r *Route) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
-	return r.From.Reify(ctx, camelContext)
+func (r *Route) Reify(ctx context.Context) (string, error) {
+	return r.From.Reify(ctx)
 }

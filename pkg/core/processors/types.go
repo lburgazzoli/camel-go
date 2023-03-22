@@ -12,13 +12,38 @@ import (
 )
 
 type Reifyable interface {
-	Reify(context.Context, camel.Context) (string, error)
+	Reify(context.Context) (string, error)
 }
 
 func NewStep(r Reifyable) Step {
 	return Step{
 		t: r,
 	}
+}
+
+func ReifySteps(ctx context.Context, parent camel.OutputAware, steps []Step) error {
+	last := ""
+
+	for s := len(steps) - 1; s >= 0; s-- {
+		step := steps[s]
+
+		if last != "" {
+			step.Next(last)
+		}
+
+		id, err := step.Reify(ctx)
+		if err != nil {
+			return err
+		}
+
+		last = id
+	}
+
+	if last != "" {
+		parent.Next(last)
+	}
+
+	return nil
 }
 
 type Step struct {
@@ -52,7 +77,7 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *Step) Reify(ctx context.Context, camelContext camel.Context) (string, error) {
+func (s *Step) Reify(ctx context.Context) (string, error) {
 	r, ok := s.t.(Reifyable)
 	if !ok {
 		return "", camelerrors.InternalError("non reifiable step")
@@ -64,7 +89,7 @@ func (s *Step) Reify(ctx context.Context, camelContext camel.Context) (string, e
 		}
 	}
 
-	return r.Reify(ctx, camelContext)
+	return r.Reify(ctx)
 }
 
 func NewDefaultVerticle() DefaultVerticle {

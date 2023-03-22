@@ -42,11 +42,12 @@ import (
 
 func TestSimple(t *testing.T) {
 
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		wg := make(chan camel.Message)
 
+		c := camel.GetContext(ctx)
 		c.Registry().Set("consumer", func(_ context.Context, message camel.Message) error {
 			wg <- message
 			return nil
@@ -66,13 +67,13 @@ func TestSimple(t *testing.T) {
 			Ref:             "consumer",
 		}
 
-		id, err := p.Reify(ctx, c)
+		id, err := p.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
 
 		f.Next(id)
 
-		fromPid, err := f.Reify(ctx, c)
+		fromPid, err := f.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, fromPid)
 
@@ -99,11 +100,13 @@ const simpleYAML = `
 `
 
 func TestSimpleYAML(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		content := uuid.New()
 		wg := make(chan camel.Message)
+
+		c := camel.GetContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
@@ -144,10 +147,12 @@ const simpleWASM = `
 `
 
 func TestSimpleWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		wg := make(chan camel.Message)
+
+		c := camel.GetContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			_ = message.SetSubject("consumer-1")
@@ -189,7 +194,7 @@ const simpleKafka = `
 `
 
 func TestSimpleKafka(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		content := uuid.New()
@@ -223,6 +228,8 @@ func TestSimpleKafka(t *testing.T) {
 		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
 		assert.Nil(t, err)
 		assert.Nil(t, tp.Err)
+
+		c := camel.GetContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
@@ -259,7 +266,7 @@ const simpleKafkaWASM = `
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		container, err := kafka.NewContainer(ctx, containers.NoopOverrideContainerRequest)
@@ -292,6 +299,8 @@ func TestSimpleKafkaWASM(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Nil(t, tp.Err)
 
+		c := camel.GetContext(ctx)
+
 		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
 		assert.Nil(t, err)
 
@@ -321,10 +330,12 @@ const simpleComponentWASM = `
 `
 
 func TestSimpleComponentWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		wg := make(chan camel.Message)
+
+		c := camel.GetContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")
@@ -364,10 +375,12 @@ const simpleComponentImageWASM = `
 `
 
 func TestSimpleComponentImageWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		wg := make(chan camel.Message)
+
+		c := camel.GetContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")
@@ -407,7 +420,7 @@ const simpleMQTT = `
 `
 
 func TestSimpleMQTT(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		content := uuid.New()
@@ -429,6 +442,7 @@ func TestSimpleMQTT(t *testing.T) {
 		cl, err := container.Client(ctx)
 		require.NoError(t, err)
 
+		c := camel.GetContext(ctx)
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			wg <- message
 			return nil

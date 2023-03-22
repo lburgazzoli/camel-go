@@ -95,8 +95,10 @@ func (c *defaultContext) LoadRoutes(ctx context.Context, in io.Reader) error {
 		return err
 	}
 
+	ctx = context.WithValue(ctx, camel.ContextKeyCamelContext, c)
+
 	for i := range routes {
-		if _, err := routes[i].Reify(ctx, c); err != nil {
+		if _, err := routes[i].Reify(ctx); err != nil {
 			return err
 		}
 	}
@@ -109,9 +111,8 @@ func (c *defaultContext) Registry() camel.Registry {
 }
 
 func (c *defaultContext) Spawn(v camel.Verticle) error {
-	p := actor.PropsFromProducer(func() actor.Actor {
-		return v
-	})
+	f := func() actor.Actor { return v }
+	p := actor.PropsFromProducer(f)
 
 	pid, err := c.system.Root.SpawnNamed(p, v.ID())
 	if err != nil {

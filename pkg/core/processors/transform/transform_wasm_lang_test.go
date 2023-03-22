@@ -20,8 +20,10 @@ import (
 )
 
 func TestTransformWASM(t *testing.T) {
-	support.Run(t, "wasm_local", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "wasm_local", func(t *testing.T, ctx context.Context) {
 		t.Helper()
+
+		c := camel.GetContext(ctx)
 
 		wg := make(chan camel.Message)
 
@@ -40,7 +42,7 @@ func TestTransformWASM(t *testing.T) {
 
 		p.Next(v.ID())
 
-		id, err := p.Reify(ctx, c)
+		id, err := p.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
 
@@ -59,8 +61,10 @@ func TestTransformWASM(t *testing.T) {
 		}
 	})
 
-	support.Run(t, "wasm_registry", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "wasm_registry", func(t *testing.T, ctx context.Context) {
 		t.Helper()
+
+		c := camel.GetContext(ctx)
 
 		wg := make(chan camel.Message)
 
@@ -80,7 +84,7 @@ func TestTransformWASM(t *testing.T) {
 
 		p.Next(v.ID())
 
-		id, err := p.Reify(ctx, c)
+		id, err := p.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
 

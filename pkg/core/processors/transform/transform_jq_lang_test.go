@@ -18,9 +18,11 @@ import (
 )
 
 func TestTransformJQ(t *testing.T) {
-	support.Run(t, "jq", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "jq", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 		t.Skip("TODO")
+
+		c := camel.GetContext(ctx)
 
 		wg := make(chan camel.Message)
 
@@ -35,7 +37,7 @@ func TestTransformJQ(t *testing.T) {
 
 		p.Next(v.ID())
 
-		id, err := p.Reify(ctx, c)
+		id, err := p.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
 

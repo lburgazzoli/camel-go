@@ -30,7 +30,8 @@ type Process struct {
 	processor camel.Processor
 }
 
-func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
 
 	if p.Ref == "" {
 		return "", camelerrors.MissingParameterf("ref", "failure processing %s", TAG)

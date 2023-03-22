@@ -41,7 +41,9 @@ func (p *Process) ID() string {
 	return p.Identity
 }
 
-func (p *Process) Reify(_ context.Context, camelContext camel.Context) (string, error) {
+func (p *Process) Reify(ctx context.Context) (string, error) {
+	camelContext := camel.GetContext(ctx)
+
 	if p.Name == "" {
 		return "", camelerrors.MissingParameterf("name", "failure processing %s", TAG)
 	}

@@ -19,12 +19,13 @@ import (
 )
 
 func TestProcessor(t *testing.T) {
-	support.Run(t, "simple", func(t *testing.T, ctx context.Context, c camel.Context) {
+	support.Run(t, "simple", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
+		c := camel.GetContext(ctx)
 		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
 			return nil
@@ -42,7 +43,7 @@ func TestProcessor(t *testing.T) {
 
 		p.Next(v.ID())
 
-		id, err := p.Reify(ctx, c)
+		id, err := p.Reify(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, id)
 
