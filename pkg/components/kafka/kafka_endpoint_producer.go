@@ -76,9 +76,9 @@ func (p *Producer) Receive(ctx actor.Context) {
 		_ = p.Stop(context.Background())
 	case api.Message:
 		component := p.endpoint.Component()
-		context := component.Context()
+		cc := component.Context()
 
-		p.publish(msg)
+		p.publish(context.Background(), msg)
 
 		// TODO: handle
 		if msg.Error() != nil {
@@ -86,14 +86,14 @@ func (p *Producer) Receive(ctx actor.Context) {
 		}
 
 		for _, o := range p.Outputs() {
-			if err := context.Send(o, msg); err != nil {
+			if err := cc.Send(o, msg); err != nil {
 				panic(err)
 			}
 		}
 	}
 }
 
-func (p *Producer) publish(msg api.Message) {
+func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	record := &kgo.Record{}
 	record.Topic = p.endpoint.config.Remaining
 	record.Headers = []kgo.RecordHeader{
@@ -111,8 +111,7 @@ func (p *Producer) publish(msg api.Message) {
 		return
 	}
 
-	// TODO: must get a context.Context
-	result := p.client.ProduceSync(context.TODO(), record)
+	result := p.client.ProduceSync(ctx, record)
 
 	r, err := result.First()
 	if err != nil {
