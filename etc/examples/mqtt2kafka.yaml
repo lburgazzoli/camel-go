@@ -6,11 +6,13 @@
       steps:
         - to:
             uri: "log:from-mqtt"
+        - transform:
+            wasm:
+              image: "docker.io/lburgazzoli/camel-go:latest"
+              path: "etc/wasm/fn/to_upper.wasm"
         - to:
             uri: "kafka:{{kafka.topic}}"
             parameters:
               brokers: "{{kafka.broker}}"
-              user: "{{kafka.user}}"
-              password: "{{kafka.password}}"
         - to:
             uri: "log:from-kafka"

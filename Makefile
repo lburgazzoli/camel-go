@@ -98,6 +98,7 @@ image/wasm:
 	 oras push --verbose docker.io/lburgazzoli/camel-go:latest \
  		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/components/slack.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 .PHONY: build/wasm
@@ -127,6 +128,19 @@ build/wasm:
 			-gc=leaking \
 			-o etc/wasm/fn/simple_logger.wasm  \
 			etc/wasm/fn/simple_logger.go
+
+	@docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/src:Z \
+		-w /src \
+		tinygo/tinygo:0.27.0 \
+		tinygo build \
+			-target=wasi \
+			-scheduler=none \
+			-gc=leaking \
+			-o etc/wasm/fn/to_upper.wasm  \
+			etc/wasm/fn/to_upper.go
 
 	@docker run \
 		--rm \
