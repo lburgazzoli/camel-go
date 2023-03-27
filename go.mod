@@ -9,7 +9,7 @@ require (
 	github.com/cucumber/godog v0.12.6
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/imdario/mergo v0.3.14
+	github.com/imdario/mergo v0.3.15
 	github.com/itchyny/gojq v0.12.12
 	github.com/knadh/koanf/parsers/json v0.1.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
