@@ -30,7 +30,7 @@ require (
 	github.com/twmb/franz-go v1.13.1
 	github.com/twmb/franz-go/pkg/kadm v1.8.0
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
-	go.uber.org/multierr v1.10.0
+	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
 	karmem.org v1.2.9
