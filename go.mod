@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20230131112514-d86fc29cd86d
 	github.com/cbroglie/mustache v1.4.0
-	github.com/cloudevents/sdk-go/v2 v2.13.0
+	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/cucumber/godog v0.12.6
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
