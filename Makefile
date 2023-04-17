@@ -156,8 +156,9 @@ build/wasm:
 			etc/wasm/components/slack.go
 
 .PHONY: generate
-generate:
-	go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
+generate: protoc
+	#go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
+	protoc --go_out=$(PROJECT_PATH)/pkg/api --proto_path=$(PROJECT_PATH)/etc/proto $(PROJECT_PATH)/etc/proto/cloudevents.proto
 
 
 ##@ Build Dependencies
@@ -170,6 +171,7 @@ $(LOCALBIN):
 ## Tool Binaries
 GOIMPORT ?= $(LOCALBIN)/goimports
 KO ?= $(LOCALBIN)/ko
+PROTOC ?= $(LOCALBIN)/protoc-gen-go
 
 .PHONY: goimport
 goimport: $(GOIMPORT)
@@ -181,3 +183,10 @@ $(GOIMPORT): $(LOCALBIN)
 ko: $(KO)
 $(KO): $(LOCALBIN)
 	@test -s $(LOCALBIN)/ko || GOBIN=$(LOCALBIN) go install github.com/google/ko@main
+
+
+.PHONY: protoc
+protoc: $(PROTOC)
+$(PROTOC): $(LOCALBIN)
+	@test -s $(LOCALBIN)/protoc-gen-go || GOBIN=$(LOCALBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
