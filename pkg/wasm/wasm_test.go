@@ -2,7 +2,6 @@ package wasm
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -24,16 +23,13 @@ func TestWASM(t *testing.T) {
 	require.NoError(t, err)
 	require.FileExists(t, data)
 
-	fd, err := os.Open(data)
-	assert.Nil(t, err)
-
-	f, err := r.Load(ctx, "process", fd)
+	f, err := r.Load(ctx, data)
 	assert.Nil(t, err)
 
 	in, err := message.New()
 	assert.Nil(t, err)
 
-	out, err := Process(ctx, f, in)
+	out, err := f.Invoke(ctx, in)
 	assert.Nil(t, err)
 
 	c, ok := out.Content().([]byte)

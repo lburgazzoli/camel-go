@@ -9,6 +9,8 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/tetratelabs/wazero"
+
+	pp "github.com/lburgazzoli/camel-go/pkg/wasm/plugin/processor"
 )
 
 func NewRuntime(ctx context.Context, opt Options) (*Runtime, error) {
@@ -79,21 +81,23 @@ func (r *Runtime) Close(ctx context.Context) error {
 	return err
 }
 
-func (r *Runtime) Load(ctx context.Context, name string, reader io.Reader) (*Function, error) {
-	content, err := io.ReadAll(reader)
+// Load ---
+// TODO: improve the plugin code to load from a reader instead of a path.
+func (r *Runtime) Load(ctx context.Context, path string) (*Function, error) {
+	// Initialize a plugin loader
+	p, err := pp.NewProcessorsPlugin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	code, err := r.wz.CompileModule(ctx, content)
+	// Load a plugin
+	plugin, err := p.Load(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
 	f := Function{
-		r:    r,
-		cm:   code,
-		name: name,
+		processor: plugin,
 	}
 
 	return &f, nil

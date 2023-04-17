@@ -9,7 +9,6 @@ import (
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/lburgazzoli/camel-go/pkg/util/registry"
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
-	"github.com/lburgazzoli/camel-go/pkg/wasm/serdes"
 )
 
 type Wasm struct {
@@ -39,35 +38,37 @@ func (l *Wasm) Processor(ctx context.Context, camelContext camel.Context) (camel
 		}
 	}()
 
-	fd, err := os.Open(path.Join(rootPath, l.Path))
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() { _ = fd.Close() }()
-
 	r, err := wasm.NewRuntime(ctx, wasm.Options{})
 	if err != nil {
 		return nil, err
 	}
 
-	f, err := r.Load(ctx, "process", fd)
+	f, err := r.Load(ctx, path.Join(rootPath, l.Path))
 	if err != nil {
 		return nil, err
 	}
 
 	p := func(ctx context.Context, m camel.Message) error {
-		encoded, err := serdes.EncodeMessage(m)
+		result, err := f.Invoke(ctx, m)
 		if err != nil {
 			return err
 		}
 
-		data, err := f.Invoke(ctx, encoded)
-		if err != nil {
-			return err
-		}
+		_ = m.SetID(result.GetID())
+		_ = m.SetSource(result.GetSource())
+		_ = m.SetType(result.GetType())
+		_ = m.SetSubject(result.GetSubject())
+		_ = m.SetDataContentType(result.GetDataContentType())
+		_ = m.SetDataSchema(result.GetDataSchema())
+		//_ = msg.SetTime(time.UnixMilli(result.Time))
 
-		return serdes.DecodeMessageTo(data, m)
+		m.SetContent(result.Content())
+
+		result.ForEachAnnotation(func(k string, v string) {
+			m.SetAnnotation(k, v)
+		})
+
+		return nil
 	}
 
 	return p, nil

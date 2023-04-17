@@ -17,6 +17,7 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
+	github.com/knqyf263/go-plugin v0.7.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/gomega v1.27.6
 	github.com/pkg/errors v0.9.1
@@ -32,8 +33,8 @@ require (
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
+	google.golang.org/protobuf v1.29.1
 	gopkg.in/yaml.v3 v3.0.1
-	karmem.org v1.2.9
 	oras.land/oras-go/v2 v2.0.2
 )
 
@@ -111,5 +112,4 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
 	google.golang.org/grpc v1.52.3 // indirect
-	google.golang.org/protobuf v1.29.1 // indirect
 )

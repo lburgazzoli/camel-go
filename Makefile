@@ -98,8 +98,7 @@ image/wasm:
 	 oras push --verbose docker.io/lburgazzoli/camel-go:latest \
  		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/wasm/components/slack.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+ 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 .PHONY: build/wasm
 build/wasm:
@@ -142,23 +141,14 @@ build/wasm:
 			-o etc/wasm/fn/to_upper.wasm  \
 			etc/wasm/fn/to_upper.go
 
-	@docker run \
-		--rm \
-		-ti \
-		-v $(PROJECT_PATH):/src:Z \
-		-w /src \
-		tinygo/tinygo:0.27.0 \
-		tinygo build \
-			-target=wasi \
-			-scheduler=none \
-			-gc=leaking \
-			-o etc/wasm/components/slack.wasm  \
-			etc/wasm/components/slack.go
-
 .PHONY: generate
-generate: protoc
+generate: protoc-gen-go-plugin
 	#go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
-	protoc --go_out=$(PROJECT_PATH)/pkg/api --proto_path=$(PROJECT_PATH)/etc/proto $(PROJECT_PATH)/etc/proto/cloudevents.proto
+	protoc \
+		--plugin=$(LOCALBIN)/protoc-gen-go-plugin \
+		--proto_path=$(PROJECT_PATH)/etc/proto \
+		--go-plugin_out=$(PROJECT_PATH)/pkg \
+		$(PROJECT_PATH)/etc/proto/processor.proto
 
 
 ##@ Build Dependencies
@@ -171,7 +161,7 @@ $(LOCALBIN):
 ## Tool Binaries
 GOIMPORT ?= $(LOCALBIN)/goimports
 KO ?= $(LOCALBIN)/ko
-PROTOC ?= $(LOCALBIN)/protoc-gen-go
+PROTOC_PLUGIN ?= $(LOCALBIN)/protoc-gen-go-plugin
 
 .PHONY: goimport
 goimport: $(GOIMPORT)
@@ -184,9 +174,7 @@ ko: $(KO)
 $(KO): $(LOCALBIN)
 	@test -s $(LOCALBIN)/ko || GOBIN=$(LOCALBIN) go install github.com/google/ko@main
 
-
-.PHONY: protoc
-protoc: $(PROTOC)
-$(PROTOC): $(LOCALBIN)
-	@test -s $(LOCALBIN)/protoc-gen-go || GOBIN=$(LOCALBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-
+.PHONY: protoc-gen-go-plugin
+protoc-gen-go-plugin: $(PROTOC_PLUGIN)
+$(PROTOC_PLUGIN): $(LOCALBIN)
+	@test -s $(LOCALBIN)/protoc-gen-go-plugin || GOBIN=$(LOCALBIN) go install github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin@main
