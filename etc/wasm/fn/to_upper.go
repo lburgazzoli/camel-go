@@ -17,7 +17,7 @@ func main() {
 
 type MyProcessor struct{}
 
-func (m MyProcessor) Process(ctx context.Context, request processor.Message) (processor.Message, error) {
+func (m MyProcessor) Process(_ context.Context, request *processor.Message) (*processor.Message, error) {
 	request.Data = []byte(strings.ToUpper(string(request.Data)))
 
 	return request, nil
