@@ -26,10 +26,13 @@ func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Mes
 		ContentType:   message.GetDataContentType(),
 		ContentSchema: message.GetDataSchema(),
 		Time:          timestamppb.New(message.GetTime()),
+		Attributes:    make(map[string]string),
+		Annotations:   make(map[string]string),
 	}
 
+	// TODO:fix annotation/attributes
 	message.ForEachAnnotation(func(k string, v string) {
-		content.Attributes[k] = v
+		content.Annotations[k] = v
 	})
 
 	if message.Content() != nil {
