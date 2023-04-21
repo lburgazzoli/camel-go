@@ -20,6 +20,10 @@ const (
 	ContextKeyActorContext = ContextKey("actor-context")
 )
 
+func Wrap(ctx context.Context, camelContext Context) context.Context {
+	return context.WithValue(context.Background(), ContextKeyCamelContext, camelContext)
+}
+
 func GetContext(ctx context.Context) Context {
 	value := ctx.Value(ContextKeyCamelContext)
 	if value == nil {
@@ -147,6 +151,8 @@ type Message interface {
 	// TODO: add options Content(opt.AsType(baz{})).
 	Content() interface{}
 	SetContent(interface{})
+
+	CopyTo(message Message) error
 }
 
 type Processor = func(context.Context, Message) error

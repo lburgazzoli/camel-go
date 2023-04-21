@@ -96,3 +96,41 @@ func (m *defaultMessage) Content() interface{} {
 func (m *defaultMessage) SetContent(content interface{}) {
 	m.content = content
 }
+
+func (m *defaultMessage) CopyTo(message api.Message) error {
+
+	if err := message.SetID(m.GetID()); err != nil {
+		return err
+	}
+	if err := message.SetSource(m.GetSource()); err != nil {
+		return err
+	}
+	if err := message.SetType(m.GetType()); err != nil {
+		return err
+	}
+	if err := message.SetSubject(m.GetSubject()); err != nil {
+		return err
+	}
+	if err := message.SetDataContentType(m.GetDataContentType()); err != nil {
+		return err
+	}
+	if err := message.SetDataSchema(m.GetDataSchema()); err != nil {
+		return err
+	}
+	if err := message.SetTime(m.GetTime()); err != nil {
+		return err
+	}
+
+	message.SetContent(m.Content())
+
+	message.SetAnnotations(m.Annotations())
+	message.SetError(m.Error())
+
+	for k, v := range m.GetExtensions() {
+		if err := message.SetExtension(k, v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -6,7 +6,6 @@ import (
 	"github.com/knqyf263/go-plugin/types/known/timestamppb"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	camelmsg "github.com/lburgazzoli/camel-go/pkg/core/message"
 	pp "github.com/lburgazzoli/camel-go/pkg/wasm/plugin/processor"
 )
@@ -17,6 +16,8 @@ type Function struct {
 
 // Invoke invoke a function.
 func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Message, error) {
+
+	camelContext := camel.GetContext(ctx)
 
 	content := pp.Message{
 		Id:            message.GetID(),
@@ -35,15 +36,9 @@ func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Mes
 		content.Annotations[k] = v
 	})
 
-	if message.Content() != nil {
-		switch d := message.Content().(type) {
-		case []byte:
-			content.Data = d
-		case string:
-			content.Data = []byte(d)
-		default:
-			return nil, camelerrors.InternalErrorf("unsupported type %v", message.Content())
-		}
+	_, err := camelContext.TypeConverter().Convert(message.Content(), &content.Data)
+	if err != nil {
+		return message, err
 	}
 
 	result, err := f.processor.Process(ctx, &content)
@@ -62,7 +57,7 @@ func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Mes
 	_ = msg.SetSubject(result.Subject)
 	_ = msg.SetDataContentType(result.ContentType)
 	_ = msg.SetDataSchema(result.ContentSchema)
-	//_ = msg.SetTime(time.UnixMilli(result.Time))
+	_ = msg.SetTime(result.Time.AsTime())
 
 	msg.SetContent(result.Data)
 

@@ -34,6 +34,9 @@ type defaultTypeConverter struct {
 }
 
 func (tc *defaultTypeConverter) Convert(input interface{}, output interface{}) (bool, error) {
+	if input == nil {
+		return false, nil
+	}
 
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,

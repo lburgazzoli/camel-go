@@ -54,21 +54,7 @@ func (l *Wasm) Processor(ctx context.Context, camelContext camel.Context) (camel
 			return err
 		}
 
-		_ = m.SetID(result.GetID())
-		_ = m.SetSource(result.GetSource())
-		_ = m.SetType(result.GetType())
-		_ = m.SetSubject(result.GetSubject())
-		_ = m.SetDataContentType(result.GetDataContentType())
-		_ = m.SetDataSchema(result.GetDataSchema())
-		//_ = msg.SetTime(time.UnixMilli(result.Time))
-
-		m.SetContent(result.Content())
-
-		result.ForEachAnnotation(func(k string, v string) {
-			m.SetAnnotation(k, v)
-		})
-
-		return nil
+		return result.CopyTo(m)
 	}
 
 	return p, nil
