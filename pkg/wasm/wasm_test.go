@@ -2,9 +2,10 @@ package wasm
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"path/filepath"
 	"testing"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 
 	"github.com/stretchr/testify/require"
 
