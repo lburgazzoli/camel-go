@@ -1,4 +1,4 @@
-//build tinygo.wasm
+//go:build tinygo.wasm
 
 // nolint
 package main
