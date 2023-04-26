@@ -24,7 +24,7 @@ func Wrap(ctx context.Context, camelContext Context) context.Context {
 	return context.WithValue(context.Background(), ContextKeyCamelContext, camelContext)
 }
 
-func GetContext(ctx context.Context) Context {
+func ExtractContext(ctx context.Context) Context {
 	value := ctx.Value(ContextKeyCamelContext)
 	if value == nil {
 		panic(fmt.Errorf("unable to get CamelContext from context"))
@@ -38,7 +38,7 @@ func GetContext(ctx context.Context) Context {
 	return answer
 }
 
-func GetActorContext(ctx context.Context) actor.Context {
+func ExtractActorContext(ctx context.Context) actor.Context {
 	value := ctx.Value(ContextKeyActorContext)
 	if value == nil {
 		panic(fmt.Errorf("unable to get actor Context from context"))
@@ -181,23 +181,23 @@ type ConsumerFactory interface {
 }
 
 type OutputAware interface {
-	Next(*actor.PID)
-	Outputs() []*actor.PID
+	Output(*actor.PID)
+	Outputs() *actor.PIDSet
 }
 
 type WithOutputs struct {
-	outputs []*actor.PID
+	outputs *actor.PIDSet
 }
 
-func (o *WithOutputs) Next(id *actor.PID) {
-	if id == nil {
+func (o *WithOutputs) Output(pid *actor.PID) {
+	if pid == nil {
 		return
 	}
 
-	o.outputs = append(o.outputs, id)
+	o.outputs.Add(pid)
 }
 
-func (o *WithOutputs) Outputs() []*actor.PID {
+func (o *WithOutputs) Outputs() *actor.PIDSet {
 	return o.outputs
 }
 

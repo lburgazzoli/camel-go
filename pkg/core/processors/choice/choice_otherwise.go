@@ -20,7 +20,7 @@ type Otherwise struct {
 }
 
 func (o *Otherwise) Reify(ctx context.Context) (camel.Verticle, error) {
-	c := camel.GetContext(ctx)
+	c := camel.ExtractContext(ctx)
 	o.DefaultVerticle.SetContext(c)
 
 	return o, nil

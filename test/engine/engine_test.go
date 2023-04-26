@@ -48,7 +48,7 @@ func TestSimpleYAML(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
@@ -94,7 +94,7 @@ func TestSimpleWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			_ = message.SetSubject("consumer-1")
@@ -148,7 +148,7 @@ func TestSimpleError(t *testing.T) {
 
 	wg := make(chan camel.Message)
 
-	c := camel.GetContext(ctx)
+	c := camel.ExtractContext(ctx)
 	c.Registry().Set("panic", func(_ context.Context, message camel.Message) error {
 		return errors.New("foo")
 	})

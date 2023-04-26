@@ -5,9 +5,10 @@ package timer
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Endpoint struct {
@@ -26,8 +27,8 @@ func (e *Endpoint) Stop(context.Context) error {
 
 func (e *Endpoint) Consumer() (api.Consumer, error) {
 	c := Consumer{
-		id:       uuid.New(),
-		endpoint: e,
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		endpoint:        e,
 	}
 
 	return &c, nil

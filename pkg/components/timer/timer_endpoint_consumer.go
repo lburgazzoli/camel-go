@@ -8,17 +8,18 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"github.com/asynkron/protoactor-go/actor"
 
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/procyon-projects/chrono"
 )
 
 type Consumer struct {
-	api.WithOutputs
+	processors.DefaultVerticle
 
-	id        string
 	endpoint  *Endpoint
 	scheduler chrono.TaskScheduler
 	task      chrono.ScheduledTask
@@ -26,12 +27,8 @@ type Consumer struct {
 	started   time.Time
 }
 
-func (c *Consumer) Endpoint() api.Endpoint {
+func (c *Consumer) Endpoint() camel.Endpoint {
 	return c.endpoint
-}
-
-func (c *Consumer) ID() string {
-	return c.id
 }
 
 func (c *Consumer) Start(context.Context) error {
@@ -71,6 +68,10 @@ func (c *Consumer) Receive(ctx actor.Context) {
 		_ = c.Start(context.Background())
 	case *actor.Stopping:
 		_ = c.Stop(context.Background())
+	case camel.Message:
+		// ignore message,
+		// TODO: may be used for transactions
+		break
 	}
 }
 
@@ -78,7 +79,7 @@ func (c *Consumer) run(_ context.Context) {
 	component := c.endpoint.Component()
 	context := component.Context()
 
-	for _, o := range c.Outputs() {
+	for _, o := range c.Outputs().Values() {
 		m, err := message.New()
 		if err != nil {
 			panic(err)

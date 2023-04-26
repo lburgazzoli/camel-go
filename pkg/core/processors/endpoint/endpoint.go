@@ -50,11 +50,6 @@ func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
 		return nil, errors.Wrapf(err, "error creating consumer")
 	}
 
-	for _, o := range e.Outputs() {
-		next := o
-
-		consumer.Next(next)
-	}
 	return consumer, nil
 }
 
@@ -73,12 +68,6 @@ func (e *Endpoint) Producer(ctx api.Context) (api.Producer, error) {
 	producer, err := factory.Producer()
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating producer")
-	}
-
-	for _, o := range e.Outputs() {
-		next := o
-
-		producer.Next(next)
 	}
 
 	return producer, nil

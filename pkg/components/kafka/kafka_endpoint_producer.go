@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"github.com/twmb/franz-go/plugin/kzap"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -18,16 +20,11 @@ import (
 )
 
 type Producer struct {
-	api.WithOutputs
+	processors.DefaultVerticle
 
-	id       string
 	endpoint *Endpoint
 	client   *kgo.Client
 	tc       api.TypeConverter
-}
-
-func (p *Producer) ID() string {
-	return p.id
 }
 
 func (p *Producer) Endpoint() api.Endpoint {
@@ -82,9 +79,7 @@ func (p *Producer) Receive(ac actor.Context) {
 			panic(msg.Error())
 		}
 
-		for _, o := range p.Outputs() {
-			ac.Send(o, msg)
-		}
+		ac.Send(ac.Parent(), msg)
 	}
 }
 

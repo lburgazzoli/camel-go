@@ -28,7 +28,7 @@ type To struct {
 }
 
 func (t *To) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	producer, err := t.Endpoint.Producer(camelContext)
 	if err != nil {

@@ -42,7 +42,7 @@ type Process struct {
 }
 
 func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	if p.Ref == "" {
 		return nil, camelerrors.MissingParameterf("ref", "failure processing %s", TAG)
@@ -59,13 +59,13 @@ func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	return p, nil
 }
 
-func (p *Process) Receive(c actor.Context) {
-	msg, ok := c.Message().(camel.Message)
+func (p *Process) Receive(ac actor.Context) {
+	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		if err := p.processor(context.Background(), msg); err != nil {
 			panic(err)
 		}
 
-		p.Dispatch(c, msg)
+		ac.Send(ac.Sender(), msg)
 	}
 }

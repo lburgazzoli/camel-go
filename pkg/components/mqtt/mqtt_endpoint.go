@@ -5,6 +5,8 @@ package mqtt
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"go.uber.org/zap"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -30,9 +32,9 @@ func (e *Endpoint) Consumer() (api.Consumer, error) {
 	id := uuid.New()
 
 	c := Consumer{
-		id:       id,
-		endpoint: e,
-		logger:   e.Logger().With(zap.String("consumer.id", id)).Sugar(),
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		endpoint:        e,
+		logger:          e.Logger().With(zap.String("consumer.id", id)).Sugar(),
 	}
 
 	return &c, nil

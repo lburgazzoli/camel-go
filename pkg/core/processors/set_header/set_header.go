@@ -42,7 +42,7 @@ func (p *Process) ID() string {
 }
 
 func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	if p.Name == "" {
 		return nil, camelerrors.MissingParameterf("name", "failure processing %s", TAG)
@@ -64,6 +64,6 @@ func (p *Process) Receive(ac actor.Context) {
 	if ok {
 		_ = msg.SetExtension(p.Name, p.Constant.Value)
 
-		p.Dispatch(ac, msg)
+		ac.Send(ac.Sender(), msg)
 	}
 }

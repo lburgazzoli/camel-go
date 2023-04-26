@@ -68,7 +68,7 @@ func TestSimpleMQTT(t *testing.T) {
 		cl, err := container.Client(ctx)
 		require.NoError(t, err)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			wg <- message
 			return nil

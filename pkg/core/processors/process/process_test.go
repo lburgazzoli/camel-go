@@ -23,7 +23,7 @@ func TestProcessor(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
 			return nil

@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -77,43 +75,10 @@ func (s *Step) Reify(ctx context.Context) (camel.Verticle, error) {
 	}
 
 	if o, ok := s.t.(camel.OutputAware); ok {
-		for _, pid := range s.Outputs() {
-			o.Next(pid)
+		for _, pid := range s.Outputs().Values() {
+			o.Output(pid)
 		}
 	}
 
 	return r.Reify(ctx)
-}
-
-func NewDefaultVerticle() DefaultVerticle {
-	return DefaultVerticle{
-		Identity: uuid.New(),
-	}
-}
-
-type DefaultVerticle struct {
-	camel.Identifiable
-	camel.WithOutputs
-
-	Identity string `yaml:"id"`
-
-	context camel.Context
-}
-
-func (v *DefaultVerticle) Context() camel.Context {
-	return v.context
-}
-
-func (v *DefaultVerticle) SetContext(ctx camel.Context) {
-	v.context = ctx
-}
-
-func (v *DefaultVerticle) ID() string {
-	return v.Identity
-}
-
-func (v *DefaultVerticle) Dispatch(c actor.Context, msg camel.Message) {
-	for _, id := range v.Outputs() {
-		c.Send(id, msg)
-	}
 }

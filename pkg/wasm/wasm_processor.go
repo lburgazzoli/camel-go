@@ -17,7 +17,7 @@ type Function struct {
 // Invoke invoke a function.
 func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Message, error) {
 
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	content := pp.Message{
 		Id:            message.GetID(),

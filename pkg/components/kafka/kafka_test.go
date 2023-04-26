@@ -16,9 +16,6 @@ import (
 	// test support.
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers/kafka"
 
-	// gomega.
-	. "github.com/onsi/gomega"
-
 	// enable components.
 	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/timer"
@@ -80,7 +77,7 @@ func TestSimpleKafka(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Nil(t, tp.Err)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
@@ -152,7 +149,7 @@ func TestSimpleKafkaWASM(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Nil(t, tp.Err)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
 		assert.Nil(t, err)

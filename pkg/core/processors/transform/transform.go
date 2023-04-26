@@ -48,7 +48,7 @@ func (t *Transform) ID() string {
 }
 
 func (t *Transform) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	t.SetContext(camelContext)
 
@@ -98,6 +98,6 @@ func (t *Transform) Receive(ac actor.Context) {
 		// temporary override annotations
 		msg.SetAnnotations(annotations)
 
-		t.Dispatch(ac, msg)
+		ac.Send(ac.Sender(), msg)
 	}
 }

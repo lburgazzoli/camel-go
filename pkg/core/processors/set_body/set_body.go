@@ -36,7 +36,7 @@ type LanguageConstant struct {
 }
 
 func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	if p.Constant == nil {
 		return nil, camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
@@ -55,6 +55,6 @@ func (p *Process) Receive(ac actor.Context) {
 	if ok {
 		msg.SetContent(p.Constant.Value)
 
-		p.Dispatch(ac, msg)
+		ac.Send(ac.Sender(), msg)
 	}
 }

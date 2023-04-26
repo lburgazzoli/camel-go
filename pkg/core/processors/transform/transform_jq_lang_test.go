@@ -23,7 +23,7 @@ func TestTransformJQ(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
 		require.Nil(t, err)

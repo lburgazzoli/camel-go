@@ -29,7 +29,7 @@ type Choice struct {
 }
 
 func (c *Choice) Reify(ctx context.Context) (camel.Verticle, error) {
-	camelContext := camel.GetContext(ctx)
+	camelContext := camel.ExtractContext(ctx)
 
 	c.SetContext(camelContext)
 

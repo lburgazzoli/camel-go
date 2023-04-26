@@ -43,7 +43,7 @@ func TestSimpleComponentWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")
@@ -89,7 +89,7 @@ func TestSimpleComponentImageWASM(t *testing.T) {
 
 		wg := make(chan camel.Message)
 
-		c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent("consumer-1")

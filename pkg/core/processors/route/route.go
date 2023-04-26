@@ -27,10 +27,12 @@ type Route struct {
 
 	Group string `yaml:"group,omitempty"`
 	From  From   `yaml:"from"`
+
+	consumerPID *actor.PID
 }
 
 func (r *Route) Reify(ctx context.Context) (camel.Verticle, error) {
-	r.SetContext(camel.GetContext(ctx))
+	r.SetContext(camel.ExtractContext(ctx))
 
 	return r, nil
 }
@@ -45,9 +47,7 @@ func (r *Route) Receive(ac actor.Context) {
 			panic(errors.Wrapf(err, "error creating from steps"))
 		}
 
-		var last *actor.PID
-
-		for s := len(items) - 1; s >= 0; s-- {
+		for s := range items {
 			item := items[s]
 
 			pid, err := verticles.Spawn(ac, item)
@@ -55,15 +55,7 @@ func (r *Route) Receive(ac actor.Context) {
 				panic(errors.Wrapf(err, "unable to spawn verticle with id %s", item.ID()))
 			}
 
-			if last != nil {
-				item.Next(last)
-			}
-
-			last = pid
-		}
-
-		if last != nil {
-			r.From.Next(last)
+			r.Add(pid)
 		}
 
 		consumer, err := r.From.Endpoint.Consumer(r.Context())
@@ -71,16 +63,22 @@ func (r *Route) Receive(ac actor.Context) {
 			panic(errors.Wrapf(err, "error creating consumer"))
 		}
 
-		_, err = verticles.Spawn(ac, consumer)
+		r.consumerPID, err = verticles.Spawn(ac, consumer)
 		if err != nil {
 			panic(errors.Wrapf(err, "unable to spawn verticle with id %s", consumer.ID()))
 		}
 
-		r.Context().Registry().Set(consumer.ID(), consumer)
+		// consumer send message to the route, which route it to the
+		// route steps
+		consumer.Output(ac.Self())
+
 		r.Context().Registry().Set(r.ID(), ac.Self())
 	case camel.Message:
-		for _, id := range r.From.Outputs() {
-			ac.Send(id, msg)
+		completed := r.Dispatch(ac, msg)
+
+		// once completed, send the message to the consumer
+		if completed {
+			ac.Send(r.consumerPID, msg)
 		}
 	}
 }

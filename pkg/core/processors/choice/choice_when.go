@@ -25,7 +25,7 @@ type When struct {
 }
 
 func (w *When) Reify(ctx context.Context) (camel.Verticle, error) {
-	c := camel.GetContext(ctx)
+	c := camel.ExtractContext(ctx)
 
 	w.DefaultVerticle.SetContext(c)
 

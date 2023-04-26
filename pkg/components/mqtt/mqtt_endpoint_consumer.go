@@ -8,30 +8,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/lburgazzoli/camel-go/pkg/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Consumer struct {
-	api.WithOutputs
+	processors.DefaultVerticle
 
-	id       string
 	endpoint *Endpoint
 	client   mqtt.Client
 	logger   *zap.SugaredLogger
 }
 
-func (c *Consumer) Endpoint() api.Endpoint {
+func (c *Consumer) Endpoint() camel.Endpoint {
 	return c.endpoint
-}
-
-func (c *Consumer) ID() string {
-	return c.id
 }
 
 func (c *Consumer) Start(context.Context) error {
@@ -109,6 +106,10 @@ func (c *Consumer) Receive(ctx actor.Context) {
 		if err != nil {
 			panic(err)
 		}
+	case camel.Message:
+		// ignore message,
+		// TODO: may be used for transactions
+		break
 	}
 }
 
@@ -129,7 +130,7 @@ func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
 	m.SetAnnotation(AnnotationMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
 	m.SetContent(msg.Payload())
 
-	for _, o := range c.Outputs() {
+	for _, o := range c.Outputs().Values() {
 		if err := component.Context().SendTo(o, m); err != nil {
 			panic(err)
 		}

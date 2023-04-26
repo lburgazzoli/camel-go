@@ -3,9 +3,10 @@ package kafka
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Endpoint struct {
@@ -23,9 +24,9 @@ func (e *Endpoint) Stop(context.Context) error {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
-		id:       uuid.New(),
-		endpoint: e,
-		tc:       e.Context().TypeConverter(),
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		endpoint:        e,
+		tc:              e.Context().TypeConverter(),
 	}
 
 	return &c, nil
