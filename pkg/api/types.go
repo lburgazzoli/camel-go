@@ -103,8 +103,16 @@ type Context interface {
 	// TODO: must be hidden maybe
 	SendTo(*actor.PID, Message) error
 
+	// SendToAs ---
+	// TODO: must be hidden maybe
+	SendToAs(*actor.PID, *actor.PID, Message) error
+
 	// Receive ---
 	Receive(string, time.Duration) (Message, error)
+
+	// Request ---
+	// TODO: must be hidden maybe
+	RequestTo(*actor.PID, Message, time.Duration) (Message, error)
 
 	Logger() *zap.Logger
 }

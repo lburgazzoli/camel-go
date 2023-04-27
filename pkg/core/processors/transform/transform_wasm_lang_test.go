@@ -44,8 +44,6 @@ func TestTransformWASM(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 
-		pv.Next(wgp)
-
 		pvp, err := c.Spawn(pv)
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
@@ -56,16 +54,12 @@ func TestTransformWASM(t *testing.T) {
 		msg.SetContent(uuid.New())
 		msg.SetAnnotation("foo", "bar")
 
-		require.Nil(t, c.SendTo(pvp, msg))
+		res, err := c.RequestTo(pvp, msg, 1*time.Second)
+		require.Nil(t, err)
 
-		select {
-		case msg := <-wg:
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, "hello from wasm", string(c))
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+		body, ok := res.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, "hello from wasm", string(body))
 	})
 
 	support.Run(t, "wasm_registry", func(t *testing.T, ctx context.Context) {
@@ -94,8 +88,6 @@ func TestTransformWASM(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 
-		pv.Next(wgp)
-
 		pvp, err := c.Spawn(pv)
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
@@ -106,15 +98,13 @@ func TestTransformWASM(t *testing.T) {
 		msg.SetContent(uuid.New())
 		msg.SetAnnotation("foo", "bar")
 
-		require.Nil(t, c.SendTo(pvp, msg))
+		res, err := c.RequestTo(pvp, msg, 1*time.Second)
+		require.Nil(t, err)
 
-		select {
-		case msg := <-wg:
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, "hello from wasm", string(c))
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+		body, ok := res.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, "hello from wasm", string(body))
+
+		require.Nil(t, c.SendTo(pvp, msg))
 	})
 }

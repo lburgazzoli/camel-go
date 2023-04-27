@@ -10,7 +10,6 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
@@ -41,21 +40,15 @@ func TestProcessor(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 
-		pv.Next(wgp)
-
 		pvp, err := c.Spawn(pv)
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
 		msg, err := message.New()
 		require.Nil(t, err)
-		require.Nil(t, c.SendTo(pvp, msg))
 
-		select {
-		case msg := <-wg:
-			assert.Equal(t, content, msg.Content())
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+		res, err := c.RequestTo(pvp, msg, 1*time.Second)
+		require.Nil(t, err)
+		require.Equal(t, content, res.Content())
 	})
 }

@@ -158,21 +158,35 @@ func (c *defaultContext) Spawn(v camel.Verticle) (*actor.PID, error) {
 }
 
 func (c *defaultContext) Send(id string, message camel.Message) error {
-	pid, ok := registry.GetAs[*actor.PID](c.Registry(), id)
+	target, ok := registry.GetAs[*actor.PID](c.Registry(), id)
 	if !ok {
 		return camelerrors.NotFoundf("verticle with id %s not found in registry", id)
 	}
 
-	return c.SendTo(pid, message)
+	return c.SendTo(target, message)
 }
 
-func (c *defaultContext) SendTo(pid *actor.PID, message camel.Message) error {
-	c.system.Root.Send(pid, message)
+func (c *defaultContext) SendTo(target *actor.PID, message camel.Message) error {
+	c.system.Root.Send(target, message)
+	return nil
+}
+
+func (c *defaultContext) SendToAs(target *actor.PID, sender *actor.PID, message camel.Message) error {
+	c.system.Root.RequestWithCustomSender(target, message, sender)
 	return nil
 }
 
 func (c *defaultContext) Receive(_ string, _ time.Duration) (camel.Message, error) {
 	return nil, camelerrors.NotImplemented("Receive")
+}
+
+func (c *defaultContext) RequestTo(target *actor.PID, message camel.Message, timeout time.Duration) (camel.Message, error) {
+	r, err := c.system.Root.RequestFuture(target, message, timeout).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.(camel.Message), nil
 }
 
 func (c *defaultContext) Properties() camel.Properties {

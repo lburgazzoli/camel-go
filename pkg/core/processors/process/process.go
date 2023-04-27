@@ -62,7 +62,9 @@ func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 func (p *Process) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
-		if err := p.processor(context.Background(), msg); err != nil {
+		ctx := camel.Wrap(context.Background(), p.Context())
+
+		if err := p.processor(ctx, msg); err != nil {
 			panic(err)
 		}
 

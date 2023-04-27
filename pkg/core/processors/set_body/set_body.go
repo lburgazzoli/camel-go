@@ -1,6 +1,6 @@
 // //go:build steps_process || steps_all
 
-package process
+package setbody
 
 import (
 	"context"
@@ -16,13 +16,13 @@ const TAG = "setBody"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Process{
+		return &SetBody{
 			DefaultVerticle: processors.NewDefaultVerticle(),
 		}
 	}
 }
 
-type Process struct {
+type SetBody struct {
 	processors.DefaultVerticle `yaml:",inline"`
 	Language                   `yaml:",inline"`
 }
@@ -35,7 +35,7 @@ type LanguageConstant struct {
 	Value string `yaml:"value"`
 }
 
-func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
+func (p *SetBody) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.ExtractContext(ctx)
 
 	if p.Constant == nil {
@@ -50,7 +50,7 @@ func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	return p, nil
 }
 
-func (p *Process) Receive(ac actor.Context) {
+func (p *SetBody) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		msg.SetContent(p.Constant.Value)

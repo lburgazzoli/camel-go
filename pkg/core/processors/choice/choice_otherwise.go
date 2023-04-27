@@ -36,9 +36,7 @@ func (o *Otherwise) Receive(ac actor.Context) {
 			panic(errors.Wrapf(err, "error creating when steps"))
 		}
 
-		var last *actor.PID
-
-		for s := len(items) - 1; s >= 0; s-- {
+		for s := range items {
 			item := items[s]
 
 			pid, err := verticles.Spawn(ac, item)
@@ -46,17 +44,14 @@ func (o *Otherwise) Receive(ac actor.Context) {
 				panic(errors.Wrapf(err, "unable to spawn verticle with id %s", item.ID()))
 			}
 
-			if last != nil {
-				item.Next(last)
-			}
-
-			last = pid
-		}
-
-		if last != nil {
-			o.Next(last)
+			o.Add(pid)
 		}
 	case camel.Message:
-		o.Dispatch(ac, msg)
+		completed := o.Dispatch(ac, msg)
+
+		// once completed, send the message to the sender
+		if completed {
+			ac.Send(ac.Sender(), branchDone{M: msg})
+		}
 	}
 }

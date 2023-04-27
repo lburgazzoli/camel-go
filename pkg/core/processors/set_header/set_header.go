@@ -1,6 +1,6 @@
 // //go:build steps_process || steps_all
 
-package process
+package setheader
 
 import (
 	"context"
@@ -16,13 +16,13 @@ const TAG = "setHeader"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Process{
+		return &SetHeader{
 			DefaultVerticle: processors.NewDefaultVerticle(),
 		}
 	}
 }
 
-type Process struct {
+type SetHeader struct {
 	processors.DefaultVerticle `yaml:",inline"`
 
 	Name     string `yaml:"name"`
@@ -37,11 +37,11 @@ type LanguageConstant struct {
 	Value string `yaml:"value"`
 }
 
-func (p *Process) ID() string {
+func (p *SetHeader) ID() string {
 	return p.Identity
 }
 
-func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
+func (p *SetHeader) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.ExtractContext(ctx)
 
 	if p.Name == "" {
@@ -59,7 +59,7 @@ func (p *Process) Reify(ctx context.Context) (camel.Verticle, error) {
 	return p, nil
 }
 
-func (p *Process) Receive(ac actor.Context) {
+func (p *SetHeader) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
 		_ = msg.SetExtension(p.Name, p.Constant.Value)

@@ -1,6 +1,6 @@
-// //go:build steps_transform || steps_all
+// //go:build steps_process || steps_all
 
-package transform
+package setheader
 
 import (
 	"context"
@@ -8,22 +8,26 @@ import (
 	"time"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/language"
-	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
-func TestTransformMustache(t *testing.T) {
-	support.Run(t, "mustache", func(t *testing.T, ctx context.Context) {
+func TestSetHeader(t *testing.T) {
+	support.Run(t, "simple", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
+		name := uuid.New()
+		content := uuid.New()
 		wg := make(chan camel.Message)
+
 		c := camel.ExtractContext(ctx)
+		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
+			message.SetContent(content)
+			return nil
+		})
 
 		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
 		require.Nil(t, err)
@@ -33,13 +37,16 @@ func TestTransformMustache(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, wgp)
 
-		l := language.Language{
-			Mustache: &mustache.Mustache{
-				Template: `hello {{message.id}}, {{message.annotations.foo}}`,
+		p := SetHeader{
+			Name: name,
+			Language: Language{
+				Constant: &LanguageConstant{
+					Value: content,
+				},
 			},
 		}
 
-		pv, err := NewTransformWithLanguage(l).Reify(ctx)
+		pv, err := p.Reify(ctx)
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 
@@ -50,14 +57,8 @@ func TestTransformMustache(t *testing.T) {
 		msg, err := message.New()
 		require.Nil(t, err)
 
-		msg.SetContent(uuid.New())
-		msg.SetAnnotation("foo", "bar")
-
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)
-
-		body, ok := res.Content().([]byte)
-		assert.True(t, ok)
-		assert.Equal(t, "hello "+msg.GetID()+", bar", string(body))
+		require.Equal(t, content, res.GetExtensions()[name])
 	})
 }
