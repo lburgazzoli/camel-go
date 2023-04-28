@@ -13,6 +13,8 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 
+	. "github.com/onsi/gomega"
+
 	// test support.
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers/kafka"
 

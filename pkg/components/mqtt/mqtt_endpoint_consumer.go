@@ -8,9 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
-	"go.uber.org/zap"
+	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -20,11 +18,10 @@ import (
 )
 
 type Consumer struct {
-	processors.DefaultVerticle
+	components.DefaultConsumer
 
 	endpoint *Endpoint
 	client   mqtt.Client
-	logger   *zap.SugaredLogger
 }
 
 func (c *Consumer) Endpoint() camel.Endpoint {
@@ -53,13 +50,13 @@ func (c *Consumer) Start(context.Context) error {
 
 	// Log events
 	opts.OnConnectionLost = func(cl mqtt.Client, err error) {
-		c.logger.Warnf("connection lost (error: %s)", err.Error())
+		c.Logger().Warnf("connection lost (error: %s)", err.Error())
 	}
 	opts.OnConnect = func(cl mqtt.Client) {
-		c.logger.Info("connection established")
+		c.Logger().Info("connection established")
 	}
 	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		c.logger.Info("attempting to reconnect")
+		c.Logger().Info("attempting to reconnect")
 	}
 
 	c.client = mqtt.NewClient(opts)
@@ -67,7 +64,7 @@ func (c *Consumer) Start(context.Context) error {
 		return token.Error()
 	}
 
-	c.logger.Infof("subscribing to %s", c.endpoint.config.Remaining)
+	c.Logger().Infof("subscribing to %s", c.endpoint.config.Remaining)
 
 	token := c.client.Subscribe(c.endpoint.config.Remaining, 0, c.handler)
 	token.Wait()
@@ -76,7 +73,7 @@ func (c *Consumer) Start(context.Context) error {
 		return token.Error()
 	}
 
-	c.logger.Infof("subscribed to %s", c.endpoint.config.Remaining)
+	c.Logger().Infof("subscribed to %s", c.endpoint.config.Remaining)
 
 	return nil
 }
@@ -114,7 +111,7 @@ func (c *Consumer) Receive(ctx actor.Context) {
 }
 
 func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
-	c.logger.Infof("handing message %v", msg)
+	c.Logger().Infof("handing message %v", msg)
 
 	m, err := message.New()
 	if err != nil {
@@ -130,10 +127,8 @@ func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
 	m.SetAnnotation(AnnotationMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
 	m.SetContent(msg.Payload())
 
-	for _, o := range c.Outputs().Values() {
-		if err := component.Context().SendTo(o, m); err != nil {
-			panic(err)
-		}
+	if err := component.Context().SendTo(c.Target(), m); err != nil {
+		panic(err)
 	}
 
 	msg.Ack()

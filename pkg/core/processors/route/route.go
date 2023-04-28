@@ -50,15 +50,13 @@ func (r *Route) Receive(ac actor.Context) {
 		for s := range items {
 			item := items[s]
 
-			pid, err := verticles.Spawn(ac, item)
+			_, err := verticles.Spawn(ac, item)
 			if err != nil {
 				panic(errors.Wrapf(err, "unable to spawn verticle with id %s", item.ID()))
 			}
-
-			r.Add(pid)
 		}
 
-		consumer, err := r.From.Endpoint.Consumer(r.Context())
+		consumer, err := r.From.Endpoint.Consumer(r.Context(), ac.Self())
 		if err != nil {
 			panic(errors.Wrapf(err, "error creating consumer"))
 		}
@@ -68,17 +66,13 @@ func (r *Route) Receive(ac actor.Context) {
 			panic(errors.Wrapf(err, "unable to spawn verticle with id %s", consumer.ID()))
 		}
 
-		// consumer send message to the route, which route it to the
-		// route steps
-		consumer.Output(ac.Self())
-
 		r.Context().Registry().Set(r.ID(), ac.Self())
 	case camel.Message:
 		completed := r.Dispatch(ac, msg)
 
 		// once completed, send the message to the consumer
 		if completed {
-			ac.Send(r.consumerPID, msg)
+			ac.Request(r.consumerPID, msg)
 		}
 	}
 }

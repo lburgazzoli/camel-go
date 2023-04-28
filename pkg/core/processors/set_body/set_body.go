@@ -16,9 +16,13 @@ const TAG = "setBody"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &SetBody{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-		}
+		return New()
+	}
+}
+
+func New() *SetBody {
+	return &SetBody{
+		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
 }
 
@@ -55,6 +59,6 @@ func (p *SetBody) Receive(ac actor.Context) {
 	if ok {
 		msg.SetContent(p.Constant.Value)
 
-		ac.Send(ac.Sender(), msg)
+		ac.Request(ac.Sender(), msg)
 	}
 }

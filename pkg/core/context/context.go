@@ -2,7 +2,9 @@ package context
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"reflect"
 	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/errors/log"
@@ -167,7 +169,7 @@ func (c *defaultContext) Send(id string, message camel.Message) error {
 }
 
 func (c *defaultContext) SendTo(target *actor.PID, message camel.Message) error {
-	c.system.Root.Send(target, message)
+	c.system.Root.Request(target, message)
 	return nil
 }
 
@@ -186,7 +188,12 @@ func (c *defaultContext) RequestTo(target *actor.PID, message camel.Message, tim
 		return nil, err
 	}
 
-	return r.(camel.Message), nil
+	m, ok := r.(camel.Message)
+	if !ok {
+		return nil, fmt.Errorf("response is not of type camel.Message, got %v", reflect.TypeOf(r))
+	}
+
+	return m, nil
 }
 
 func (c *defaultContext) Properties() camel.Properties {

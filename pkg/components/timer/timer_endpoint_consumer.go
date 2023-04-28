@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 
@@ -18,7 +18,7 @@ import (
 )
 
 type Consumer struct {
-	processors.DefaultVerticle
+	components.DefaultConsumer
 
 	endpoint  *Endpoint
 	scheduler chrono.TaskScheduler
@@ -79,21 +79,19 @@ func (c *Consumer) run(_ context.Context) {
 	component := c.endpoint.Component()
 	context := component.Context()
 
-	for _, o := range c.Outputs().Values() {
-		m, err := message.New()
-		if err != nil {
-			panic(err)
-		}
+	m, err := message.New()
+	if err != nil {
+		panic(err)
+	}
 
-		_ = m.SetType("camel.timer.triggered")
-		_ = m.SetSource(component.Scheme())
+	_ = m.SetType("camel.timer.triggered")
+	_ = m.SetSource(component.Scheme())
 
-		m.SetAnnotation(AnnotationTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
-		m.SetAnnotation(AnnotationTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
-		m.SetAnnotation(AnnotationTimerName, c.endpoint.config.Remaining)
+	m.SetAnnotation(AnnotationTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
+	m.SetAnnotation(AnnotationTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
+	m.SetAnnotation(AnnotationTimerName, c.endpoint.config.Remaining)
 
-		if err := context.SendTo(o, m); err != nil {
-			panic(err)
-		}
+	if err := context.SendTo(c.Target(), m); err != nil {
+		panic(err)
 	}
 }

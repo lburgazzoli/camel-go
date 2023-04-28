@@ -3,6 +3,8 @@ package endpoint
 import (
 	"net/url"
 
+	"github.com/asynkron/protoactor-go/actor"
+
 	"github.com/pkg/errors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -22,7 +24,6 @@ func init() {
 
 type Endpoint struct {
 	api.Identifiable
-	api.WithOutputs
 
 	Identity   string                 `yaml:"id"`
 	URI        string                 `yaml:"uri"`
@@ -33,7 +34,7 @@ func (e *Endpoint) ID() string {
 	return e.Identity
 }
 
-func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
+func (e *Endpoint) Consumer(ctx api.Context, pid *actor.PID) (api.Consumer, error) {
 
 	ep, err := e.create(ctx)
 	if err != nil {
@@ -45,7 +46,7 @@ func (e *Endpoint) Consumer(ctx api.Context) (api.Consumer, error) {
 		return nil, camelerrors.NotImplementedf("scheme %s does not implement consumer", ep.Component().Scheme())
 	}
 
-	consumer, err := factory.Consumer()
+	consumer, err := factory.Consumer(pid)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating consumer")
 	}

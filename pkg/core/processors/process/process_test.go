@@ -20,7 +20,6 @@ func TestProcessor(t *testing.T) {
 		t.Helper()
 
 		content := uuid.New()
-		wg := make(chan camel.Message)
 
 		c := camel.ExtractContext(ctx)
 		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
@@ -28,15 +27,10 @@ func TestProcessor(t *testing.T) {
 			return nil
 		})
 
-		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.Nil(t, err)
-		require.NotNil(t, wgv)
+		p := New()
+		p.Ref = "p"
 
-		wgp, err := c.Spawn(wgv)
-		require.Nil(t, err)
-		require.NotNil(t, wgp)
-
-		pv, err := NewProcessWithRef("p").Reify(ctx)
+		pv, err := p.Reify(ctx)
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 

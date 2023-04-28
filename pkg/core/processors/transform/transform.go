@@ -98,6 +98,6 @@ func (t *Transform) Receive(ac actor.Context) {
 		// temporary override annotations
 		msg.SetAnnotations(annotations)
 
-		ac.Send(ac.Sender(), msg)
+		ac.Request(ac.Sender(), msg)
 	}
 }

@@ -3,166 +3,166 @@ package choice
 import (
 	"context"
 	"testing"
+	"time"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
+	"github.com/lburgazzoli/camel-go/pkg/core/message"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
 func TestChoice(t *testing.T) {
-	support.Run(t, "simple", func(t *testing.T, ctx context.Context) {
+	support.Run(t, "when", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
-		/*
-			c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
-			content1 := `{ "foo": "bar" }`
-			wg1 := make(chan camel.Message)
-
-			content2 := `{ "bar": "baz" }`
-			wg2 := make(chan camel.Message)
-
-			choice := Choice{
-				DefaultVerticle: processors.NewDefaultVerticle(),
-				When: []*When{
-					{
-						DefaultVerticle: processors.NewDefaultVerticle(),
-						Language: language.Language{
-							Jq: &jq.Jq{Expression: `.foo == "bar"`},
-						},
-						Steps: []processors.Step{
-							processors.NewStep(support.NewChannelVerticle(wg1)),
-						},
-					},
-					{
-						DefaultVerticle: processors.NewDefaultVerticle(),
-						Language: language.Language{
-							Jq: &jq.Jq{Expression: `.bar == "baz"`},
-						},
-						Steps: []processors.Step{
-							processors.NewStep(support.NewChannelVerticle(wg2)),
-						},
-					},
+		choice := New()
+		choice.When = []*When{
+			NewWhen(
+				language.Language{
+					Jq: &jq.Jq{Expression: `.foo == "bar"`},
 				},
-			}
+				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+					m.SetContent("branch: bar")
+					return nil
+				})),
+			),
+			NewWhen(
+				language.Language{
+					Jq: &jq.Jq{Expression: `.foo == "baz"`},
+				},
+				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+					m.SetContent("branch: baz")
+					return nil
+				})),
+			),
+		}
 
-			id, err := choice.Reify(ctx)
+		chv, err := choice.Reify(ctx)
 
+		assert.Nil(t, err)
+		assert.NotNil(t, chv)
+
+		h := support.NewRootVerticle(chv)
+
+		chp, err := c.Spawn(h)
+		require.Nil(t, err)
+		require.NotNil(t, chp)
+
+		{
+			msg, err := message.New()
+			msg.SetContent(`{ "foo": "bar" }`)
 			assert.Nil(t, err)
-			assert.NotNil(t, id)
 
-			msg1, err := message.New()
-			msg1.SetContent(content1)
+			err = c.SendTo(chp, msg)
+			require.Nil(t, err)
+
+			res, err := h.Get(1 * time.Minute)
+			require.Nil(t, err)
+			require.Equal(t, "branch: bar", res.Content())
+		}
+
+		{
+			msg, err := message.New()
+			msg.SetContent(`{ "foo": "baz" }`)
 			assert.Nil(t, err)
 
-			assert.Nil(t, c.Send(id, msg1))
+			err = c.SendTo(chp, msg)
+			require.Nil(t, err)
 
-			msg2, err := message.New()
-			msg2.SetContent(content2)
-			assert.Nil(t, err)
-
-			assert.Nil(t, c.Send(id, msg2))
-
-			RegisterTestingT(t)
-
-			recv1, err := message.New()
-			assert.Nil(t, err)
-
-			recv2, err := message.New()
-			assert.Nil(t, err)
-
-			Eventually(wg1).Should(Receive(&recv1))
-			Eventually(wg2).Should(Receive(&recv2))
-
-			Expect(recv1.Content()).To(Equal(content1))
-			Expect(recv2.Content()).To(Equal(content2))
-		*/
+			res, err := h.Get(1 * time.Minute)
+			require.Nil(t, err)
+			require.Equal(t, "branch: baz", res.Content())
+		}
 	})
 
 	support.Run(t, "otherwise", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
-		/*
-			c := camel.GetContext(ctx)
+		c := camel.ExtractContext(ctx)
 
-			content1 := `{ "foo": "bar" }`
-			wg1 := make(chan camel.Message)
-
-			content2 := `{ "bar": "baz" }`
-			wg2 := make(chan camel.Message)
-
-			content3 := `{ "foo": "baz" }`
-			wg3 := make(chan camel.Message)
-
-			choice := Choice{
-				DefaultVerticle: processors.NewDefaultVerticle(),
-				When: []*When{
-					{
-						DefaultVerticle: processors.NewDefaultVerticle(),
-						Language: language.Language{
-							Jq: &jq.Jq{Expression: `.foo == "bar"`},
-						},
-						Steps: []processors.Step{
-							processors.NewStep(support.NewChannelVerticle(wg1)),
-						},
-					},
-					{
-						DefaultVerticle: processors.NewDefaultVerticle(),
-						Language: language.Language{
-							Jq: &jq.Jq{Expression: `.bar == "baz"`},
-						},
-						Steps: []processors.Step{
-							processors.NewStep(support.NewChannelVerticle(wg2)),
-						},
-					},
+		choice := New()
+		choice.When = []*When{
+			NewWhen(
+				language.Language{
+					Jq: &jq.Jq{Expression: `.foo == "bar"`},
 				},
-				Otherwise: &Otherwise{
-					DefaultVerticle: processors.NewDefaultVerticle(),
-					Steps: []processors.Step{
-						processors.NewStep(support.NewChannelVerticle(wg3)),
-					},
+				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+					m.SetContent("branch: bar")
+					return nil
+				})),
+			),
+			NewWhen(
+				language.Language{
+					Jq: &jq.Jq{Expression: `.foo == "baz"`},
 				},
-			}
+				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+					m.SetContent("branch: baz")
+					return nil
+				})),
+			),
+		}
+		choice.Otherwise = NewOtherwise(
+			processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+				m.SetContent("branch: otherwise")
+				return nil
+			})),
+		)
 
-			id, err := choice.Reify(ctx)
+		chv, err := choice.Reify(ctx)
 
-			assert.Nil(t, err)
-			assert.NotNil(t, id)
+		assert.Nil(t, err)
+		assert.NotNil(t, chv)
 
-			msg3, err := message.New()
-			msg3.SetContent(content3)
-			assert.Nil(t, err)
+		h := support.NewRootVerticle(chv)
 
-			assert.Nil(t, c.Send(id, msg3))
+		chp, err := c.Spawn(h)
+		require.Nil(t, err)
+		require.NotNil(t, chp)
 
-			msg1, err := message.New()
-			msg1.SetContent(content1)
-			assert.Nil(t, err)
-
-			assert.Nil(t, c.Send(id, msg1))
-
-			msg2, err := message.New()
-			msg2.SetContent(content2)
-			assert.Nil(t, err)
-
-			assert.Nil(t, c.Send(id, msg2))
-
-			RegisterTestingT(t)
-
-			recv1, err := message.New()
-			assert.Nil(t, err)
-
-			recv2, err := message.New()
+		{
+			msg, err := message.New()
+			msg.SetContent(`{ "foo": "bar" }`)
 			assert.Nil(t, err)
 
-			recv3, err := message.New()
+			err = c.SendTo(chp, msg)
+			require.Nil(t, err)
+
+			res, err := h.Get(1 * time.Minute)
+			require.Nil(t, err)
+			require.Equal(t, "branch: bar", res.Content())
+		}
+
+		{
+			msg, err := message.New()
+			msg.SetContent(`{ "foo": "baz" }`)
 			assert.Nil(t, err)
 
-			Eventually(wg3).Should(Receive(&recv3))
-			Eventually(wg1).Should(Receive(&recv1))
-			Eventually(wg2).Should(Receive(&recv2))
+			err = c.SendTo(chp, msg)
+			require.Nil(t, err)
 
-			Expect(recv3.Content()).To(Equal(content3))
-			Expect(recv1.Content()).To(Equal(content1))
-			Expect(recv2.Content()).To(Equal(content2))
-		*/
+			res, err := h.Get(1 * time.Minute)
+			require.Nil(t, err)
+			require.Equal(t, "branch: baz", res.Content())
+		}
+
+		{
+			msg, err := message.New()
+			msg.SetContent(`{ "bar": "baz" }`)
+			assert.Nil(t, err)
+
+			err = c.SendTo(chp, msg)
+			require.Nil(t, err)
+
+			res, err := h.Get(1 * time.Minute)
+			require.Nil(t, err)
+			require.Equal(t, "branch: otherwise", res.Content())
+		}
 	})
 }

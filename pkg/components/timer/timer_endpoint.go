@@ -5,7 +5,7 @@ package timer
 import (
 	"context"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/asynkron/protoactor-go/actor"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
@@ -25,9 +25,9 @@ func (e *Endpoint) Stop(context.Context) error {
 	return nil
 }
 
-func (e *Endpoint) Consumer() (api.Consumer, error) {
+func (e *Endpoint) Consumer(pid *actor.PID) (api.Consumer, error) {
 	c := Consumer{
-		DefaultVerticle: processors.NewDefaultVerticle(),
+		DefaultConsumer: components.NewDefaultConsumer(e, pid),
 		endpoint:        e,
 	}
 

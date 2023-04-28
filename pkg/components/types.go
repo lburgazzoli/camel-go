@@ -1,7 +1,9 @@
 package components
 
 import (
+	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"go.uber.org/zap"
 )
@@ -84,4 +86,32 @@ func (e *DefaultEndpoint) ID() string {
 
 func (e *DefaultEndpoint) Logger() *zap.Logger {
 	return e.logger
+}
+
+//
+// Default Consumer
+//
+
+func NewDefaultConsumer(endpoint api.Endpoint, target *actor.PID) DefaultConsumer {
+	id := uuid.New()
+
+	return DefaultConsumer{
+		target: target,
+		logger: endpoint.Logger().With(zap.String("consumer.id", id)).Sugar(),
+	}
+}
+
+type DefaultConsumer struct {
+	processors.DefaultVerticle
+
+	logger *zap.SugaredLogger
+	target *actor.PID
+}
+
+func (c *DefaultConsumer) Logger() *zap.SugaredLogger {
+	return c.logger
+}
+
+func (c *DefaultConsumer) Target() *actor.PID {
+	return c.target
 }

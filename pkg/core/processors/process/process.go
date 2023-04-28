@@ -17,11 +17,11 @@ const TAG = "process"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return NewProcess()
+		return New()
 	}
 }
 
-func NewProcess() *Process {
+func New() *Process {
 	return &Process{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
@@ -68,6 +68,6 @@ func (p *Process) Receive(ac actor.Context) {
 			panic(err)
 		}
 
-		ac.Send(ac.Sender(), msg)
+		ac.Request(ac.Sender(), msg)
 	}
 }

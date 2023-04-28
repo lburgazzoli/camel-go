@@ -20,7 +20,6 @@ func TestSetBody(t *testing.T) {
 		t.Helper()
 
 		content := uuid.New()
-		wg := make(chan camel.Message)
 
 		c := camel.ExtractContext(ctx)
 		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
@@ -28,20 +27,9 @@ func TestSetBody(t *testing.T) {
 			return nil
 		})
 
-		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.Nil(t, err)
-		require.NotNil(t, wgv)
-
-		wgp, err := c.Spawn(wgv)
-		require.Nil(t, err)
-		require.NotNil(t, wgp)
-
-		p := SetBody{
-			Language: Language{
-				Constant: &LanguageConstant{
-					Value: content,
-				},
-			},
+		p := New()
+		p.Language.Constant = &LanguageConstant{
+			Value: content,
 		}
 
 		pv, err := p.Reify(ctx)

@@ -39,7 +39,6 @@ func ReifySteps(ctx context.Context, steps []Step) ([]camel.Verticle, error) {
 
 type Step struct {
 	Reifyable
-	camel.WithOutputs
 
 	t interface{}
 }
@@ -72,12 +71,6 @@ func (s *Step) Reify(ctx context.Context) (camel.Verticle, error) {
 	r, ok := s.t.(Reifyable)
 	if !ok {
 		return nil, camelerrors.InternalError("non reifiable step")
-	}
-
-	if o, ok := s.t.(camel.OutputAware); ok {
-		for _, pid := range s.Outputs().Values() {
-			o.Output(pid)
-		}
 	}
 
 	return r.Reify(ctx)

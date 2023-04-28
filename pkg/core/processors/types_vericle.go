@@ -3,24 +3,23 @@ package processors
 import (
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	"github.com/lburgazzoli/camel-go/pkg/core/verticles"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
+	"github.com/pkg/errors"
 )
 
 func NewDefaultVerticle() DefaultVerticle {
 	return DefaultVerticle{
 		Identity: uuid.New(),
-		pids:     actor.NewPIDSet(),
 	}
 }
 
 type DefaultVerticle struct {
 	camel.Identifiable
-	camel.WithOutputs
 
 	Identity string `yaml:"id"`
 
 	context camel.Context
-	pids    *actor.PIDSet
 }
 
 func (v *DefaultVerticle) Context() camel.Context {
@@ -35,39 +34,82 @@ func (v *DefaultVerticle) ID() string {
 	return v.Identity
 }
 
-func (v *DefaultVerticle) Add(pid *actor.PID) {
-	if pid == nil {
-		return
-	}
+// Dispatch send messages to the child steps, returns true if the dispatch is completed.
+func (v *DefaultVerticle) Dispatch(ac actor.Context, msg camel.Message) bool {
 
-	v.pids.Add(pid)
-}
+	pids := ac.Children()
 
-// Dispatch send messages to the child steps, returns true if the dispatch is completed
-func (v *DefaultVerticle) Dispatch(c actor.Context, msg camel.Message) bool {
 	// no children
-	if v.pids.Empty() {
+	if len(pids) == 0 {
 		return true
 	}
 
-	sender := c.Sender()
+	sender := ac.Sender()
+	if sender == nil {
+		panic("unknown sender")
+	}
 
-	if !v.pids.Contains(sender) {
+	if !verticles.Contains(pids, sender) {
 		// this is not a message coming from a children, send to the first one
-		c.Send(v.pids.Get(0), msg)
+		ac.Request(pids[0], msg)
 
 		return false
 	}
 
-	for i := 0; i < v.pids.Len(); i++ {
-		pid := v.pids.Get(i)
+	for i := 0; i < len(pids); i++ {
+		pid := pids[i]
 
-		if pid.Equal(sender) && i != v.pids.Len()-1 {
+		if pid.Equal(sender) && i != len(pids)-1 {
 			// send the message to the next one
-			c.Send(v.pids.Get(i+1), msg)
+			ac.Request(pids[i+1], msg)
 			return false
 		}
 	}
 
 	return true
+}
+
+// StepsDone is a marker type to help break out.
+type StepsDone struct {
+	M camel.Message
+}
+
+func NewDefaultStepsVerticle() DefaultStepsVerticle {
+	return DefaultStepsVerticle{
+		DefaultVerticle: NewDefaultVerticle(),
+	}
+}
+
+type DefaultStepsVerticle struct {
+	DefaultVerticle `yaml:",inline"`
+
+	Steps []Step `yaml:"steps,omitempty"`
+}
+
+func (v *DefaultStepsVerticle) Receive(ac actor.Context) {
+	switch msg := ac.Message().(type) {
+	case *actor.Started:
+		ctx := verticles.NewContext(v.Context(), ac)
+
+		items, err := ReifySteps(ctx, v.Steps)
+		if err != nil {
+			panic(errors.Wrapf(err, "error creating when steps"))
+		}
+
+		for s := range items {
+			item := items[s]
+
+			_, err := verticles.Spawn(ac, item)
+			if err != nil {
+				panic(errors.Wrapf(err, "unable to spawn verticle with id %s", item.ID()))
+			}
+		}
+	case camel.Message:
+		completed := v.Dispatch(ac, msg)
+
+		// once completed, send the message to the parent
+		if completed {
+			ac.Request(ac.Parent(), StepsDone{M: msg})
+		}
+	}
 }

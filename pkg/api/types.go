@@ -139,6 +139,7 @@ type Endpoint interface {
 
 //nolint:interfacebloat
 type Message interface {
+	// TODO: remove, too limited
 	ce.EventContext
 
 	Fail(error)
@@ -185,33 +186,11 @@ type Consumer interface {
 }
 
 type ConsumerFactory interface {
-	Consumer() (Consumer, error)
-}
-
-type OutputAware interface {
-	Output(*actor.PID)
-	Outputs() *actor.PIDSet
-}
-
-type WithOutputs struct {
-	outputs *actor.PIDSet
-}
-
-func (o *WithOutputs) Output(pid *actor.PID) {
-	if pid == nil {
-		return
-	}
-
-	o.outputs.Add(pid)
-}
-
-func (o *WithOutputs) Outputs() *actor.PIDSet {
-	return o.outputs
+	Consumer(pid *actor.PID) (Consumer, error)
 }
 
 type Verticle interface {
 	Identifiable
-	OutputAware
 
 	actor.Actor
 }

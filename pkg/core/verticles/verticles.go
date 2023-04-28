@@ -27,3 +27,13 @@ func NewContext(cc camel.Context, ac actor.Context) context.Context {
 
 	return c
 }
+
+func Contains(pids []*actor.PID, pid *actor.PID) bool {
+	for _, c := range pids {
+		if c.Equal(pid) {
+			return true
+		}
+	}
+
+	return false
+}

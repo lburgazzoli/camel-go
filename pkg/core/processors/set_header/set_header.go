@@ -16,9 +16,13 @@ const TAG = "setHeader"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &SetHeader{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-		}
+		return New()
+	}
+}
+
+func New() *SetHeader {
+	return &SetHeader{
+		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
 }
 
@@ -64,6 +68,6 @@ func (p *SetHeader) Receive(ac actor.Context) {
 	if ok {
 		_ = msg.SetExtension(p.Name, p.Constant.Value)
 
-		ac.Send(ac.Sender(), msg)
+		ac.Request(ac.Sender(), msg)
 	}
 }

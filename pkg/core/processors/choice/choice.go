@@ -15,9 +15,13 @@ const TAG = "choice"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return &Choice{
-			DefaultVerticle: processors.NewDefaultVerticle(),
-		}
+		return New()
+	}
+}
+
+func New() *Choice {
+	return &Choice{
+		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
 }
 
@@ -44,8 +48,8 @@ func (c *Choice) Receive(ac actor.Context) {
 		c.onStarted(ctx, ac, msg)
 	case camel.Message:
 		c.onMessage(ctx, ac, msg)
-	case branchDone:
-		c.onDone(ctx, ac, msg)
+	case processors.StepsDone:
+		c.onDone(ctx, ac, msg.M)
 	}
 }
 
@@ -92,17 +96,19 @@ func (c *Choice) onMessage(ctx context.Context, ac actor.Context, msg camel.Mess
 		}
 
 		if matches {
-			ac.Send(c.When[i].pid, msg)
+			ac.Request(c.When[i].pid, msg)
 			break
 		}
 	}
 
 	if !matches && c.Otherwise != nil {
-		ac.Send(c.Otherwise.pid, msg)
+		ac.Request(c.Otherwise.pid, msg)
 	}
 }
 
-func (c *Choice) onDone(_ context.Context, ac actor.Context, msg branchDone) {
-	// all done, unwrap and send to parent send to parent
-	ac.Send(ac.Sender(), msg.M)
+func (c *Choice) onDone(_ context.Context, ac actor.Context, msg camel.Message) {
+	// all done, unwrap and send to parent
+	if ac.Parent() != nil {
+		ac.Request(ac.Parent(), msg)
+	}
 }
