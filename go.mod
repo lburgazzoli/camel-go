@@ -29,7 +29,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.19.0
 	github.com/tetratelabs/wazero v1.1.0
 	github.com/twmb/franz-go v1.13.3
-	github.com/twmb/franz-go/pkg/kadm v1.8.0
+	github.com/twmb/franz-go/pkg/kadm v1.8.1
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
