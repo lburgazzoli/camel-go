@@ -72,13 +72,14 @@ check: check/lint
 
 .PHONY: check/lint
 check/lint:
-	@docker run \
+	docker run \
 		--rm \
 		-t \
 		-v $(PROJECT_PATH):/app:Z \
 		-e GOGC=$(LINT_GOGC) \
 		-w /app \
 		golangci/golangci-lint:v1.52 golangci-lint run \
+			--verbose \
 			--config .golangci.yml \
 			--out-format tab \
 			--skip-dirs etc \
