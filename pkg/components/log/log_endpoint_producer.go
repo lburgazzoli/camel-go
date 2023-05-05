@@ -44,6 +44,6 @@ func (p *Producer) Receive(ac actor.Context) {
 			zap.String("message.type", msg.GetType()),
 			zap.String("message.id", msg.GetID()))
 
-		ac.Send(ac.Parent(), msg)
+		ac.Request(ac.Parent(), msg)
 	}
 }

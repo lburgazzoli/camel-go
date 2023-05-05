@@ -44,12 +44,7 @@ func (v *DefaultVerticle) Dispatch(ac actor.Context, msg camel.Message) bool {
 		return true
 	}
 
-	sender := ac.Sender()
-	if sender == nil {
-		panic("unknown sender")
-	}
-
-	if !verticles.Contains(pids, sender) {
+	if !verticles.Contains(pids, ac.Sender()) {
 		// this is not a message coming from a children, send to the first one
 		ac.Request(pids[0], msg)
 
@@ -59,7 +54,7 @@ func (v *DefaultVerticle) Dispatch(ac actor.Context, msg camel.Message) bool {
 	for i := 0; i < len(pids); i++ {
 		pid := pids[i]
 
-		if pid.Equal(sender) && i != len(pids)-1 {
+		if pid.Equal(ac.Sender()) && i != len(pids)-1 {
 			// send the message to the next one
 			ac.Request(pids[i+1], msg)
 			return false

@@ -1,6 +1,6 @@
 - route:
     from:
-      uri: "timer:foo?interval=1s"
+      uri: "timer:foo?period=1s"
       steps:
         - transform:
             wasm:

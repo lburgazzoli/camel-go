@@ -47,6 +47,13 @@ help:
 
 ##@ Development
 
+
+.PHONY: clean
+clean:
+	go clean -x
+	go clean -x -testcache
+	rm -f $(LOCAL_BIN_PATH)/camel
+
 .PHONY: fmt
 fmt: goimport
 	$(LOCALBIN)/goimports -l -w .
@@ -60,15 +67,18 @@ test:
 deps:
 	go mod tidy
 
-.PHONY: lint
-lint:
+.PHONY: check/lint
+check: check/lint
+
+.PHONY: check/lint
+check/lint:
 	@docker run \
 		--rm \
 		-t \
 		-v $(PROJECT_PATH):/app:Z \
 		-e GOGC=$(LINT_GOGC) \
 		-w /app \
-		golangci/golangci-lint:v1.51.2 golangci-lint run \
+		golangci/golangci-lint:v1.52 golangci-lint run \
 			--config .golangci.yml \
 			--out-format tab \
 			--skip-dirs etc \

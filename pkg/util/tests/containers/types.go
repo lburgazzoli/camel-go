@@ -27,6 +27,6 @@ func OverrideContainerRequest(r testcontainers.ContainerRequest) func(req testco
 type SysOutLogConsumer struct {
 }
 
-func (g *SysOutLogConsumer) Accept(l testcontainers.Log) {
+func (g *SysOutLogConsumer) Accept(_ testcontainers.Log) {
 	// _, _ = fmt.Fprintf(os.Stdout, string(l.Content))
 }

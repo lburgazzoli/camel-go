@@ -14,7 +14,7 @@ type Mustache struct {
 	Template string `yaml:"template"`
 }
 
-func (l *Mustache) Processor(ctx context.Context, camelContext camel.Context) (camel.Processor, error) {
+func (l *Mustache) Processor(_ context.Context, _ camel.Context) (camel.Processor, error) {
 	if l.Template == "" {
 		return nil, camelerrors.MissingParameterf("mustache.template", "failure configuring jq processor")
 	}

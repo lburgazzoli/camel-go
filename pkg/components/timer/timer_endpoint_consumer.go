@@ -36,7 +36,7 @@ func (c *Consumer) Start(context.Context) error {
 	c.started = time.Now()
 	c.scheduler = chrono.NewDefaultTaskScheduler()
 
-	t, err := c.scheduler.ScheduleWithFixedDelay(c.run, c.endpoint.config.Interval)
+	t, err := c.scheduler.ScheduleWithFixedDelay(c.run, c.endpoint.config.Period)
 	if err != nil {
 		return err
 	}
@@ -76,6 +76,10 @@ func (c *Consumer) Receive(ctx actor.Context) {
 }
 
 func (c *Consumer) run(_ context.Context) {
+	if c.endpoint.config.RepeatCount > 0 && c.counter >= c.endpoint.config.RepeatCount {
+		return
+	}
+
 	component := c.endpoint.Component()
 	context := component.Context()
 

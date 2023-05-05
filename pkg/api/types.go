@@ -20,7 +20,7 @@ const (
 	ContextKeyActorContext = ContextKey("actor-context")
 )
 
-func Wrap(ctx context.Context, camelContext Context) context.Context {
+func Wrap(_ context.Context, camelContext Context) context.Context {
 	return context.WithValue(context.Background(), ContextKeyCamelContext, camelContext)
 }
 

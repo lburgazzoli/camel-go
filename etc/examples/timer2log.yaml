@@ -1,0 +1,6 @@
+- route:
+    from:
+      uri: "timer:foo?period=1s&repeatCount=2"
+      steps:
+        - to:
+            uri: "log:info"

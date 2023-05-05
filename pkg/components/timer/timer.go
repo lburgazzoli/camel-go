@@ -15,7 +15,7 @@ const (
 	AnnotationTimerFiredCount = "camel.apache.org/timer.fired.count"
 )
 
-func NewComponent(ctx api.Context, config map[string]interface{}) (api.Component, error) {
+func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {
 	component := Component{
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
 	}

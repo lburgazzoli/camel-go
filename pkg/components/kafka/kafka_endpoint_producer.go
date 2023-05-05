@@ -79,7 +79,7 @@ func (p *Producer) Receive(ac actor.Context) {
 			panic(msg.Error())
 		}
 
-		ac.Send(ac.Parent(), msg)
+		ac.Request(ac.Parent(), msg)
 	}
 }
 

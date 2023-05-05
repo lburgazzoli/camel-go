@@ -16,7 +16,7 @@ type Wasm struct {
 	Image string `yaml:"image,omitempty"`
 }
 
-func (l *Wasm) Processor(ctx context.Context, camelContext camel.Context) (camel.Processor, error) {
+func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor, error) {
 	if l.Path == "" {
 		return nil, camelerrors.MissingParameterf("wasm.path", "failure configuring wasm processor")
 	}
