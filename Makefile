@@ -115,7 +115,6 @@ build/wasm:
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
-			-gc=leaking \
 			-o etc/wasm/fn/simple_process.wasm  \
 			etc/wasm/fn/simple_process.go
 
@@ -128,7 +127,6 @@ build/wasm:
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
-			-gc=leaking \
 			-o etc/wasm/fn/simple_logger.wasm  \
 			etc/wasm/fn/simple_logger.go
 
@@ -141,7 +139,6 @@ build/wasm:
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
-			-gc=leaking \
 			-o etc/wasm/fn/to_upper.wasm  \
 			etc/wasm/fn/to_upper.go
 
