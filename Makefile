@@ -77,6 +77,7 @@ check/lint:
 		-t \
 		-v $(PROJECT_PATH):/app:Z \
 		-e GOGC=$(LINT_GOGC) \
+		-e GL_DEBUG="runner" \
 		-w /app \
 		golangci/golangci-lint:v1.52 golangci-lint run \
 			--verbose \
