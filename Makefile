@@ -71,21 +71,13 @@ deps:
 check: check/lint
 
 .PHONY: check/lint
-check/lint:
-	docker run \
-		--rm \
-		-t \
-		-v $(PROJECT_PATH):/app:Z \
-		-e GOGC=$(LINT_GOGC) \
-		-e GL_DEBUG="runner" \
-		-w /app \
-		golangci/golangci-lint:v1.52 golangci-lint run \
-			--verbose \
-			--config .golangci.yml \
-			--out-format tab \
-			--skip-dirs etc \
-			--skip-dirs pkg/wasm/interop \
-			--deadline $(LINT_DEADLINE)
+check/lint: golangci-lint
+	$(LOCALBIN)/golangci-lint run \
+		--verbose \
+		--config .golangci.yml \
+		--out-format tab \
+		--skip-dirs etc \
+		--deadline $(LINT_DEADLINE)
 
 ##@ Build
 
@@ -174,6 +166,7 @@ $(LOCALBIN):
 GOIMPORT ?= $(LOCALBIN)/goimports
 KO ?= $(LOCALBIN)/ko
 PROTOC_PLUGIN ?= $(LOCALBIN)/protoc-gen-go-plugin
+GL ?= $(LOCALBIN)/golangci-lint
 
 .PHONY: goimport
 goimport: $(GOIMPORT)
@@ -184,9 +177,19 @@ $(GOIMPORT): $(LOCALBIN)
 .PHONY: ko
 ko: $(KO)
 $(KO): $(LOCALBIN)
-	@test -s $(LOCALBIN)/ko || GOBIN=$(LOCALBIN) go install github.com/google/ko@main
+	@test -s $(LOCALBIN)/ko || \
+	GOBIN=$(LOCALBIN) go install github.com/google/ko@main
 
 .PHONY: protoc-gen-go-plugin
 protoc-gen-go-plugin: $(PROTOC_PLUGIN)
 $(PROTOC_PLUGIN): $(LOCALBIN)
-	@test -s $(LOCALBIN)/protoc-gen-go-plugin || GOBIN=$(LOCALBIN) go install github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin@main
+	@test -s $(LOCALBIN)/protoc-gen-go-plugin || \
+	GOBIN=$(LOCALBIN) go install github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin@main
+
+
+.PHONY: golangci-lint
+golangci-lint: $(GL)
+$(GL): $(LOCALBIN)
+	@test -s $(LOCALBIN)/golangci-lint || \
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+
