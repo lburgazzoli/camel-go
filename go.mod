@@ -35,7 +35,7 @@ require (
 	go.uber.org/zap v1.24.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v3 v3.0.1
-	oras.land/oras-go/v2 v2.0.2
+	oras.land/oras-go/v2 v2.1.0
 )
 
 require (
