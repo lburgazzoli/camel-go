@@ -20,7 +20,6 @@ type Consumer struct {
 
 	endpoint *Endpoint
 	client   *kgo.Client
-	tc       camel.TypeConverter
 	running  atomic.Bool
 }
 
