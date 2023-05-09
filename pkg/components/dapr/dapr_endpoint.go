@@ -2,6 +2,7 @@ package dapr
 
 import (
 	"context"
+
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"

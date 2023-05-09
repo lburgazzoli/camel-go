@@ -4,8 +4,9 @@ package kafka
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"strconv"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"

@@ -5,13 +5,14 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"sync/atomic"
+
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strconv"
-	"sync/atomic"
 )
 
 type Consumer struct {

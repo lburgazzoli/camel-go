@@ -5,13 +5,14 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"net"
+	"strings"
+	"time"
+
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/plugin/kzap"
-	"net"
-	"strings"
-	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
