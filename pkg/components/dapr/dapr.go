@@ -1,6 +1,6 @@
-////go:build components_kafka || components_all
+////go:build components_dapr || components_all
 
-package kafka
+package dapr
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -8,12 +8,7 @@ import (
 )
 
 const (
-	Scheme = "kafka"
-
-	AnnotationPartition = "camel.apache.org/kafka.partition"
-	AnnotationOffset    = "camel.apache.org/kafka.offset"
-	AnnotationTopic     = "camel.apache.org/kafka.topic"
-	AnnotationKey       = "camel.apache.org/kafka.key"
+	Scheme = "dapr"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

@@ -1,22 +1,16 @@
+////go:build components_kafka || components_all
+
 package kafka
 
 import (
 	"context"
-	"crypto/tls"
-	"net"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
-	"github.com/twmb/franz-go/plugin/kzap"
+	"strconv"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/pkg/errors"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/pkg/sasl/plain"
 )
 
 type Producer struct {
@@ -32,21 +26,7 @@ func (p *Producer) Endpoint() api.Endpoint {
 }
 
 func (p *Producer) Start(context.Context) error {
-
-	opts := make([]kgo.Opt, 0)
-	opts = append(opts, kgo.SeedBrokers(strings.Split(p.endpoint.config.Brokers, ",")...))
-
-	if p.endpoint.config.User != "" && p.endpoint.config.Password != "" {
-		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
-		authMechanism := plain.Auth{User: p.endpoint.config.User, Pass: p.endpoint.config.Password}.AsMechanism()
-
-		opts = append(opts, kgo.SASL(authMechanism))
-		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
-		opts = append(opts, kgo.WithLogger(kzap.New(p.endpoint.Logger())))
-	}
-
-	cl, err := kgo.NewClient(opts...)
-
+	cl, err := p.endpoint.newClient()
 	if err != nil {
 		return err
 	}
