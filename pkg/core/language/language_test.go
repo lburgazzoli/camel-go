@@ -18,20 +18,18 @@ jq: .bar
 
 func TestJq(t *testing.T) {
 
-	t.Run("inline", func(t *testing.T) {
-
+	t.Run("full", func(t *testing.T) {
 		l := Language{}
 
-		err := yaml.Unmarshal([]byte(jqInlineExpression), &l)
+		err := yaml.Unmarshal([]byte(jqFullExpression), &l)
 		require.NoError(t, err)
 		require.Equal(t, ".foo", l.Jq.Expression)
 	})
 
-	t.Run("full", func(t *testing.T) {
-
+	t.Run("inline", func(t *testing.T) {
 		l := Language{}
 
-		err := yaml.Unmarshal([]byte(jqFullExpression), &l)
+		err := yaml.Unmarshal([]byte(jqInlineExpression), &l)
 		require.NoError(t, err)
 		require.Equal(t, ".bar", l.Jq.Expression)
 	})

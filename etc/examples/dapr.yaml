@@ -4,8 +4,7 @@
       parameters:
         brokers: "tcp://test.mosquitto.org:1883"
       steps:
-        - to:
-            uri: "log:from-mqtt"
+        - to: "log:from-mqtt"
         - choice:
             when:
               #
@@ -13,36 +12,29 @@
               #
               - jq: '.source == "sensor-1"'
                 steps:
-                - to:
-                    uri: "log:sensor-1"
+                - to: "log:sensor-1"
                 - transform:
                     jq: '.data'
                 - transform:
                     wasm:
                       image: "docker.io/lburgazzoli/camel-go:latest"
                       path: "etc/wasm/fn/to_upper.wasm"
-                - to:
-                    uri: "dapr-pubsub:sensors/near"
-                - to:
-                    uri: "log:near"
+                - to: "dapr-pubsub:sensors/near"
+                - to: "log:near"
               #
               # if from "sensor-2", extract data, make it lowercase, send to sensors/far
               #
               - jq: '.source == "sensor-2"'
                 steps:
-                  - to:
-                      uri: "log:sensor-2"
+                  - to: "log:sensor-2"
                   - transform:
                       jq: '.data'
                   - transform:
                       wasm:
                         image: "docker.io/lburgazzoli/camel-go:latest"
                         path: "etc/wasm/fn/to_lower.wasm"
-                  - to:
-                      uri: "dapr-pubsub:sensors/far"
-                  - to:
-                      uri: "log:far"
+                  - to: "dapr-pubsub:sensors/far"
+                  - to: "log:far"
             otherwise:
               steps:
-                - to:
-                    uri: "log:unknown"
+                - to: "log:unknown"
