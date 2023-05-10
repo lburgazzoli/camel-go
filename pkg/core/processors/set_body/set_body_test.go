@@ -4,10 +4,11 @@ package setbody
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/core/language"
-	"github.com/lburgazzoli/camel-go/pkg/core/language/constant"
 	"testing"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/constant"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"

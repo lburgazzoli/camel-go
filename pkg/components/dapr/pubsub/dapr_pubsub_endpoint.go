@@ -4,6 +4,7 @@ package pubsub
 
 import (
 	"context"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"

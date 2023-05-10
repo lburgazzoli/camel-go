@@ -3,8 +3,9 @@ package jq
 import (
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"strconv"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/itchyny/gojq"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"

@@ -35,7 +35,7 @@ func TestTransformJQ(t *testing.T) {
 
 		l := language.Language{
 			Jq: &jq.Jq{
-				Expression: `.message`,
+				Definition: jq.Definition{Expression: `.message`},
 			},
 		}
 

@@ -2,6 +2,7 @@ package choice
 
 import (
 	"context"
+
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/verticles"
