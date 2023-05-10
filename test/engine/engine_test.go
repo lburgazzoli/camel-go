@@ -14,19 +14,22 @@ import (
 	"testing"
 	"time"
 
+	// helper to include everything.
+	_ "github.com/lburgazzoli/camel-go/pkg/components/dapr/pubsub"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/mqtt"
-	"github.com/lburgazzoli/camel-go/pkg/components/timer"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/process"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
+	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
 
+	"github.com/lburgazzoli/camel-go/pkg/components/timer"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelc "github.com/lburgazzoli/camel-go/pkg/core/context"
-	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/process"
-	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/to"
-	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
+
 	"github.com/stretchr/testify/assert"
 )
 

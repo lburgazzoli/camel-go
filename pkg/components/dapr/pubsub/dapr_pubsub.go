@@ -1,6 +1,6 @@
-////go:build components_dapr || components_all
+////go:build components_dapr_pubsub || components_all
 
-package dapr
+package pubsub
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Scheme = "dapr"
+	Scheme = "dapr-pubsub"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

@@ -1,4 +1,6 @@
-package dapr
+////go:build components_dapr_pubsub || components_all
+
+package pubsub
 
 import (
 	"context"

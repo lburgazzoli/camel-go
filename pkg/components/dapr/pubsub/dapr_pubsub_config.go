@@ -1,6 +1,6 @@
-////go:build components_dapr || components_all
+////go:build components_dapr_pubsub || components_all
 
-package dapr
+package pubsub
 
 type Config struct {
 	Remaining string `mapstructure:"remaining"`

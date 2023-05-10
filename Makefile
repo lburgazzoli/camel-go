@@ -72,8 +72,7 @@ check: check/lint
 
 .PHONY: check/lint
 check/lint: golangci-lint
-	$(LOCALBIN)/golangci-lint run \
-		--verbose \
+	@$(LOCALBIN)/golangci-lint run \
 		--config .golangci.yml \
 		--out-format tab \
 		--skip-dirs etc \
@@ -102,7 +101,8 @@ image/wasm:
 	 oras push --verbose docker.io/lburgazzoli/camel-go:latest \
  		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+ 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 .PHONY: build/wasm
 build/wasm:
@@ -141,6 +141,18 @@ build/wasm:
 			-scheduler=none \
 			-o etc/wasm/fn/to_upper.wasm  \
 			etc/wasm/fn/to_upper.go
+
+	@docker run \
+		--rm \
+		-ti \
+		-v $(PROJECT_PATH):/src:Z \
+		-w /src \
+		tinygo/tinygo:0.27.0 \
+		tinygo build \
+			-target=wasi \
+			-scheduler=none \
+			-o etc/wasm/fn/to_lower.wasm  \
+			etc/wasm/fn/to_lower.go
 
 .PHONY: generate
 generate: protoc-gen-go-plugin
