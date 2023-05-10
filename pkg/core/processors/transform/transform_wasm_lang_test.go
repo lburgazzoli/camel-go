@@ -35,9 +35,7 @@ func TestTransformWASM(t *testing.T) {
 		require.NotNil(t, wgp)
 
 		l := language.Language{
-			Wasm: &wasm.Wasm{
-				Path: "../../../../etc/wasm/fn/simple_process.wasm",
-			},
+			Wasm: wasm.NewWithValue("../../../../etc/wasm/fn/simple_process.wasm"),
 		}
 
 		pv, err := NewTransformWithLanguage(l).Reify(ctx)
@@ -78,10 +76,7 @@ func TestTransformWASM(t *testing.T) {
 		require.NotNil(t, wgp)
 
 		l := language.Language{
-			Wasm: &wasm.Wasm{
-				Path:  "etc/wasm/fn/simple_process.wasm",
-				Image: "docker.io/lburgazzoli/camel-go:latest",
-			},
+			Wasm: wasm.NewWithValue("docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/simple_process.wasm"),
 		}
 
 		pv, err := NewTransformWithLanguage(l).Reify(ctx)

@@ -126,6 +126,100 @@ func TestSimpleWASM(t *testing.T) {
 	})
 }
 
+const simpleInlineWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - transform:
+            wasm: "../../etc/wasm/fn/simple_process.wasm"
+        - process:
+            ref: "consumer-2"
+`
+
+func TestSimpleInlineWASM(t *testing.T) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
+		t.Helper()
+
+		wg := make(chan camel.Message)
+
+		c := camel.ExtractContext(ctx)
+
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+			_ = message.SetSubject("consumer-1")
+			return nil
+		})
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+			wg <- message
+			return nil
+		})
+
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineWASM))
+		assert.Nil(t, err)
+
+		select {
+		case msg := <-wg:
+			assert.Equal(t, "consumer-1", msg.GetSubject())
+
+			c, ok := msg.Content().([]byte)
+			assert.True(t, ok)
+			assert.Equal(t, "hello from wasm", string(c))
+
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
+	})
+}
+
+const simpleInlineImageWASM = `
+- route:
+    from:
+      uri: "timer:foo"
+      steps:
+        - process:
+            ref: "consumer-1"
+        - transform:
+            wasm: "docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/simple_process.wasm"
+        - process:
+            ref: "consumer-2"
+`
+
+func TestSimpleInlineImageWASM(t *testing.T) {
+	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
+		t.Helper()
+
+		wg := make(chan camel.Message)
+
+		c := camel.ExtractContext(ctx)
+
+		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+			_ = message.SetSubject("consumer-1")
+			return nil
+		})
+		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+			wg <- message
+			return nil
+		})
+
+		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineImageWASM))
+		assert.Nil(t, err)
+
+		select {
+		case msg := <-wg:
+			assert.Equal(t, "consumer-1", msg.GetSubject())
+
+			c, ok := msg.Content().([]byte)
+			assert.True(t, ok)
+			assert.Equal(t, "hello from wasm", string(c))
+
+		case <-time.After(5 * time.Second):
+			assert.Fail(t, "timeout")
+		}
+	})
+}
+
 const simpleError = `
 - route:
     from:
