@@ -7,6 +7,7 @@ require (
 	github.com/cbroglie/mustache v1.4.0
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/cucumber/godog v0.12.6
+	github.com/dapr/go-sdk v1.7.0
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/imdario/mergo v0.3.15
@@ -26,7 +27,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
-	github.com/testcontainers/testcontainers-go v0.20.0
+	github.com/testcontainers/testcontainers-go v0.20.1
 	github.com/tetratelabs/wazero v1.1.0
 	github.com/twmb/franz-go v1.13.3
 	github.com/twmb/franz-go/pkg/kadm v1.8.1
@@ -49,7 +50,6 @@ require (
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
-	github.com/dapr/go-sdk v1.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v23.0.5+incompatible // indirect
