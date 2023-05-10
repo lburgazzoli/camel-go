@@ -2,6 +2,7 @@ package choice
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/verticles"
 
@@ -55,14 +56,18 @@ func (c *Choice) Receive(ac actor.Context) {
 
 func (c *Choice) onStarted(ctx context.Context, ac actor.Context, _ *actor.Started) {
 	for w := range c.When {
+		if c.When[w].Identity == "" {
+			c.When[w].Identity = uuid.New()
+		}
+
 		v, err := c.When[w].Reify(ctx)
 		if err != nil {
-			panic(errors.Wrapf(err, "unable to reify verticle with id %s", c.When[w].ID()))
+			panic(errors.Wrapf(err, "unable to reify verticle with id <%s>", c.When[w].ID()))
 		}
 
 		pid, err := verticles.Spawn(ac, v)
 		if err != nil {
-			panic(errors.Wrapf(err, "unable to spawn verticle with id %s", c.When[w].ID()))
+			panic(errors.Wrapf(err, "unable to spawn verticle with id <%s>", c.When[w].ID()))
 		}
 
 		// Ugly, very ugly
@@ -70,14 +75,18 @@ func (c *Choice) onStarted(ctx context.Context, ac actor.Context, _ *actor.Start
 	}
 
 	if c.Otherwise != nil {
+		if c.Otherwise.Identity == "" {
+			c.Otherwise.Identity = uuid.New()
+		}
+
 		v, err := c.Otherwise.Reify(ctx)
 		if err != nil {
-			panic(errors.Wrapf(err, "unable to reify verticle with id %s", c.Otherwise.ID()))
+			panic(errors.Wrapf(err, "unable to reify verticle with id <%s>", c.Otherwise.ID()))
 		}
 
 		pid, err := verticles.Spawn(ac, v)
 		if err != nil {
-			panic(errors.Wrapf(err, "unable to spawn verticle with id %s", c.Otherwise.ID()))
+			panic(errors.Wrapf(err, "unable to spawn verticle with id <%s>", c.Otherwise.ID()))
 		}
 
 		// Ugly, very ugly

@@ -76,6 +76,14 @@ func (t *Transform) Reify(ctx context.Context) (camel.Verticle, error) {
 		}
 
 		t.processor = p
+
+	case t.Constant != nil:
+		p, err := t.Constant.Processor(ctx, camelContext)
+		if err != nil {
+			return nil, err
+		}
+
+		t.processor = p
 	default:
 		return nil, camelerrors.MissingParameterf("wasm || mustache || jq", "failure processing %s", TAG)
 

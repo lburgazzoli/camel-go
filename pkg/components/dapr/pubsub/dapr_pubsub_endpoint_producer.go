@@ -31,7 +31,7 @@ func (p *Producer) Endpoint() api.Endpoint {
 }
 
 func (p *Producer) Start(context.Context) error {
-	ct := strings.Split(p.endpoint.config.Remaining, ",")
+	ct := strings.Split(p.endpoint.config.Remaining, "/")
 	if len(ct) != 2 {
 		return camelerrors.MissingParameter("componentName/topicName", "missing componentName/topicName")
 	}

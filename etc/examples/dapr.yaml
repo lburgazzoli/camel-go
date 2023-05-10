@@ -7,35 +7,45 @@
         - to:
             uri: "log:from-mqtt"
         - choice:
-            #
-            # if from "sensor-1", extract data, make it uppercase, send to sensors/near
-            #
-            - when:
-                jq: '.source == "sensor-1"'
-              steps:
-              - setBody:
-                  jq: '.data'
-              - transform:
-                  wasm:
-                    image: "docker.io/lburgazzoli/camel-go:latest"
-                    path: "etc/wasm/fn/to_upper.wasm"
-              - to:
-                  uri: "dapr-pubsub:sensors/near"
-              - to:
-                  uri: "log:near"
-            #
-            # if from "sensor-2", extract data, make it lowercase, send to sensors/far
-            #
-            - when:
-                jq: '.source == "sensor-2"'
-              steps:
-                - setBody:
-                    jq: '.data'
+            when:
+              #
+              # if from "sensor-1", extract data, make it uppercase, send to sensors/near
+              #
+              - jq: '.source == "sensor-1"'
+                steps:
+                - to:
+                    uri: "log:sensor-1"
+                - transform:
+                    jq:
+                      expression: '.data'
                 - transform:
                     wasm:
                       image: "docker.io/lburgazzoli/camel-go:latest"
-                      path: "etc/wasm/fn/to_lower.wasm"
+                      path: "etc/wasm/fn/to_upper.wasm"
                 - to:
-                    uri: "dapr-pubsub:sensors/far"
+                    uri: "dapr-pubsub:sensors/near"
                 - to:
-                    uri: "log:far"
+                    uri: "log:near"
+              #
+              # if from "sensor-2", extract data, make it lowercase, send to sensors/far
+              #
+              - jq:
+                  expression: '.source == "sensor-2"'
+                steps:
+                  - to:
+                      uri: "log:sensor-2"
+                  - transform:
+                      jq:
+                        expression: '.data'
+                  - transform:
+                      wasm:
+                        image: "docker.io/lburgazzoli/camel-go:latest"
+                        path: "etc/wasm/fn/to_lower.wasm"
+                  - to:
+                      uri: "dapr-pubsub:sensors/far"
+                  - to:
+                      uri: "log:far"
+            otherwise:
+              steps:
+                - to:
+                    uri: "log:unknown"

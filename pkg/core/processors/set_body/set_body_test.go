@@ -4,6 +4,8 @@ package setbody
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/constant"
 	"testing"
 	"time"
 
@@ -28,8 +30,10 @@ func TestSetBody(t *testing.T) {
 		})
 
 		p := New()
-		p.Language.Constant = &LanguageConstant{
-			Value: content,
+		p.Language = language.Language{
+			Constant: &constant.Constant{
+				Value: content,
+			},
 		}
 
 		pv, err := p.Reify(ctx)

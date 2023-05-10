@@ -104,6 +104,14 @@ image/wasm:
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
 		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
+
+.PHONY: run/examples/dapr
+run/examples/dapr:
+	dapr run --app-id pub \
+         --log-level debug \
+         --resources-path ./etc/dapr/config \
+         -- go run cmd/camel/main.go run --route ./etc/examples/dapr.yaml
+
 .PHONY: build/wasm
 build/wasm:
 	@docker run \

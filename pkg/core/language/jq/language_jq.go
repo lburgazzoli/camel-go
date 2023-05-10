@@ -3,6 +3,7 @@ package jq
 import (
 	"context"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"strconv"
 
 	"github.com/itchyny/gojq"
@@ -17,6 +18,15 @@ const (
 
 type Jq struct {
 	Expression string `yaml:"expression"`
+}
+
+func (l *Jq) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		l.Expression = value.Value
+		return nil
+	}
+
+	return value.Decode(l.Expression)
 }
 
 func (l *Jq) run(

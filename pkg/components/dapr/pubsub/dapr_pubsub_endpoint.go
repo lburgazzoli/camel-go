@@ -4,8 +4,7 @@ package pubsub
 
 import (
 	"context"
-
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
@@ -25,5 +24,11 @@ func (e *Endpoint) Stop(context.Context) error {
 }
 
 func (e *Endpoint) Producer() (api.Producer, error) {
-	return nil, camelerrors.NotImplemented("TODO")
+	c := Producer{
+		DefaultVerticle: processors.NewDefaultVerticle(),
+		endpoint:        e,
+		tc:              e.Context().TypeConverter(),
+	}
+
+	return &c, nil
 }
