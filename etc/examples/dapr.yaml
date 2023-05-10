@@ -16,8 +16,7 @@
                 - to:
                     uri: "log:sensor-1"
                 - transform:
-                    jq:
-                      expression: '.data'
+                    jq: '.data'
                 - transform:
                     wasm:
                       image: "docker.io/lburgazzoli/camel-go:latest"
@@ -29,14 +28,12 @@
               #
               # if from "sensor-2", extract data, make it lowercase, send to sensors/far
               #
-              - jq:
-                  expression: '.source == "sensor-2"'
+              - jq: '.source == "sensor-2"'
                 steps:
                   - to:
                       uri: "log:sensor-2"
                   - transform:
-                      jq:
-                        expression: '.data'
+                      jq: '.data'
                   - transform:
                       wasm:
                         image: "docker.io/lburgazzoli/camel-go:latest"

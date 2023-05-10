@@ -16,17 +16,28 @@ const (
 	AnnotationJqResults = "camel.apache.org/jq.results"
 )
 
-type Jq struct {
+type Definition struct {
 	Expression string `yaml:"expression"`
 }
 
-func (l *Jq) UnmarshalYAML(value *yaml.Node) error {
-	if value.Kind == yaml.ScalarNode {
-		l.Expression = value.Value
-		return nil
-	}
+type Jq struct {
+	Definition `yaml:",inline"`
+}
 
-	return value.Decode(l.Expression)
+func (l *Jq) UnmarshalYAML(value *yaml.Node) error {
+	switch value.Kind {
+	case yaml.ScalarNode:
+		return l.UnmarshalText([]byte(value.Value))
+	case yaml.MappingNode:
+		return value.Decode(&l.Definition)
+	default:
+		return fmt.Errorf("unsupported node kind: %v (line: %d, column: %d)", value.Kind, value.Line, value.Column)
+	}
+}
+
+func (l *Jq) UnmarshalText(text []byte) error {
+	l.Expression = string(text)
+	return nil
 }
 
 func (l *Jq) run(

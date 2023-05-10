@@ -26,7 +26,7 @@ func TestChoice(t *testing.T) {
 		choice.When = []*When{
 			NewWhen(
 				language.Language{
-					Jq: &jq.Jq{Expression: `.foo == "bar"`},
+					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "bar"`}},
 				},
 				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: bar")
@@ -35,7 +35,7 @@ func TestChoice(t *testing.T) {
 			),
 			NewWhen(
 				language.Language{
-					Jq: &jq.Jq{Expression: `.foo == "baz"`},
+					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "baz"`}},
 				},
 				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: baz")
@@ -91,7 +91,7 @@ func TestChoice(t *testing.T) {
 		choice.When = []*When{
 			NewWhen(
 				language.Language{
-					Jq: &jq.Jq{Expression: `.foo == "bar"`},
+					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "bar"`}},
 				},
 				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: bar")
@@ -100,7 +100,7 @@ func TestChoice(t *testing.T) {
 			),
 			NewWhen(
 				language.Language{
-					Jq: &jq.Jq{Expression: `.foo == "baz"`},
+					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "baz"`}},
 				},
 				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: baz")
