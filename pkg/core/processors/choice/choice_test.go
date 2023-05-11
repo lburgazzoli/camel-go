@@ -5,11 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors/choice/otherwise"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors/choice/when"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -23,24 +25,24 @@ func TestChoice(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		choice := New()
-		choice.When = []*When{
-			NewWhen(
-				language.Language{
+		choice.When = []*when.When{
+			when.New(
+				when.WithExpression(language.Language{
 					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "bar"`}},
-				},
-				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+				}),
+				when.WithProcessor(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: bar")
 					return nil
-				})),
+				}),
 			),
-			NewWhen(
-				language.Language{
+			when.New(
+				when.WithExpression(language.Language{
 					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "baz"`}},
-				},
-				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+				}),
+				when.WithProcessor(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: baz")
 					return nil
-				})),
+				}),
 			),
 		}
 
@@ -88,31 +90,31 @@ func TestChoice(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		choice := New()
-		choice.When = []*When{
-			NewWhen(
-				language.Language{
+		choice.When = []*when.When{
+			when.New(
+				when.WithExpression(language.Language{
 					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "bar"`}},
-				},
-				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+				}),
+				when.WithProcessor(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: bar")
 					return nil
-				})),
+				}),
 			),
-			NewWhen(
-				language.Language{
+			when.New(
+				when.WithExpression(language.Language{
 					Jq: &jq.Jq{Definition: jq.Definition{Expression: `.foo == "baz"`}},
-				},
-				processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+				}),
+				when.WithProcessor(func(ctx context.Context, m camel.Message) error {
 					m.SetContent("branch: baz")
 					return nil
-				})),
+				}),
 			),
 		}
-		choice.Otherwise = NewOtherwise(
-			processors.NewStep(support.NewProcessorsVerticle(func(ctx context.Context, m camel.Message) error {
+		choice.Otherwise = otherwise.New(
+			otherwise.WithProcessor(func(ctx context.Context, m camel.Message) error {
 				m.SetContent("branch: otherwise")
 				return nil
-			})),
+			}),
 		)
 
 		chv, err := choice.Reify(ctx)

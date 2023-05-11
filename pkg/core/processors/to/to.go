@@ -23,13 +23,15 @@ func init() {
 }
 
 func New() *To {
-	return &To{
+	answer := &To{
 		Definition: Definition{
 			Endpoint: endpoint.Endpoint{
 				Identity: uuid.New(),
 			},
 		},
 	}
+
+	return answer
 }
 
 type Definition struct {

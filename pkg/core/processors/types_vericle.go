@@ -79,11 +79,19 @@ type DefaultStepsVerticle struct {
 	DefaultVerticle `yaml:",inline"`
 
 	Steps []Step `yaml:"steps,omitempty"`
+
+	pid *actor.PID
+}
+
+func (v *DefaultStepsVerticle) Process(ac actor.Context, msg camel.Message) {
+	ac.Request(v.pid, msg)
 }
 
 func (v *DefaultStepsVerticle) Receive(ac actor.Context) {
 	switch msg := ac.Message().(type) {
 	case *actor.Started:
+		v.pid = ac.Self()
+
 		ctx := verticles.NewContext(v.Context(), ac)
 
 		items, err := ReifySteps(ctx, v.Steps)
@@ -99,6 +107,8 @@ func (v *DefaultStepsVerticle) Receive(ac actor.Context) {
 				panic(errors.Wrapf(err, "unable to spawn verticle with id %s", item.ID()))
 			}
 		}
+	case *actor.Stopped:
+		v.pid = nil
 	case camel.Message:
 		completed := v.Dispatch(ac, msg)
 

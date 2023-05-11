@@ -39,7 +39,7 @@ func TestTransformMustache(t *testing.T) {
 			},
 		}
 
-		pv, err := NewTransformWithLanguage(l).Reify(ctx)
+		pv, err := New(WithLanguage(l)).Reify(ctx)
 		require.Nil(t, err)
 		require.NotNil(t, pv)
 

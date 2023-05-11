@@ -21,17 +21,16 @@ func init() {
 	}
 }
 
-func New() *Process {
-	return &Process{
+func New(opts ...OptionFn) *Process {
+	answer := &Process{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
-}
 
-func NewProcessWithRef(ref string) *Process {
-	return &Process{
-		DefaultVerticle: processors.NewDefaultVerticle(),
-		Ref:             ref,
+	for _, o := range opts {
+		o(answer)
 	}
+
+	return answer
 }
 
 type Process struct {

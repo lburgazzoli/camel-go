@@ -15,16 +15,14 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
 )
 
-func New() *Wasm {
-	w := Wasm{}
-	return &w
-}
+func New(opts ...OptionFn) *Wasm {
+	answer := &Wasm{}
 
-func NewWithValue(value string) *Wasm {
-	w := Wasm{}
-	_ = w.UnmarshalText([]byte(value))
+	for _, o := range opts {
+		o(answer)
+	}
 
-	return &w
+	return answer
 }
 
 type Definition struct {

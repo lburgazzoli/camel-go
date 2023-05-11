@@ -1,10 +1,9 @@
-package choice
+package when
 
 import (
 	"context"
 
 	"github.com/asynkron/protoactor-go/actor"
-
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -12,15 +11,16 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
-func NewWhen(l language.Language, steps ...processors.Step) *When {
-	w := When{
+func New(opts ...OptionFn) *When {
+	answer := &When{
 		DefaultStepsVerticle: processors.NewDefaultStepsVerticle(),
-		Language:             l,
 	}
 
-	w.Steps = steps
+	for _, o := range opts {
+		o(answer)
+	}
 
-	return &w
+	return answer
 }
 
 type When struct {
@@ -45,7 +45,7 @@ func (w *When) Reify(ctx context.Context) (camel.Verticle, error) {
 
 		w.predicate = p
 	default:
-		return nil, camelerrors.MissingParameterf("jq", "failure processing %s", TAG)
+		return nil, camelerrors.MissingParameterf("jq", "failure processing %s", "when")
 	}
 
 	return w, nil

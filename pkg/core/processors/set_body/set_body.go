@@ -5,6 +5,8 @@ package setbody
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/processors/transform"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -18,7 +20,7 @@ const TAG = "setBody"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return New()
+		return transform.New()
 	}
 }
 

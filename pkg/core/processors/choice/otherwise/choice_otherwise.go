@@ -1,4 +1,4 @@
-package choice
+package otherwise
 
 import (
 	"context"
@@ -8,14 +8,16 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
-func NewOtherwise(steps ...processors.Step) *Otherwise {
-	w := Otherwise{
+func New(opts ...OptionFn) *Otherwise {
+	answer := &Otherwise{
 		DefaultStepsVerticle: processors.NewDefaultStepsVerticle(),
 	}
 
-	w.Steps = steps
+	for _, o := range opts {
+		o(answer)
+	}
 
-	return &w
+	return answer
 }
 
 type Otherwise struct {

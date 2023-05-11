@@ -18,21 +18,20 @@ const TAG = "transform"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
-		return NewTransform()
+		return New()
 	}
 }
 
-func NewTransform() *Transform {
-	return &Transform{
+func New(opts ...OptionFn) *Transform {
+	answer := &Transform{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
-}
 
-func NewTransformWithLanguage(lang language.Language) *Transform {
-	return &Transform{
-		DefaultVerticle: processors.NewDefaultVerticle(),
-		Language:        lang,
+	for _, o := range opts {
+		o(answer)
 	}
+
+	return answer
 }
 
 type Transform struct {
