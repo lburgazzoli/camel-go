@@ -20,10 +20,16 @@ func init() {
 	}
 }
 
-func New() *SetHeader {
-	return &SetHeader{
+func New(opts ...OptionFn) *SetHeader {
+	answer := &SetHeader{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
+
+	for _, o := range opts {
+		o(answer)
+	}
+
+	return answer
 }
 
 type SetHeader struct {
@@ -33,6 +39,8 @@ type SetHeader struct {
 	Language `yaml:",inline"`
 }
 
+// Language ---
+// TODO: replace with language.Language.
 type Language struct {
 	Constant *LanguageConstant `yaml:"constant,omitempty"`
 }

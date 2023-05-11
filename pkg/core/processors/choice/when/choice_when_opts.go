@@ -14,6 +14,7 @@ func WithExpression(lang language.Language) OptionFn {
 		in.Language = lang
 	}
 }
+
 func WithStep(step processors.Step) OptionFn {
 	return func(in *When) {
 		in.Steps = append(in.Steps, step)

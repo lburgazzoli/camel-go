@@ -11,6 +11,16 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
 )
 
+func New(opts ...OptionFn) *Language {
+	answer := &Language{}
+
+	for _, o := range opts {
+		o(answer)
+	}
+
+	return answer
+}
+
 type Language struct {
 	Jq       *jq.Jq             `yaml:"jq,omitempty"`
 	Mustache *mustache.Mustache `yaml:"mustache,omitempty"`

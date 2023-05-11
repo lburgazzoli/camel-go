@@ -22,10 +22,16 @@ func init() {
 	}
 }
 
-func New() *SetBody {
-	return &SetBody{
+func New(opts ...OptionFn) *SetBody {
+	answer := &SetBody{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 	}
+
+	for _, o := range opts {
+		o(answer)
+	}
+
+	return answer
 }
 
 type SetBody struct {
