@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"io/fs"
+	"os"
 
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"go.uber.org/multierr"
@@ -81,17 +82,45 @@ func (r *Runtime) Close(ctx context.Context) error {
 	return err
 }
 
-// Load ---
-// TODO: improve the plugin code to load from a reader instead of a path.
-func (r *Runtime) Load(ctx context.Context, path string) (*Function, error) {
+func (r *Runtime) Load(ctx context.Context, in io.ReadCloser) (*Function, error) {
 	// Initialize a plugin loader
 	p, err := pp.NewProcessorsPlugin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	content, err := io.ReadAll(in)
+	if err != nil {
+		return nil, err
+	}
+
 	// Load a plugin
-	plugin, err := p.Load(ctx, path)
+	plugin, err := p.Load(ctx, content)
+	if err != nil {
+		return nil, err
+	}
+
+	f := Function{
+		processor: plugin,
+	}
+
+	return &f, nil
+}
+
+func (r *Runtime) LoadFromPath(ctx context.Context, path string) (*Function, error) {
+	// Initialize a plugin loader
+	p, err := pp.NewProcessorsPlugin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load a plugin
+	plugin, err := p.Load(ctx, content)
 	if err != nil {
 		return nil, err
 	}

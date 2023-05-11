@@ -3,8 +3,6 @@ package wasm
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -71,31 +69,32 @@ func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor,
 		return nil, camelerrors.MissingParameterf("wasm.path", "failure configuring wasm processor")
 	}
 
-	rootPath := ""
-
-	if l.Image != "" {
-		fp, err := registry.Pull(ctx, l.Image)
-		if err != nil {
-			return nil, err
-		}
-
-		rootPath = fp
-	}
-
-	defer func() {
-		if rootPath != "" {
-			_ = os.RemoveAll(rootPath)
-		}
-	}()
-
 	r, err := wasm.NewRuntime(ctx, wasm.Options{})
 	if err != nil {
 		return nil, err
 	}
 
-	f, err := r.Load(ctx, path.Join(rootPath, l.Path))
-	if err != nil {
-		return nil, err
+	var f *wasm.Function
+
+	if l.Image != "" {
+		content, err := registry.Blob(ctx, l.Image, l.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		fn, err := r.Load(ctx, content)
+		if err != nil {
+			return nil, err
+		}
+
+		f = fn
+	} else {
+		fn, err := r.LoadFromPath(ctx, l.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		f = fn
 	}
 
 	p := func(ctx context.Context, m camel.Message) error {

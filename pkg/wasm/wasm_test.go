@@ -26,7 +26,7 @@ func TestWASM(t *testing.T) {
 		require.NoError(t, err)
 		require.FileExists(t, data)
 
-		f, err := r.Load(ctx, data)
+		f, err := r.LoadFromPath(ctx, data)
 		assert.Nil(t, err)
 
 		in, err := message.New()

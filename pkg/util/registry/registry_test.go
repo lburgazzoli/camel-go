@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOrasCopyFS(t *testing.T) {
+func TestPull(t *testing.T) {
 	ctx := context.Background()
 
 	root, err := Pull(ctx, "docker.io/lburgazzoli/camel-go:latest")
@@ -28,4 +28,22 @@ func TestOrasCopyFS(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, fi.IsDir())
 	assert.True(t, fi.Mode().IsRegular())
+}
+
+func TestBlob(t *testing.T) {
+	ctx := context.Background()
+
+	content, err := Blob(
+		ctx,
+		"docker.io/lburgazzoli/camel-go:latest",
+		"etc/wasm/fn/simple_process.wasm")
+
+	defer func() {
+		if content != nil {
+			_ = content.Close()
+		}
+	}()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, content)
 }

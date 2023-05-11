@@ -12,7 +12,6 @@ import (
 	context "context"
 	errors "errors"
 	fmt "fmt"
-	os "os"
 
 	wazero "github.com/tetratelabs/wazero"
 	api "github.com/tetratelabs/wazero/api"
@@ -47,12 +46,7 @@ type processors interface {
 	Processors
 }
 
-func (p *ProcessorsPlugin) Load(ctx context.Context, pluginPath string) (processors, error) {
-	b, err := os.ReadFile(pluginPath)
-	if err != nil {
-		return nil, err
-	}
-
+func (p *ProcessorsPlugin) Load(ctx context.Context, content []byte) (processors, error) {
 	// Create a new runtime so that multiple modules will not conflict
 	r, err := p.newRuntime(ctx)
 	if err != nil {
@@ -60,7 +54,7 @@ func (p *ProcessorsPlugin) Load(ctx context.Context, pluginPath string) (process
 	}
 
 	// Compile the WebAssembly module using the default configuration.
-	code, err := r.CompileModule(ctx, b)
+	code, err := r.CompileModule(ctx, content)
 	if err != nil {
 		return nil, err
 	}
