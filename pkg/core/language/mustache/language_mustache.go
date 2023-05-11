@@ -14,6 +14,10 @@ type Mustache struct {
 	Template string `yaml:"template"`
 }
 
+func (l *Mustache) Predicate(_ context.Context, _ camel.Context) (camel.Predicate, error) {
+	return nil, camelerrors.NotImplemented("TODO")
+}
+
 func (l *Mustache) Processor(_ context.Context, _ camel.Context) (camel.Processor, error) {
 	if l.Template == "" {
 		return nil, camelerrors.MissingParameterf("mustache.template", "failure configuring jq processor")

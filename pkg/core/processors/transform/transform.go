@@ -9,8 +9,6 @@ import (
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
-
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
@@ -51,42 +49,12 @@ func (t *Transform) Reify(ctx context.Context) (camel.Verticle, error) {
 
 	t.SetContext(camelContext)
 
-	switch {
-	case t.Wasm != nil:
-		p, err := t.Wasm.Processor(ctx, camelContext)
-		if err != nil {
-			return nil, err
-		}
-
-		t.processor = p
-
-	case t.Mustache != nil:
-		p, err := t.Mustache.Processor(ctx, camelContext)
-		if err != nil {
-			return nil, err
-		}
-
-		t.processor = p
-
-	case t.Jq != nil:
-		p, err := t.Jq.Processor(ctx, camelContext)
-		if err != nil {
-			return nil, err
-		}
-
-		t.processor = p
-
-	case t.Constant != nil:
-		p, err := t.Constant.Processor(ctx, camelContext)
-		if err != nil {
-			return nil, err
-		}
-
-		t.processor = p
-	default:
-		return nil, camelerrors.MissingParameterf("wasm || mustache || jq", "failure processing %s", TAG)
-
+	p, err := t.Language.Processor(ctx, camelContext)
+	if err != nil {
+		return nil, err
 	}
+
+	t.processor = p
 
 	return t, nil
 }

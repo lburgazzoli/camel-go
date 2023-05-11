@@ -69,10 +69,13 @@ func (c *Choice) onStarted(ctx context.Context, ac actor.Context, _ *actor.Start
 			panic(errors.Wrapf(err, "unable to reify verticle with id <%s>", c.When[w].ID()))
 		}
 
-		_, err = verticles.Spawn(ac, v)
+		p, err := verticles.Spawn(ac, v)
 		if err != nil {
 			panic(errors.Wrapf(err, "unable to spawn verticle with id <%s>", c.When[w].ID()))
 		}
+
+		// Horrible
+		c.When[w].PID = p
 	}
 
 	if c.Otherwise != nil {
@@ -85,10 +88,13 @@ func (c *Choice) onStarted(ctx context.Context, ac actor.Context, _ *actor.Start
 			panic(errors.Wrapf(err, "unable to reify verticle with id <%s>", c.Otherwise.ID()))
 		}
 
-		_, err = verticles.Spawn(ac, v)
+		p, err := verticles.Spawn(ac, v)
 		if err != nil {
 			panic(errors.Wrapf(err, "unable to spawn verticle with id <%s>", c.Otherwise.ID()))
 		}
+
+		// Horrible
+		c.Otherwise.PID = p
 	}
 }
 
@@ -103,13 +109,13 @@ func (c *Choice) onMessage(ctx context.Context, ac actor.Context, msg camel.Mess
 		}
 
 		if matches {
-			c.When[i].Process(ac, msg)
+			ac.Request(c.When[i].PID, msg)
 			break
 		}
 	}
 
 	if !matches && c.Otherwise != nil {
-		c.Otherwise.Process(ac, msg)
+		ac.Request(c.Otherwise.PID, msg)
 	}
 }
 

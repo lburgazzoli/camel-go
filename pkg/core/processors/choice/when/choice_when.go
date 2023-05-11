@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/asynkron/protoactor-go/actor"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -28,7 +29,8 @@ type When struct {
 	language.Language               `yaml:",inline"`
 
 	predicate camel.Predicate
-	pid       *actor.PID
+
+	PID *actor.PID
 }
 
 func (w *When) Reify(ctx context.Context) (camel.Verticle, error) {
@@ -36,17 +38,12 @@ func (w *When) Reify(ctx context.Context) (camel.Verticle, error) {
 
 	w.DefaultVerticle.SetContext(c)
 
-	switch {
-	case w.Jq != nil:
-		p, err := w.Jq.Predicate(ctx, c)
-		if err != nil {
-			return nil, err
-		}
-
-		w.predicate = p
-	default:
-		return nil, camelerrors.MissingParameterf("jq", "failure processing %s", "when")
+	p, err := w.Language.Predicate(ctx, c)
+	if err != nil {
+		return nil, err
 	}
+
+	w.predicate = p
 
 	return w, nil
 }

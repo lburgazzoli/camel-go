@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/asynkron/protoactor-go/actor"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
@@ -22,7 +23,8 @@ func New(opts ...OptionFn) *Otherwise {
 
 type Otherwise struct {
 	processors.DefaultStepsVerticle `yaml:",inline"`
-	pid                             *actor.PID
+
+	PID *actor.PID
 }
 
 func (o *Otherwise) Reify(ctx context.Context) (camel.Verticle, error) {

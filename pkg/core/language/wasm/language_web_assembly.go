@@ -62,6 +62,10 @@ func (l *Wasm) UnmarshalText(text []byte) error {
 	return nil
 }
 
+func (l *Wasm) Predicate(_ context.Context, _ camel.Context) (camel.Predicate, error) {
+	return nil, camelerrors.NotImplemented("TODO")
+}
+
 func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor, error) {
 	if l.Path == "" {
 		return nil, camelerrors.MissingParameterf("wasm.path", "failure configuring wasm processor")

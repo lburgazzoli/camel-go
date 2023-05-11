@@ -11,6 +11,18 @@ type Constant struct {
 	Value string `yaml:"value"`
 }
 
+func (l *Constant) Predicate(_ context.Context, _ camel.Context) (camel.Predicate, error) {
+	if l.Value == "" {
+		return nil, camelerrors.MissingParameterf("constant.value", "failure configuring constant predicate")
+	}
+
+	p := func(ctx context.Context, message camel.Message) (bool, error) {
+		return l.Value == "true", nil
+	}
+
+	return p, nil
+}
+
 func (l *Constant) Processor(_ context.Context, _ camel.Context) (camel.Processor, error) {
 	if l.Value == "" {
 		return nil, camelerrors.MissingParameterf("constant.value", "failure configuring constant processor")
