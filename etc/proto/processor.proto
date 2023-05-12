@@ -7,6 +7,7 @@ option go_package = "wasm/plugin/processor";
 
 import "google/protobuf/timestamp.proto";
 
+// go:plugin type=plugin version=1
 message Message {
   string id = 1;
   string source = 2;
@@ -26,6 +27,6 @@ message Message {
 }
 
 // go:plugin type=plugin version=1
-service Processors {
-  rpc Process(Message) returns (Message) {}
-}
+//service Processors {
+//  rpc Process(Message) returns (Message) {}
+//}

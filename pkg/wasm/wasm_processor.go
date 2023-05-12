@@ -6,16 +6,14 @@ import (
 	"github.com/knqyf263/go-plugin/types/known/timestamppb"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelmsg "github.com/lburgazzoli/camel-go/pkg/core/message"
 	pp "github.com/lburgazzoli/camel-go/pkg/wasm/plugin/processor"
 )
 
-type Function struct {
-	processor pp.Processors
+type Processor struct {
+	Function
 }
 
-// Invoke invoke a function.
-func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Message, error) {
+func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 
 	camelContext := camel.ExtractContext(ctx)
 
@@ -38,32 +36,27 @@ func (f *Function) Invoke(ctx context.Context, message camel.Message) (camel.Mes
 
 	_, err := camelContext.TypeConverter().Convert(message.Content(), &content.Data)
 	if err != nil {
-		return message, err
+		return err
 	}
 
-	result, err := f.processor.Process(ctx, &content)
+	err = p.invoke(ctx, &content)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	msg, err := camelmsg.New()
-	if err != nil {
-		return nil, err
+	_ = message.SetID(content.Id)
+	_ = message.SetSource(content.Source)
+	_ = message.SetType(content.Type)
+	_ = message.SetSubject(content.Subject)
+	_ = message.SetDataContentType(content.ContentType)
+	_ = message.SetDataSchema(content.ContentSchema)
+	_ = message.SetTime(content.Time.AsTime())
+
+	message.SetContent(content.Data)
+
+	for k, v := range content.Annotations {
+		message.SetAnnotation(k, v)
 	}
 
-	_ = msg.SetID(result.Id)
-	_ = msg.SetSource(result.Source)
-	_ = msg.SetType(result.Type)
-	_ = msg.SetSubject(result.Subject)
-	_ = msg.SetDataContentType(result.ContentType)
-	_ = msg.SetDataSchema(result.ContentSchema)
-	_ = msg.SetTime(result.Time.AsTime())
-
-	msg.SetContent(result.Data)
-
-	for k, v := range result.Annotations {
-		msg.SetAnnotation(k, v)
-	}
-
-	return msg, nil
+	return nil
 }

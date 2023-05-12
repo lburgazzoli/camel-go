@@ -3,6 +3,8 @@ package wasm
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -69,12 +71,12 @@ func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor,
 		return nil, camelerrors.MissingParameterf("wasm.path", "failure configuring wasm processor")
 	}
 
-	r, err := wasm.NewRuntime(ctx, wasm.Options{})
+	r, err := wasm.NewRuntime(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var f *wasm.Function
+	var reader io.ReadCloser
 
 	if l.Image != "" {
 		content, err := registry.Blob(ctx, l.Image, l.Path)
@@ -82,28 +84,33 @@ func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor,
 			return nil, err
 		}
 
-		fn, err := r.Load(ctx, content)
-		if err != nil {
-			return nil, err
-		}
-
-		f = fn
+		reader = content
 	} else {
-		fn, err := r.LoadFromPath(ctx, l.Path)
+		content, err := os.Open(l.Path)
 		if err != nil {
 			return nil, err
 		}
 
-		f = fn
+		reader = content
+	}
+
+	module, err := r.Load(ctx, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	proc, err := module.Processor(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	p := func(ctx context.Context, m camel.Message) error {
-		result, err := f.Invoke(ctx, m)
+		err := proc.Process(ctx, m)
 		if err != nil {
 			return err
 		}
 
-		return result.CopyTo(m)
+		return nil
 	}
 
 	return p, nil
