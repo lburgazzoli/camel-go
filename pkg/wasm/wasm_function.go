@@ -62,9 +62,5 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 		return errors.New(string(bytes))
 	}
 
-	if err = inout.UnmarshalVT(bytes); err != nil {
-		return err
-	}
-
-	return nil
+	return inout.UnmarshalVT(bytes)
 }

@@ -24,8 +24,10 @@ func NewModule(ctx context.Context, r wz.Runtime, code wz.CompiledModule) (*Modu
 	if err != nil {
 		// Note: Most compilers do not exit the module after running "_start",
 		// unless there was an Error. This allows you to call exported functions.
-		if exitErr, ok := err.(*sys.ExitError); ok && exitErr.ExitCode() != 0 {
-			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
+		var syse *sys.ExitError
+
+		if ok := errors.As(err, &syse); ok && (*syse).ExitCode() != 0 {
+			return nil, fmt.Errorf("unexpected exit_code: %d", (*syse).ExitCode())
 		} else if !ok {
 			return nil, err
 		}

@@ -1,4 +1,4 @@
-////go:build tinygo.wasm
+//go:build tinygo.wasm
 
 package processor
 
@@ -16,6 +16,7 @@ func RegisterProcessors(p Processor) {
 	processor = p
 }
 
+//
 //export process
 func _process(size uint32) uint64 {
 	b := make([]byte, size)
