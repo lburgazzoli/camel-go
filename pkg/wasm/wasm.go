@@ -2,11 +2,9 @@ package wasm
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
-	"github.com/tetratelabs/wazero/sys"
 	"go.uber.org/multierr"
 
 	"github.com/tetratelabs/wazero"
@@ -72,20 +70,5 @@ func (r *Runtime) Load(ctx context.Context, in io.ReadCloser) (*Module, error) {
 		return nil, err
 	}
 
-	// TODO: add stdin/out
-	config := wazero.NewModuleConfig()
-
-	// InstantiateModule runs the "_start" function, WASI's "main".
-	module, err := r.wz.InstantiateModule(ctx, code, config)
-	if err != nil {
-		// Note: Most compilers do not exit the module after running "_start",
-		// unless there was an Error. This allows you to call exported functions.
-		if exitErr, ok := err.(*sys.ExitError); ok && exitErr.ExitCode() != 0 {
-			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
-		} else if !ok {
-			return nil, err
-		}
-	}
-
-	return &Module{wz: r.wz, module: module}, nil
+	return NewModule(ctx, r.wz, code)
 }

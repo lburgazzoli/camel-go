@@ -3,7 +3,6 @@ package wasm
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/tetratelabs/wazero/api"
 )
@@ -14,9 +13,7 @@ type VTProtoSerde interface {
 }
 
 type Function struct {
-	module api.Module
-	malloc api.Function
-	free   api.Function
+	module *Module
 	fn     api.Function
 }
 
@@ -26,34 +23,26 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 		return err
 	}
 
-	dataSize := uint64(len(data))
+	// clean up the buffer
+	p.module.stdin.Reset()
+	p.module.stdout.Reset()
 
-	var dataPtr uint64
-	// If the input data is not empty, we must allocate the in-Wasm memory to store it, and pass to the plugin.
-	if dataSize != 0 {
-		results, err := p.malloc.Call(ctx, dataSize)
-		if err != nil {
-			return err
-		}
-		dataPtr = results[0]
-		// This pointer is managed by TinyGo, but TinyGo is unaware of external usage.
-		// So, we have to free it when finished
-		defer func() {
-			_, _ = p.free.Call(ctx, dataPtr)
-		}()
+	defer func() {
+		// clean up the buffer when the method
+		p.module.stdin.Reset()
+		p.module.stdout.Reset()
+	}()
 
-		// The pointer is a linear memory offset, which is where we write the name.
-		if !p.module.Memory().Write(uint32(dataPtr), data) {
-			return fmt.Errorf("Memory.Write(%d, %d) out of range of memory size %d", dataPtr, dataSize, p.module.Memory().Size())
-		}
-	}
-
-	ptrSize, err := p.fn.Call(ctx, dataPtr, dataSize)
+	ws, err := p.module.stdin.Write(data)
 	if err != nil {
 		return err
 	}
 
-	resPtr := uint32(ptrSize[0] >> 32)
+	ptrSize, err := p.fn.Call(ctx, uint64(ws))
+	if err != nil {
+		return err
+	}
+
 	resSize := uint32(ptrSize[0])
 
 	var isErrResponse bool
@@ -63,20 +52,10 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 		resSize &^= 1 << 31
 	}
 
-	// We don't need the memory after deserialization: make sure it is freed.
-	if resPtr != 0 {
-		defer func() {
-			_, _ = p.free.Call(ctx, uint64(resPtr))
-		}()
-	}
-
-	// The pointer is a linear memory offset, which is where we write the name.
-	bytes, ok := p.module.Memory().Read(resPtr, resSize)
-	if !ok {
-		return fmt.Errorf("Memory.Read(%d, %d) out of range of memory size %d",
-			resPtr,
-			resSize,
-			p.module.Memory().Size())
+	bytes := make([]byte, resSize)
+	_, err = p.module.stdout.Read(bytes)
+	if err != nil {
+		return err
 	}
 
 	if isErrResponse {

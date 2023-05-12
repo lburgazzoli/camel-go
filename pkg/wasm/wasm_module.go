@@ -1,16 +1,46 @@
 package wasm
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 
 	wz "github.com/tetratelabs/wazero"
 	wzapi "github.com/tetratelabs/wazero/api"
+	"github.com/tetratelabs/wazero/sys"
 )
+
+func NewModule(ctx context.Context, r wz.Runtime, code wz.CompiledModule) (*Module, error) {
+	answer := Module{}
+	answer.wz = r
+
+	config := wz.NewModuleConfig()
+	config = config.WithStdout(io.Writer(&answer.stdout))
+	config = config.WithStdin(io.Reader(&answer.stdin))
+
+	module, err := answer.wz.InstantiateModule(ctx, code, config)
+	if err != nil {
+		// Note: Most compilers do not exit the module after running "_start",
+		// unless there was an Error. This allows you to call exported functions.
+		if exitErr, ok := err.(*sys.ExitError); ok && exitErr.ExitCode() != 0 {
+			return nil, fmt.Errorf("unexpected exit_code: %d", exitErr.ExitCode())
+		} else if !ok {
+			return nil, err
+		}
+	}
+
+	answer.module = module
+
+	return &answer, nil
+}
 
 type Module struct {
 	wz     wz.Runtime
 	module wzapi.Module
+	stdin  bytes.Buffer
+	stdout bytes.Buffer
 }
 
 func (m *Module) Close(ctx context.Context) error {
@@ -21,19 +51,9 @@ func (m *Module) Close(ctx context.Context) error {
 	return m.module.Close(ctx)
 }
 
-func (m *Module) Processor(ctx context.Context) (*Processor, error) {
+func (m *Module) Processor(_ context.Context) (*Processor, error) {
 	if m.module == nil {
 		return nil, nil
-	}
-
-	malloc := m.module.ExportedFunction("malloc")
-	if malloc == nil {
-		return nil, errors.New("malloc is not exported")
-	}
-
-	free := m.module.ExportedFunction("free")
-	if free == nil {
-		return nil, errors.New("free is not exported")
 	}
 
 	fn := m.module.ExportedFunction("process")
@@ -43,9 +63,7 @@ func (m *Module) Processor(ctx context.Context) (*Processor, error) {
 
 	p := Processor{
 		Function: Function{
-			module: m.module,
-			malloc: malloc,
-			free:   free,
+			module: m,
 			fn:     fn,
 		},
 	}

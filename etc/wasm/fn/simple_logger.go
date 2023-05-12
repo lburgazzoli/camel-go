@@ -12,12 +12,10 @@ import (
 
 // main is required for TinyGo to compile to Wasm.
 func main() {
-	processor.RegisterProcessors(MyProcessor{})
+	processor.RegisterProcessors(Process)
 }
 
-type MyProcessor struct{}
-
-func (m MyProcessor) Process(_ context.Context, request *processor.Message) (*processor.Message, error) {
+func Process(_ context.Context, request *processor.Message) (*processor.Message, error) {
 	fmt.Println("Processing message ", request.Id)
 
 	return request, nil
