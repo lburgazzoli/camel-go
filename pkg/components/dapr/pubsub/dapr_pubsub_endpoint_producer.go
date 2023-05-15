@@ -85,8 +85,8 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	}
 
 	opts := make([]dapr.PublishEventOption, 0)
-	if msg.GetDataContentType() != "" {
-		opts = append(opts, dapr.PublishEventWithContentType(msg.GetDataContentType()))
+	if msg.ContentType() != "" {
+		opts = append(opts, dapr.PublishEventWithContentType(msg.ContentType()))
 	}
 
 	if err := p.client.PublishEvent(ctx, p.componentName, p.topicName, data, opts...); err != nil {

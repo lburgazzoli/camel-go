@@ -10,10 +10,10 @@ import (
 const (
 	Scheme = "kafka"
 
-	AnnotationPartition = "camel.apache.org/kafka.partition"
-	AnnotationOffset    = "camel.apache.org/kafka.offset"
-	AnnotationTopic     = "camel.apache.org/kafka.topic"
-	AnnotationKey       = "camel.apache.org/kafka.key"
+	AttributePartition = "camel.apache.org/kafka.partition"
+	AttributeOffset    = "camel.apache.org/kafka.offset"
+	AttributeTopic     = "camel.apache.org/kafka.topic"
+	AttributeKey       = "camel.apache.org/kafka.key"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

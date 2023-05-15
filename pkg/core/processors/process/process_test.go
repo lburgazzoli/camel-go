@@ -8,7 +8,6 @@ import (
 	"time"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/require"
 
@@ -38,8 +37,7 @@ func TestProcessor(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
+		msg := c.NewMessage()
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)

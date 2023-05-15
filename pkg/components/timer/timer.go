@@ -10,9 +10,9 @@ import (
 const (
 	Scheme = "timer"
 
-	AnnotationTimerName       = "camel.apache.org/timer.name"
-	AnnotationTimerStarted    = "camel.apache.org/timer.started"
-	AnnotationTimerFiredCount = "camel.apache.org/timer.fired.count"
+	AttributeTimerName       = "camel.apache.org/timer.name"
+	AttributeTimerStarted    = "camel.apache.org/timer.started"
+	AttributeTimerFiredCount = "camel.apache.org/timer.fired.count"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

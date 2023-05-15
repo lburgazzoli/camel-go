@@ -62,16 +62,12 @@ func (t *Transform) Reify(ctx context.Context) (camel.Verticle, error) {
 func (t *Transform) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
-		annotations := msg.Annotations()
 		ctx := camel.Wrap(context.Background(), t.Context())
 
 		err := t.processor(ctx, msg)
 		if err != nil {
 			panic(err)
 		}
-
-		// temporary override annotations
-		msg.SetAnnotations(annotations)
 
 		ac.Request(ac.Sender(), msg)
 	}

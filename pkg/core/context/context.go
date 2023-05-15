@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/message"
+
 	"github.com/lburgazzoli/camel-go/pkg/core/errors/log"
 
 	"go.uber.org/zap"
@@ -97,6 +99,10 @@ type defaultContext struct {
 	verticles     map[string]vh
 	logger        *zap.Logger
 	errorHandler  camelerrors.Handler
+}
+
+func (c *defaultContext) NewMessage() camel.Message {
+	return message.New(c)
 }
 
 func (c *defaultContext) ID() string {

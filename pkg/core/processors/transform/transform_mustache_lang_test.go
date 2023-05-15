@@ -10,7 +10,6 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/mustache"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,7 +34,7 @@ func TestTransformMustache(t *testing.T) {
 
 		l := language.Language{
 			Mustache: &mustache.Mustache{
-				Template: `hello {{message.id}}, {{message.annotations.foo}}`,
+				Template: `hello {{message.id}}, {{message.attributes.foo}}`,
 			},
 		}
 
@@ -47,17 +46,16 @@ func TestTransformMustache(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
+		msg := c.NewMessage()
 
 		msg.SetContent(uuid.New())
-		msg.SetAnnotation("foo", "bar")
+		_ = msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)
 
 		body, ok := res.Content().([]byte)
 		assert.True(t, ok)
-		assert.Equal(t, "hello "+msg.GetID()+", bar", string(body))
+		assert.Equal(t, "hello "+msg.ID()+", bar", string(body))
 	})
 }

@@ -10,8 +10,8 @@ import (
 const (
 	Scheme = "mqtt"
 
-	AnnotationMqttMessageID   = "camel.apache.org/mqtt.message.id"
-	AnnotationMqttMessageQUOS = "camel.apache.org/mqtt.message.qus"
+	AttributeMqttMessageID   = "camel.apache.org/mqtt.message.id"
+	AttributeMqttMessageQUOS = "camel.apache.org/mqtt.message.qus"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

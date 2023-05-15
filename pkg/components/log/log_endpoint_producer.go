@@ -41,8 +41,8 @@ func (p *Producer) Receive(ac actor.Context) {
 
 		p.logger.Info(
 			content,
-			zap.String("message.type", msg.GetType()),
-			zap.String("message.id", msg.GetID()))
+			zap.String("message.type", msg.Type()),
+			zap.String("message.id", msg.ID()))
 
 		ac.Request(ac.Parent(), msg)
 	}

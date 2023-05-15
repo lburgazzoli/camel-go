@@ -13,7 +13,6 @@ import (
 	"github.com/asynkron/protoactor-go/actor"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/procyon-projects/chrono"
 )
 
@@ -81,21 +80,17 @@ func (c *Consumer) run(_ context.Context) {
 	}
 
 	component := c.endpoint.Component()
-	context := component.Context()
+	camelCtx := component.Context()
 
-	m, err := message.New()
-	if err != nil {
-		panic(err)
-	}
+	m := camelCtx.NewMessage()
+	m.SetType("camel.timer.triggered")
+	m.SetSource(component.Scheme())
 
-	_ = m.SetType("camel.timer.triggered")
-	_ = m.SetSource(component.Scheme())
+	_ = m.SetAttribute(AttributeTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
+	_ = m.SetAttribute(AttributeTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
+	_ = m.SetAttribute(AttributeTimerName, c.endpoint.config.Remaining)
 
-	m.SetAnnotation(AnnotationTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
-	m.SetAnnotation(AnnotationTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
-	m.SetAnnotation(AnnotationTimerName, c.endpoint.config.Remaining)
-
-	if err := context.SendTo(c.Target(), m); err != nil {
+	if err := camelCtx.SendTo(c.Target(), m); err != nil {
 		panic(err)
 	}
 }

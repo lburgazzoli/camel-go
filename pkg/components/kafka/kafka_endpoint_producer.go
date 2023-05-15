@@ -68,11 +68,11 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	record := &kgo.Record{}
 	record.Topic = p.endpoint.config.Remaining
 	record.Headers = []kgo.RecordHeader{
-		{Key: "event.id", Value: []byte(msg.GetID())},
-		{Key: "event.type", Value: []byte(msg.GetType())},
+		{Key: "event.id", Value: []byte(msg.ID())},
+		{Key: "event.type", Value: []byte(msg.Type())},
 	}
 
-	if s := msg.GetSubject(); s != "" {
+	if s := msg.Subject(); s != "" {
 		record.Key = []byte(s)
 	}
 
@@ -89,7 +89,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		msg.SetError(errors.Wrap(err, "record had a produce error while synchronously producing"))
 	}
 	if r != nil {
-		msg.SetAnnotation(AnnotationOffset, strconv.FormatInt(r.Offset, 10))
-		msg.SetAnnotation(AnnotationPartition, strconv.FormatInt(int64(r.Partition), 10))
+		_ = msg.SetAttribute(AttributeOffset, strconv.FormatInt(r.Offset, 10))
+		_ = msg.SetAttribute(AttributePartition, strconv.FormatInt(int64(r.Partition), 10))
 	}
 }

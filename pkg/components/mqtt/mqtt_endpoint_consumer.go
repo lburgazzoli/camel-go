@@ -13,7 +13,6 @@ import (
 	"github.com/asynkron/protoactor-go/actor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
@@ -113,19 +112,17 @@ func (c *Consumer) Receive(ctx actor.Context) {
 func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
 	c.Logger().Infof("handing message %v", msg)
 
-	m, err := message.New()
-	if err != nil {
-		panic(err)
-	}
-
 	component := c.endpoint.Component()
+	camelCtx := component.Context()
 
-	_ = m.SetSubject(msg.Topic())
-	_ = m.SetType("mqtt.publish")
-	_ = m.SetSource(component.Scheme())
+	m := camelCtx.NewMessage()
 
-	m.SetAnnotation(AnnotationMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
+	m.SetSubject(msg.Topic())
+	m.SetType("mqtt.publish")
+	m.SetSource(component.Scheme())
 	m.SetContent(msg.Payload())
+
+	_ = m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
 
 	if err := component.Context().SendTo(c.Target(), m); err != nil {
 		panic(err)

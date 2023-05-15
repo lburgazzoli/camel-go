@@ -11,7 +11,6 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -58,7 +57,7 @@ func TestChoice(t *testing.T) {
 		require.NotNil(t, chp)
 
 		{
-			msg, err := message.New()
+			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "bar" }`)
 			assert.Nil(t, err)
 
@@ -71,7 +70,7 @@ func TestChoice(t *testing.T) {
 		}
 
 		{
-			msg, err := message.New()
+			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "baz" }`)
 			assert.Nil(t, err)
 
@@ -129,7 +128,7 @@ func TestChoice(t *testing.T) {
 		require.NotNil(t, chp)
 
 		{
-			msg, err := message.New()
+			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "bar" }`)
 			assert.Nil(t, err)
 
@@ -142,7 +141,7 @@ func TestChoice(t *testing.T) {
 		}
 
 		{
-			msg, err := message.New()
+			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "baz" }`)
 			assert.Nil(t, err)
 
@@ -155,7 +154,7 @@ func TestChoice(t *testing.T) {
 		}
 
 		{
-			msg, err := message.New()
+			msg := c.NewMessage()
 			msg.SetContent(`{ "bar": "baz" }`)
 			assert.Nil(t, err)
 

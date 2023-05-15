@@ -68,7 +68,7 @@ func TestSimpleYAML(t *testing.T) {
 
 		select {
 		case msg := <-wg:
-			a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
+			a, ok := msg.Attribute(timer.AttributeTimerFiredCount)
 			assert.True(t, ok)
 			assert.Equal(t, "1", a)
 			assert.Equal(t, content, msg.Content())
@@ -101,7 +101,7 @@ func TestSimpleWASM(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			_ = message.SetSubject("consumer-1")
+			message.SetSubject("consumer-1")
 			return nil
 		})
 		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
@@ -114,7 +114,7 @@ func TestSimpleWASM(t *testing.T) {
 
 		select {
 		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.GetSubject())
+			assert.Equal(t, "consumer-1", msg.Subject())
 
 			c, ok := msg.Content().([]byte)
 			assert.True(t, ok)
@@ -148,7 +148,7 @@ func TestSimpleInlineWASM(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			_ = message.SetSubject("consumer-1")
+			message.SetSubject("consumer-1")
 			return nil
 		})
 		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
@@ -161,7 +161,7 @@ func TestSimpleInlineWASM(t *testing.T) {
 
 		select {
 		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.GetSubject())
+			assert.Equal(t, "consumer-1", msg.Subject())
 
 			c, ok := msg.Content().([]byte)
 			assert.True(t, ok)
@@ -195,7 +195,7 @@ func TestSimpleInlineImageWASM(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			_ = message.SetSubject("consumer-1")
+			message.SetSubject("consumer-1")
 			return nil
 		})
 		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
@@ -208,7 +208,7 @@ func TestSimpleInlineImageWASM(t *testing.T) {
 
 		select {
 		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.GetSubject())
+			assert.Equal(t, "consumer-1", msg.Subject())
 
 			c, ok := msg.Content().([]byte)
 			assert.True(t, ok)
@@ -256,7 +256,7 @@ func TestSimpleError(t *testing.T) {
 
 	select {
 	case msg := <-wg:
-		a, ok := msg.Annotation(timer.AnnotationTimerFiredCount)
+		a, ok := msg.Attribute(timer.AttributeTimerFiredCount)
 		assert.True(t, ok)
 		assert.Equal(t, "1", a)
 	case <-time.After(5 * time.Second):

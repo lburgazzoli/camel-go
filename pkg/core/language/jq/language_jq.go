@@ -127,7 +127,9 @@ func (l *Jq) Processor(ctx context.Context, camelContext camel.Context) (camel.P
 			out = append(out, v)
 		}
 
-		m.SetAnnotation(AnnotationJqResults, strconv.Itoa(len(out)))
+		if err := m.SetAttribute(AnnotationJqResults, strconv.Itoa(len(out))); err != nil {
+			panic(err)
+		}
 
 		if len(out) == 1 {
 			m.SetContent(out[0])

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/require"
 
@@ -42,11 +41,13 @@ func TestSetHeader(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
+		msg := c.NewMessage()
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)
-		require.Equal(t, content, res.GetExtensions()[name])
+
+		h, ok := res.Header(name)
+		require.True(t, ok)
+		require.Equal(t, content, h)
 	})
 }

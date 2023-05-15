@@ -11,7 +11,6 @@ import (
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -69,7 +68,7 @@ func (c *Consumer) Receive(ctx actor.Context) {
 func (c *Consumer) poll(ctx context.Context) {
 
 	component := c.endpoint.Component()
-	context := component.Context()
+	camelCtx := component.Context()
 
 	for {
 		fetches := c.client.PollFetches(ctx)
@@ -82,36 +81,31 @@ func (c *Consumer) poll(ctx context.Context) {
 		for it := fetches.RecordIter(); !it.Done(); {
 			record := it.Next()
 
-			m, err := message.New()
-			if err != nil {
-				panic(err)
-			}
+			m := camelCtx.NewMessage()
 
-			_ = m.SetType("camel.kafka.record.received")
-			_ = m.SetSource(component.Scheme())
+			m.SetType("camel.kafka.record.received")
+			m.SetSource(component.Scheme())
 
 			if len(record.Key) > 0 {
-				_ = m.SetExtension("partitionkey", record.Key)
+				m.SetHeader("partitionkey", record.Key)
 
 				// TODO: use type converter
-				_ = m.SetSubject(string(record.Key))
+				m.SetSubject(string(record.Key))
 			}
 
 			for _, h := range record.Headers {
 				// TODO: use type converter
-				_ = m.SetExtension(h.Key, string(h.Value))
+				m.SetHeader(h.Key, string(h.Value))
 			}
 
 			m.SetContent(record.Value)
 
-			m.SetAnnotation(AnnotationOffset, strconv.FormatInt(record.Offset, 10))
-			m.SetAnnotation(AnnotationPartition, strconv.FormatInt(int64(record.Partition), 10))
-			m.SetAnnotation(AnnotationTopic, record.Topic)
+			_ = m.SetAttribute(AttributeOffset, strconv.FormatInt(record.Offset, 10))
+			_ = m.SetAttribute(AttributePartition, strconv.FormatInt(int64(record.Partition), 10))
+			_ = m.SetAttribute(AttributeTopic, record.Topic)
+			_ = m.SetAttribute(AttributeKey, string(record.Key))
 
-			// TODO: use type converter
-			m.SetAnnotation(AnnotationKey, string(record.Key))
-
-			if err := context.SendTo(c.Target(), m); err != nil {
+			if err := camelCtx.SendTo(c.Target(), m); err != nil {
 				panic(err)
 			}
 		}

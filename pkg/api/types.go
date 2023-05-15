@@ -9,8 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
-
-	ce "github.com/cloudevents/sdk-go/v2"
 )
 
 type ContextKey string
@@ -115,6 +113,8 @@ type Context interface {
 	RequestTo(*actor.PID, Message, time.Duration) (Message, error)
 
 	Logger() *zap.Logger
+
+	NewMessage() Message
 }
 
 type Component interface {
@@ -137,29 +137,57 @@ type Endpoint interface {
 	Logger() *zap.Logger
 }
 
+const (
+	MessageAttributeID            string = "camel.apache.org/message.id"
+	MessageAttributeTime          string = "camel.apache.org/message.time"
+	MessageAttributeType          string = "camel.apache.org/message.type"
+	MessageAttributeSource        string = "camel.apache.org/message.source"
+	MessageAttributeSubject       string = "camel.apache.org/message.subject"
+	MessageAttributeContentType   string = "camel.apache.org/message.content.type"
+	MessageAttributeContentSchema string = "camel.apache.org/message.content.schema"
+)
+
 //nolint:interfacebloat
 type Message interface {
-	// TODO: remove, too limited
-	ce.EventContext
+	ID() string
+	Time() time.Time
 
-	Fail(error)
+	Context() Context
 
-	SetError(error)
-	Error() error
+	Type() string
+	Source() string
+	Subject() string
+	ContentSchema() string
+	ContentType() string
 
-	// Annotation ---
-	// TODO: add options Annotation("foo", opt.WithDefault("bar"), opt.AsType(baz{})).
-	Annotation(string) (string, bool)
-	SetAnnotation(string, string)
-
-	Annotations() map[string]string
-	SetAnnotations(map[string]string)
-	ForEachAnnotation(func(string, string))
+	SetType(string)
+	SetSource(string)
+	SetSubject(string)
+	SetContentSchema(string)
+	SetContentType(string)
 
 	// Content ---
 	// TODO: add options Content(opt.AsType(baz{})).
 	Content() interface{}
 	SetContent(interface{})
+
+	// Error ---
+	Error() error
+	SetError(error)
+
+	// Headers ---
+	Headers() map[string]any
+	SetHeaders(map[string]any)
+	Header(string) (any, bool)
+	SetHeader(string, any)
+	ForEachHeader(func(string, any))
+
+	// Attributes ---
+	Attributes() map[string]any
+	SetAttributes(map[string]any) error
+	Attribute(string) (any, bool)
+	SetAttribute(string, any) error
+	ForEachAttribute(func(string, any))
 
 	CopyTo(message Message) error
 }

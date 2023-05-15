@@ -33,16 +33,16 @@ func (l *Mustache) Processor(_ context.Context, _ camel.Context) (camel.Processo
 
 		err := t.FRender(&buf, map[string]interface{}{
 			"message": map[string]interface{}{
-				"id":                m.GetID(),
-				"source":            m.GetSource(),
-				"type":              m.GetType(),
-				"subject":           m.GetSubject(),
-				"data-content-type": m.GetDataContentType(),
-				"data-schema":       m.GetDataSchema(),
-				"time":              m.GetTime(),
-				"content":           m.Content(),
-				"annotations":       m.Annotations(),
-				"extensions":        m.GetExtensions(),
+				"id":             m.ID(),
+				"source":         m.Source(),
+				"type":           m.Type(),
+				"subject":        m.Subject(),
+				"content-type":   m.ContentType(),
+				"content-schema": m.ContentSchema(),
+				"time":           m.Time(),
+				"content":        m.Content(),
+				"attributes":     m.Attributes(),
+				"header":         m.Headers(),
 			},
 		})
 

@@ -74,8 +74,7 @@ func (p *SetHeader) Reify(ctx context.Context) (camel.Verticle, error) {
 func (p *SetHeader) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
-		_ = msg.SetExtension(p.Name, p.Constant.Value)
-
+		msg.SetHeader(p.Name, p.Constant.Value)
 		ac.Request(ac.Sender(), msg)
 	}
 }

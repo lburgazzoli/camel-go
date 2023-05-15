@@ -10,7 +10,6 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -46,11 +45,10 @@ func TestTransformWASM(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
+		msg := c.NewMessage()
 
 		msg.SetContent(uuid.New())
-		msg.SetAnnotation("foo", "bar")
+		_ = msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)
@@ -87,11 +85,10 @@ func TestTransformWASM(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
+		msg := c.NewMessage()
 
 		msg.SetContent(uuid.New())
-		msg.SetAnnotation("foo", "bar")
+		_ = msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)

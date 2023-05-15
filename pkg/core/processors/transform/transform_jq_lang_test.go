@@ -10,7 +10,6 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/jq"
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -47,11 +46,9 @@ func TestTransformJQ(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, pvp)
 
-		msg, err := message.New()
-		require.Nil(t, err)
-
+		msg := c.NewMessage()
 		msg.SetContent(`{ "message": "hello jq" }`)
-		msg.SetAnnotation("foo", "bar")
+		_ = msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)

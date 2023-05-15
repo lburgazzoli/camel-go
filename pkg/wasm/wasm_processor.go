@@ -18,21 +18,21 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 	camelContext := camel.ExtractContext(ctx)
 
 	content := pp.Message{
-		Id:            message.GetID(),
-		Source:        message.GetSource(),
-		Type:          message.GetType(),
-		Subject:       message.GetSubject(),
-		ContentType:   message.GetDataContentType(),
-		ContentSchema: message.GetDataSchema(),
-		Time:          timestamppb.New(message.GetTime()),
+		Id:            message.ID(),
+		Source:        message.Source(),
+		Type:          message.Type(),
+		Subject:       message.Subject(),
+		ContentType:   message.ContentType(),
+		ContentSchema: message.ContentSchema(),
+		Time:          timestamppb.New(message.Time()),
 		Attributes:    make(map[string]string),
 		Annotations:   make(map[string]string),
 	}
 
 	// TODO:fix annotation/attributes
-	message.ForEachAnnotation(func(k string, v string) {
-		content.Annotations[k] = v
-	})
+	//message.ForEachAttribute(func(k string, v any) {
+	//	content.Annotations[k] = v
+	//})
 
 	_, err := camelContext.TypeConverter().Convert(message.Content(), &content.Data)
 	if err != nil {
@@ -44,19 +44,19 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 		return err
 	}
 
-	_ = message.SetID(content.Id)
-	_ = message.SetSource(content.Source)
-	_ = message.SetType(content.Type)
-	_ = message.SetSubject(content.Subject)
-	_ = message.SetDataContentType(content.ContentType)
-	_ = message.SetDataSchema(content.ContentSchema)
-	_ = message.SetTime(content.Time.AsTime())
-
+	message.SetSource(content.Source)
+	message.SetType(content.Type)
+	message.SetSubject(content.Subject)
+	message.SetContentType(content.ContentType)
+	message.SetContentSchema(content.ContentSchema)
 	message.SetContent(content.Data)
 
-	for k, v := range content.Annotations {
-		message.SetAnnotation(k, v)
-	}
+	// TODO:fix annotation/attributes
+	//for k, v := range content.Annotations {
+	//	if err := message.SetAttribute(k, v); err != nil {
+	//		panic(err)
+	//	}
+	//}
 
 	return nil
 }

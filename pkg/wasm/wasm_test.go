@@ -2,6 +2,7 @@ package wasm
 
 import (
 	"context"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,6 +20,8 @@ func TestWASM(t *testing.T) {
 
 		r, err := NewRuntime(ctx)
 		assert.Nil(t, err)
+
+		c := camel.ExtractContext(ctx)
 
 		defer func() { _ = r.Close(ctx) }()
 
@@ -38,15 +40,14 @@ func TestWASM(t *testing.T) {
 		p, err := m.Processor(ctx)
 		require.NoError(t, err)
 
-		in, err := message.New()
-		require.NoError(t, err)
+		in := c.NewMessage()
 
 		err = p.Process(ctx, in)
 		require.NoError(t, err)
 
-		c, ok := in.Content().([]byte)
+		data, ok := in.Content().([]byte)
 		assert.True(t, ok)
-		assert.Equal(t, "hello from wasm", string(c))
+		assert.Equal(t, "hello from wasm", string(data))
 
 	})
 }
