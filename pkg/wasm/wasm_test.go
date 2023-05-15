@@ -2,10 +2,11 @@ package wasm
 
 import (
 	"context"
-	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"os"
 	"path/filepath"
 	"testing"
+
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 

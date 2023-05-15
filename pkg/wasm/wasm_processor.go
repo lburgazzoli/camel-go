@@ -30,9 +30,9 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 	}
 
 	// TODO:fix annotation/attributes
-	//message.ForEachAttribute(func(k string, v any) {
-	//	content.Annotations[k] = v
-	//})
+	// message.ForEachAttribute(func(k string, v any) {
+	//  content.Annotations[k] = v
+	// })
 
 	_, err := camelContext.TypeConverter().Convert(message.Content(), &content.Data)
 	if err != nil {
@@ -52,11 +52,11 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 	message.SetContent(content.Data)
 
 	// TODO:fix annotation/attributes
-	//for k, v := range content.Annotations {
-	//	if err := message.SetAttribute(k, v); err != nil {
-	//		panic(err)
-	//	}
-	//}
+	// for k, v := range content.Annotations {
+	// 	 if err := message.SetAttribute(k, v); err != nil {
+	// 	    	panic(err)
+	//  	}
+	// }
 
 	return nil
 }

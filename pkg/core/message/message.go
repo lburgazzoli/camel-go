@@ -291,7 +291,7 @@ func (m *defaultMessage) ForEachHeader(fn func(string, any)) {
 // Clone
 //
 
-func (m *defaultMessage) CopyTo(message api.Message) error {
-	//TODO implement me
+func (m *defaultMessage) CopyTo(_ api.Message) error {
+	// TODO implement me.
 	panic("implement me")
 }
