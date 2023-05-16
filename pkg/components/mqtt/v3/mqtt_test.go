@@ -1,4 +1,4 @@
-package mqtt
+package v3
 
 import (
 	"bytes"
@@ -48,7 +48,7 @@ func TestSimpleMQTT(t *testing.T) {
 		content := uuid.New()
 		wg := make(chan camel.Message)
 
-		conf, err := filepath.Abs("../../../etc/support/mqtt/mosquitto.conf")
+		conf, err := filepath.Abs("../../../../etc/support/mqtt/mosquitto.conf")
 		require.NoError(t, err)
 		require.FileExists(t, conf)
 

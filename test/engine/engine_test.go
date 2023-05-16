@@ -18,7 +18,7 @@ import (
 	_ "github.com/lburgazzoli/camel-go/pkg/components/dapr/pubsub"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/kafka"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/log"
-	_ "github.com/lburgazzoli/camel-go/pkg/components/mqtt"
+	_ "github.com/lburgazzoli/camel-go/pkg/components/mqtt/v3"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/wasm"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/choice"
 	_ "github.com/lburgazzoli/camel-go/pkg/core/processors/process"

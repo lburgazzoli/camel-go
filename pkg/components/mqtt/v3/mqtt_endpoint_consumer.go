@@ -1,19 +1,16 @@
-////go:build components_mqtt || components_all
+////go:build components_mqtt_v3 || components_all
 
-package mqtt
+package v3
 
 import (
 	"context"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 type Consumer struct {
@@ -28,37 +25,10 @@ func (c *Consumer) Endpoint() camel.Endpoint {
 }
 
 func (c *Consumer) Start(context.Context) error {
-	cid := c.endpoint.config.ClientID
-	if cid == "" {
-		cid = uuid.New()
-	}
+	c.client = c.endpoint.newClient(func(opts *mqtt.ClientOptions) {
+		opts.SetDefaultPublishHandler(c.handler)
+	})
 
-	opts := mqtt.NewClientOptions()
-	opts = opts.SetClientID(cid)
-	opts = opts.SetKeepAlive(2 * time.Second)
-	opts = opts.SetDefaultPublishHandler(c.handler)
-	opts = opts.SetPingTimeout(1 * time.Second)
-
-	for _, broker := range strings.Split(c.endpoint.config.Brokers, ",") {
-		if broker == "" {
-			continue
-		}
-
-		opts = opts.AddBroker(broker)
-	}
-
-	// Log events
-	opts.OnConnectionLost = func(cl mqtt.Client, err error) {
-		c.Logger().Warnf("connection lost (error: %s)", err.Error())
-	}
-	opts.OnConnect = func(cl mqtt.Client) {
-		c.Logger().Info("connection established")
-	}
-	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		c.Logger().Info("attempting to reconnect")
-	}
-
-	c.client = mqtt.NewClient(opts)
 	if token := c.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}

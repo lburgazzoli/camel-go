@@ -1,6 +1,6 @@
-////go:build components_mqtt || components_all
+////go:build components_mqtt_v3 || components_all
 
-package mqtt
+package v3
 
 import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
