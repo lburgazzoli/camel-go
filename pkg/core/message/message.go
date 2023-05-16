@@ -235,7 +235,7 @@ func (m *defaultMessage) SetAttribute(key string, val any) error {
 	return nil
 }
 
-func (m *defaultMessage) ForEachAttribute(fn func(string, any)) {
+func (m *defaultMessage) EachAttribute(fn func(string, any)) {
 	for k, v := range m.attributes {
 		fn(k, v)
 	}
@@ -281,7 +281,7 @@ func (m *defaultMessage) SetHeader(key string, val any) {
 	m.headers[key] = val
 }
 
-func (m *defaultMessage) ForEachHeader(fn func(string, any)) {
+func (m *defaultMessage) EachHeader(fn func(string, any)) {
 	for k, v := range m.headers {
 		fn(k, v)
 	}

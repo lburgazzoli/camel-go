@@ -36,3 +36,15 @@ func (l *Constant) Processor(_ context.Context, _ camel.Context) (camel.Processo
 
 	return p, nil
 }
+
+func (l *Constant) Transformer(_ context.Context, _ camel.Context) (camel.Transformer, error) {
+	if l.Value == "" {
+		return nil, camelerrors.MissingParameterf("constant.value", "failure configuring constant processor")
+	}
+
+	p := func(ctxm context.Context, m camel.Message) (any, error) {
+		return l.Value, nil
+	}
+
+	return p, nil
+}

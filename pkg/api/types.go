@@ -180,20 +180,21 @@ type Message interface {
 	SetHeaders(map[string]any)
 	Header(string) (any, bool)
 	SetHeader(string, any)
-	ForEachHeader(func(string, any))
+	EachHeader(func(string, any))
 
 	// Attributes ---
 	Attributes() map[string]any
 	SetAttributes(map[string]any) error
 	Attribute(string) (any, bool)
 	SetAttribute(string, any) error
-	ForEachAttribute(func(string, any))
+	EachAttribute(func(string, any))
 
 	CopyTo(message Message) error
 }
 
 type Processor = func(context.Context, Message) error
 type Predicate = func(context.Context, Message) (bool, error)
+type Transformer = func(context.Context, Message) (any, error)
 
 type Producer interface {
 	Service

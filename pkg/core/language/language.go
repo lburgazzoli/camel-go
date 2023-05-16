@@ -105,3 +105,42 @@ func (l *Language) Predicate(ctx context.Context, camelContext camel.Context) (c
 		return nil, camelerrors.MissingParameter("wasm || mustache || jq || constant", "missing language")
 	}
 }
+
+func (l *Language) Transformer(ctx context.Context, camelContext camel.Context) (camel.Transformer, error) {
+
+	switch {
+	case l.Wasm != nil:
+		p, err := l.Wasm.Transformer(ctx, camelContext)
+		if err != nil {
+			return nil, err
+		}
+
+		return p, nil
+
+	case l.Mustache != nil:
+		p, err := l.Mustache.Transformer(ctx, camelContext)
+		if err != nil {
+			return nil, err
+		}
+
+		return p, nil
+
+	case l.Jq != nil:
+		p, err := l.Jq.Transformer(ctx, camelContext)
+		if err != nil {
+			return nil, err
+		}
+
+		return p, nil
+
+	case l.Constant != nil:
+		p, err := l.Constant.Transformer(ctx, camelContext)
+		if err != nil {
+			return nil, err
+		}
+
+		return p, nil
+	default:
+		return nil, camelerrors.MissingParameter("wasm || mustache || jq || constant", "missing language")
+	}
+}

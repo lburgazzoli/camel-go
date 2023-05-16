@@ -63,7 +63,7 @@ func (l *Wasm) UnmarshalText(text []byte) error {
 }
 
 func (l *Wasm) Predicate(_ context.Context, _ camel.Context) (camel.Predicate, error) {
-	return nil, camelerrors.NotImplemented("TODO")
+	return nil, camelerrors.NotImplemented("NotSupported")
 }
 
 func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor, error) {
@@ -114,4 +114,8 @@ func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor,
 	}
 
 	return p, nil
+}
+
+func (l *Wasm) Transformer(_ context.Context, _ camel.Context) (camel.Transformer, error) {
+	return nil, camelerrors.NotImplemented("NotSupported")
 }

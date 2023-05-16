@@ -5,10 +5,10 @@ package setheader
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
-
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
@@ -34,19 +34,11 @@ func New(opts ...OptionFn) *SetHeader {
 
 type SetHeader struct {
 	processors.DefaultVerticle `yaml:",inline"`
+	language.Language          `yaml:",inline"`
 
-	Name     string `yaml:"name"`
-	Language `yaml:",inline"`
-}
+	Name string `yaml:"name"`
 
-// Language ---
-// TODO: replace with language.Language.
-type Language struct {
-	Constant *LanguageConstant `yaml:"constant,omitempty"`
-}
-
-type LanguageConstant struct {
-	Value string `yaml:"value"`
+	transformer camel.Transformer
 }
 
 func (p *SetHeader) ID() string {
@@ -56,17 +48,14 @@ func (p *SetHeader) ID() string {
 func (p *SetHeader) Reify(ctx context.Context) (camel.Verticle, error) {
 	camelContext := camel.ExtractContext(ctx)
 
-	if p.Name == "" {
-		return nil, camelerrors.MissingParameterf("name", "failure processing %s", TAG)
-	}
-	if p.Constant == nil {
-		return nil, camelerrors.MissingParameterf("constant", "failure processing %s", TAG)
-	}
-	if p.Constant.Value == "" {
-		return nil, camelerrors.MissingParameterf("constant.value", "failure processing %s", TAG)
+	p.SetContext(camelContext)
+
+	t, err := p.Language.Transformer(ctx, camelContext)
+	if err != nil {
+		return nil, err
 	}
 
-	p.SetContext(camelContext)
+	p.transformer = t
 
 	return p, nil
 }
@@ -74,7 +63,15 @@ func (p *SetHeader) Reify(ctx context.Context) (camel.Verticle, error) {
 func (p *SetHeader) Receive(ac actor.Context) {
 	msg, ok := ac.Message().(camel.Message)
 	if ok {
-		msg.SetHeader(p.Name, p.Constant.Value)
+		ctx := camel.Wrap(context.Background(), p.Context())
+
+		answer, err := p.transformer(ctx, msg)
+		if err != nil {
+			panic(err)
+		}
+
+		msg.SetHeader(p.Name, answer)
+
 		ac.Request(ac.Sender(), msg)
 	}
 }

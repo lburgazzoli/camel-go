@@ -4,6 +4,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
@@ -64,16 +65,58 @@ func (p *Producer) Receive(ac actor.Context) {
 	}
 }
 
+// publish produces a record that conforms to the CloudEvents binary-content-mode 1.0 spec.
 func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	record := &kgo.Record{}
 	record.Topic = p.endpoint.config.Remaining
-	record.Headers = []kgo.RecordHeader{
-		{Key: "event.id", Value: []byte(msg.ID())},
-		{Key: "event.type", Value: []byte(msg.Type())},
-	}
+	record.Headers = make([]kgo.RecordHeader, 5)
 
-	if s := msg.Subject(); s != "" {
-		record.Key = []byte(s)
+	record.Headers = append(record.Headers, kgo.RecordHeader{
+		Key:   "ce_specversion",
+		Value: []byte("1.0"),
+	})
+
+	// copy relevant attributes as ce headers
+	msg.EachAttribute(func(k string, v any) {
+		switch k {
+		case api.MessageAttributeID:
+			k = "ce_id"
+		case api.MessageAttributeTime:
+			k = "ce_time"
+		case api.MessageAttributeSource:
+			k = "ce_source"
+		case api.MessageAttributeContentType:
+			k = "content-type"
+		case api.MessageAttributeContentSchema:
+			k = "ce_datacontentschema"
+		default:
+			return
+		}
+
+		h, err := p.setHeader(k, v)
+		if err != nil {
+			msg.SetError(err)
+			return
+		}
+
+		record.Headers = append(record.Headers, h)
+
+	})
+
+	// copy remaining headers a standard headers
+	msg.EachHeader(func(k string, v any) {
+		h, err := p.setHeader(k, v)
+		if err != nil {
+			msg.SetError(err)
+			return
+		}
+
+		record.Headers = append(record.Headers, h)
+
+	})
+
+	if v := msg.Subject(); v != "" {
+		record.Key = []byte(v)
 	}
 
 	_, err := p.tc.Convert(msg.Content(), &record.Value)
@@ -92,4 +135,19 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		_ = msg.SetAttribute(AttributeOffset, strconv.FormatInt(r.Offset, 10))
 		_ = msg.SetAttribute(AttributePartition, strconv.FormatInt(int64(r.Partition), 10))
 	}
+}
+
+func (p *Producer) setHeader(k string, v any) (kgo.RecordHeader, error) {
+	h := kgo.RecordHeader{}
+	h.Key = k
+
+	ok, err := p.tc.Convert(v, &h.Value)
+	if err != nil {
+		return h, err
+	}
+	if !ok {
+		return h, fmt.Errorf("unable to convert value for header %s", k)
+	}
+
+	return h, nil
 }

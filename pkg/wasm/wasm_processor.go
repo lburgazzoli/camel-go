@@ -30,7 +30,7 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 	}
 
 	// TODO:fix annotation/attributes
-	// message.ForEachAttribute(func(k string, v any) {
+	// message.EachAttribute(func(k string, v any) {
 	//  content.Annotations[k] = v
 	// })
 

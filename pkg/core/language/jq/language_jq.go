@@ -107,38 +107,64 @@ func (l *Jq) Processor(ctx context.Context, camelContext camel.Context) (camel.P
 	}
 
 	p := func(ctxm context.Context, m camel.Message) error {
-		it, err := l.run(ctx, camelContext, query, m)
+		answer, err := l.compute(ctx, camelContext, query, m)
 		if err != nil {
 			return err
 		}
 
-		out := make([]interface{}, 0, 1)
-
-		for {
-			v, ok := it.Next()
-			if !ok {
-				break
-			}
-
-			if err, ok := v.(error); ok {
-				return errors.Wrap(err, "error processing input")
-			}
-
-			out = append(out, v)
-		}
-
-		if err := m.SetAttribute(AnnotationJqResults, strconv.Itoa(len(out))); err != nil {
-			panic(err)
-		}
-
-		if len(out) == 1 {
-			m.SetContent(out[0])
-		} else if len(out) > 1 {
-			m.SetContent(out)
-		}
+		m.SetContent(answer)
 
 		return nil
 	}
 
 	return p, nil
+}
+
+func (l *Jq) Transformer(ctx context.Context, camelContext camel.Context) (camel.Transformer, error) {
+	if l.Expression == "" {
+		return nil, camelerrors.MissingParameterf("jq.expression", "failure configuring jq processor")
+	}
+
+	query, err := gojq.Parse(l.Expression)
+	if err != nil {
+		return nil, err
+	}
+
+	p := func(ctxm context.Context, m camel.Message) (any, error) {
+		return l.compute(ctx, camelContext, query, m)
+	}
+
+	return p, nil
+}
+
+func (l *Jq) compute(ctx context.Context, camelContext camel.Context, query *gojq.Query, m camel.Message) (any, error) {
+	it, err := l.run(ctx, camelContext, query, m)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]interface{}, 0, 1)
+
+	for {
+		v, ok := it.Next()
+		if !ok {
+			break
+		}
+
+		if err, ok := v.(error); ok {
+			return nil, errors.Wrap(err, "error processing input")
+		}
+
+		out = append(out, v)
+	}
+
+	if err := m.SetAttribute(AnnotationJqResults, strconv.Itoa(len(out))); err != nil {
+		panic(err)
+	}
+
+	if len(out) == 1 {
+		return out[0], nil
+	}
+
+	return out, nil
 }

@@ -7,6 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/core/language"
+	"github.com/lburgazzoli/camel-go/pkg/core/language/constant"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/require"
@@ -15,23 +18,21 @@ import (
 )
 
 func TestSetHeader(t *testing.T) {
-	support.Run(t, "simple", func(t *testing.T, ctx context.Context) {
+	support.Run(t, "constant", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
 		name := uuid.New()
 		content := uuid.New()
 
 		c := camel.ExtractContext(ctx)
-		c.Registry().Set("p", func(_ context.Context, message camel.Message) error {
-			message.SetContent(content)
-			return nil
-		})
 
-		p := New()
-		p.Name = name
-		p.Language.Constant = &LanguageConstant{
-			Value: content,
-		}
+		p := New(
+			WithName(name),
+			WithLanguage(language.Language{
+				Constant: &constant.Constant{
+					Value: content,
+				},
+			}))
 
 		pv, err := p.Reify(ctx)
 		require.Nil(t, err)
@@ -49,5 +50,38 @@ func TestSetHeader(t *testing.T) {
 		h, ok := res.Header(name)
 		require.True(t, ok)
 		require.Equal(t, content, h)
+	})
+
+	support.Run(t, "jq", func(t *testing.T, ctx context.Context) {
+		t.Helper()
+
+		name := uuid.New()
+
+		c := camel.ExtractContext(ctx)
+
+		p := New(
+			WithName(name),
+			WithLanguage(*language.New(
+				language.WithJqExpression(".foo")),
+			),
+		)
+
+		pv, err := p.Reify(ctx)
+		require.Nil(t, err)
+		require.NotNil(t, pv)
+
+		pvp, err := c.Spawn(pv)
+		require.Nil(t, err)
+		require.NotNil(t, pvp)
+
+		msg := c.NewMessage()
+		msg.SetContent(`{ "foo": "bar"}`)
+
+		res, err := c.RequestTo(pvp, msg, 1*time.Second)
+		require.Nil(t, err)
+
+		h, ok := res.Header(name)
+		require.True(t, ok)
+		require.Equal(t, "bar", h)
 	})
 }
