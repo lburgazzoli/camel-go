@@ -43,14 +43,8 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 		return err
 	}
 
+	resFlag := uint32(ptrSize[0] >> 32)
 	resSize := uint32(ptrSize[0])
-
-	var isErrResponse bool
-
-	if (resSize & (1 << 31)) > 0 {
-		isErrResponse = true
-		resSize &^= 1 << 31
-	}
 
 	bytes := make([]byte, resSize)
 	_, err = p.module.stdout.Read(bytes)
@@ -58,9 +52,10 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 		return err
 	}
 
-	if isErrResponse {
+	switch resFlag {
+	case 1:
 		return errors.New(string(bytes))
+	default:
+		return inout.UnmarshalVT(bytes)
 	}
-
-	return inout.UnmarshalVT(bytes)
 }

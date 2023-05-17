@@ -37,9 +37,8 @@ func _process(size uint32) uint64 {
 			return 0
 		}
 
-		// Indicate that this is the error string by setting the 32-th bit, assuming that
-		// no data exceeds 31-bit size (2 GiB).
-		return uint64(n) | 1<<31
+		// Indicate that this is the error string
+		return (uint64(1) << uint64(32)) | uint64(n)
 	}
 
 	b, err = response.MarshalVT()
