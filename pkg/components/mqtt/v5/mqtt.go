@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	Scheme = "mqtt-v5"
+	Scheme      = "mqtt-v5"
+	SchemeAlias = "mqtt"
 
 	AttributeMqttMessageID        = "camel.apache.org/mqtt.message.id"
 	AttributeMqttMessageRetained  = "camel.apache.org/mqtt.message.retained"

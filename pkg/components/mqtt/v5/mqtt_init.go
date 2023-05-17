@@ -8,4 +8,5 @@ import (
 
 func init() {
 	components.Factories[Scheme] = NewComponent
+	components.Factories[SchemeAlias] = NewComponent
 }

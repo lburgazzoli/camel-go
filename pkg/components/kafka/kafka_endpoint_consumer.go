@@ -64,7 +64,7 @@ func (c *Consumer) Receive(ctx actor.Context) {
 		_ = c.Stop(context.Background())
 	case camel.Message:
 		// ignore message,
-		// TODO: may be used for transactions
+		// TODO: may be used for ack
 		break
 	}
 }

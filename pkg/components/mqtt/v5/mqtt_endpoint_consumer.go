@@ -77,7 +77,7 @@ func (c *Consumer) Receive(ctx actor.Context) {
 		}
 	case camel.Message:
 		// ignore message,
-		// TODO: may be used for transactions
+		// TODO: may be used for ack
 		break
 	}
 }
@@ -94,6 +94,10 @@ func (c *Consumer) handler(pub *paho.Publish) {
 	m.SetType("event")
 	m.SetSource(component.Scheme())
 	m.SetContent(pub.Payload)
+
+	if pub.Properties != nil {
+		m.SetContentType(pub.Properties.ContentType)
+	}
 
 	_ = m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(pub.PacketID), 10))
 	_ = m.SetAttribute(AttributeMqttMessageRetained, pub.Retain)

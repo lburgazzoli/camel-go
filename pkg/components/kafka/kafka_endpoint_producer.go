@@ -80,15 +80,15 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	msg.EachAttribute(func(k string, v any) {
 		switch k {
 		case api.MessageAttributeID:
-			k = "ce_id"
+			k = "id"
 		case api.MessageAttributeTime:
-			k = "ce_time"
+			k = "time"
 		case api.MessageAttributeSource:
-			k = "ce_source"
+			k = "source"
 		case api.MessageAttributeContentType:
 			k = "content-type"
 		case api.MessageAttributeContentSchema:
-			k = "ce_datacontentschema"
+			k = "datacontentschema"
 		default:
 			return
 		}

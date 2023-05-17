@@ -77,21 +77,20 @@ func (p *Producer) Receive(ac actor.Context) {
 // publish produces a message that conforms to the CloudEvents binary-content-mode 1.0 spec.
 func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	props := paho.PublishProperties{}
+	props.ContentType = msg.ContentType()
 	props.User.Add("ce_specversion", "1.0")
 
 	// copy relevant attributes as ce headers
 	msg.EachAttribute(func(k string, v any) {
 		switch k {
 		case api.MessageAttributeID:
-			k = "ce_id"
+			k = "id"
 		case api.MessageAttributeTime:
-			k = "ce_time"
+			k = "time"
 		case api.MessageAttributeSource:
-			k = "ce_source"
-		case api.MessageAttributeContentType:
-			k = "content-type"
+			k = "source"
 		case api.MessageAttributeContentSchema:
-			k = "ce_datacontentschema"
+			k = "datacontentschema"
 		default:
 			return
 		}
