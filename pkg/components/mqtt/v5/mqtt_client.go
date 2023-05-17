@@ -50,6 +50,10 @@ func (c *Client) Stop(_ context.Context) error {
 	if c.client != nil {
 		d := &paho.Disconnect{ReasonCode: 0}
 
+		defer func() {
+			c.client = nil
+		}()
+
 		err := c.client.Disconnect(d)
 		if err != nil {
 			return errors.Wrap(err, "failed to send disconnect")

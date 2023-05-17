@@ -49,8 +49,7 @@ func (p *Producer) Start(ctx context.Context) error {
 
 func (p *Producer) Stop(ctx context.Context) error {
 	if p.running.CompareAndSwap(true, false) {
-		_ = p.client.Stop(ctx)
-		p.client = nil
+		return p.client.Stop(ctx)
 	}
 
 	return nil

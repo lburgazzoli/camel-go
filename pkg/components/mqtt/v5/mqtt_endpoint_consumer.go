@@ -56,8 +56,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 
 func (c *Consumer) Stop(ctx context.Context) error {
 	if c.running.CompareAndSwap(true, false) {
-		_ = c.client.Stop(ctx)
-		c.client = nil
+		return c.client.Stop(ctx)
 	}
 
 	return nil
