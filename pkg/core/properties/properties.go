@@ -2,6 +2,7 @@ package properties
 
 import (
 	"fmt"
+	"github.com/knadh/koanf/providers/confmap"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,6 +49,19 @@ type defaultProperties struct {
 	konf *koanf.Koanf
 }
 
+func (t *defaultProperties) Add(source map[string]any) error {
+	err := t.konf.Load(
+		confmap.Provider(source, "."),
+		nil,
+	)
+
+	if err != nil {
+		return errors.Wrapf(err, "error loading config")
+	}
+
+	return nil
+}
+
 func (r *defaultProperties) AddSource(path string) error {
 	fi, err := os.Stat(path)
 	if err != nil && os.IsNotExist(err) {
@@ -80,7 +94,7 @@ func (r *defaultProperties) AddSource(path string) error {
 	return nil
 }
 
-func (r *defaultProperties) String(data string) string {
+func (r *defaultProperties) String(data string) (string, bool) {
 	// TODO: must handle multiple placeholders, recursion, etc.
 
 	key := data
@@ -92,9 +106,19 @@ func (r *defaultProperties) String(data string) string {
 
 	if v := r.konf.Get(key); v != nil {
 		if i, ok := v.(string); ok {
-			return i
+			return i, true
 		}
 	}
 
-	return data
+	return data, false
+}
+
+func (r *defaultProperties) Parameters() api.Parameters {
+	return r.konf.All()
+}
+
+func (r *defaultProperties) View(path string) api.PropertiesResolver {
+	return &defaultProperties{
+		konf: r.konf.Cut(path),
+	}
 }

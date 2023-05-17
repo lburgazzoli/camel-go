@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	Scheme      = "mqtt-v5"
-	SchemeAlias = "mqtt"
+	Scheme           = "mqtt"
+	PropertiesPrefix = "camel.component." + Scheme
 
 	AttributeMqttMessageID        = "camel.apache.org/mqtt.message.id"
 	AttributeMqttMessageRetained  = "camel.apache.org/mqtt.message.retained"
@@ -34,7 +34,12 @@ func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
 	}
 
-	if _, err := c.Context().TypeConverter().Convert(&config, &e.config); err != nil {
+	props := c.Context().Properties().View(PropertiesPrefix).Parameters()
+	for k, v := range config {
+		props[k] = v
+	}
+
+	if _, err := c.Context().TypeConverter().Convert(&props, &e.config); err != nil {
 		return nil, err
 	}
 

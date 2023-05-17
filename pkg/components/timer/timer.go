@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	Scheme = "timer"
+	Scheme           = "timer"
+	PropertiesPrefix = "camel.component." + Scheme
 
 	AttributeTimerName       = "camel.apache.org/timer.name"
 	AttributeTimerStarted    = "camel.apache.org/timer.started"
@@ -32,7 +33,12 @@ func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
 	}
 
-	if _, err := c.Context().TypeConverter().Convert(&config, &e.config); err != nil {
+	props := c.Context().Properties().View(PropertiesPrefix).Parameters()
+	for k, v := range config {
+		props[k] = v
+	}
+
+	if _, err := c.Context().TypeConverter().Convert(&props, &e.config); err != nil {
 		return nil, err
 	}
 

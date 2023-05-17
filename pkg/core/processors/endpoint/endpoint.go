@@ -92,20 +92,24 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 		params[k] = v
 	}
 
-	params[RemainingKey] = ctx.Properties().String(u.Opaque)
+	r, _ := ctx.Properties().String(u.Opaque)
+
+	params[RemainingKey] = r
 
 	for k, v := range params {
 		switch val := v.(type) {
 		case string:
-			params[k] = ctx.Properties().String(val)
+			v, _ = ctx.Properties().String(val)
+			params[k] = v
 		case []byte:
-			params[k] = ctx.Properties().String(string(val))
+			v, _ = ctx.Properties().String(string(val))
+			params[k] = v
 		default:
 			params[k] = val
 		}
 	}
 
-	scheme := ctx.Properties().String(u.Scheme)
+	scheme, _ := ctx.Properties().String(u.Scheme)
 
 	f, ok := components.Factories[scheme]
 	if !ok {
