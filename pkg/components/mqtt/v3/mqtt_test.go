@@ -31,7 +31,7 @@ import (
 const simpleMQTT = `
 - route:
     from:
-      uri: "mqtt:camel/iot"
+      uri: "mqtt-v3:camel/iot"
       parameters:
         brokers: "{{.broker}}"
       steps:
