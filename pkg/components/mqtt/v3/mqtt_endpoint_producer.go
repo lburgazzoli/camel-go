@@ -4,7 +4,6 @@ package v3
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/lburgazzoli/camel-go/pkg/cloudevents"
 
@@ -60,29 +59,10 @@ func (p *Producer) Receive(ac actor.Context) {
 }
 
 // publish produces a message that conforms to the CloudEvents binary-content-mode 1.0 spec.
-func (p *Producer) publish(_ context.Context, msg api.Message) {
-	payload := cloudevents.CloudEventJSON{
-		SpecVersion:       "1.0",
-		ID:                msg.ID(),
-		Type:              msg.Type(),
-		Source:            msg.Source(),
-		Subject:           msg.Subject(),
-		Time:              msg.Time().String(),
-		DataContentType:   msg.ContentType(),
-		DataContentSchema: msg.ContentSchema(),
-	}
-
-	var content []byte
-
-	_, err := p.tc.Convert(msg.Content(), &content)
+func (p *Producer) publish(ctx context.Context, msg api.Message) {
+	payload, err := cloudevents.AsJSON(ctx, msg)
 	if err != nil {
-		msg.SetError(errors.Wrap(err, "error converting content to []byte"))
-		return
-	}
-
-	bytes, err := json.Marshal(payload)
-	if err != nil {
-		msg.SetError(errors.Wrap(err, "error converting content to []byte"))
+		msg.SetError(errors.Wrap(err, "error converting message to CloudEvent JSON format"))
 		return
 	}
 
@@ -90,7 +70,7 @@ func (p *Producer) publish(_ context.Context, msg api.Message) {
 		p.endpoint.config.Remaining,
 		p.endpoint.config.QoS,
 		p.endpoint.config.Retained,
-		bytes)
+		payload)
 
 	t.Wait()
 }
