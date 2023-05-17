@@ -73,4 +73,13 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		payload)
 
 	t.Wait()
+
+	if err := t.Error(); err != nil {
+		msg.SetError(errors.Wrapf(
+			err,
+			"error while publishing to topic '%s' on server '%s'",
+			p.endpoint.config.Remaining,
+			p.endpoint.config.Broker),
+		)
+	}
 }

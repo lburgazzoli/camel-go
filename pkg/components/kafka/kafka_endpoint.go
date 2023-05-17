@@ -56,9 +56,9 @@ func (e *Endpoint) newClient() (*kgo.Client, error) {
 	opts := make([]kgo.Opt, 0)
 	opts = append(opts, kgo.SeedBrokers(strings.Split(e.config.Brokers, ",")...))
 
-	if e.config.User != "" && e.config.Password != "" {
+	if e.config.Username != "" && e.config.Password != "" {
 		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
-		authMechanism := plain.Auth{User: e.config.User, Pass: e.config.Password}.AsMechanism()
+		authMechanism := plain.Auth{User: e.config.Username, Pass: e.config.Password}.AsMechanism()
 
 		opts = append(opts, kgo.SASL(authMechanism))
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))

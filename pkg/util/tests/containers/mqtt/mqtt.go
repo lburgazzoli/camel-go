@@ -54,6 +54,15 @@ func (c *Container) Stop(ctx context.Context) error {
 }
 
 func (c *Container) Broker(ctx context.Context) (string, error) {
+	address, err := c.Address(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return "tcp://" + address, nil
+}
+
+func (c *Container) Address(ctx context.Context) (string, error) {
 	host, err := c.Host(ctx)
 	if err != nil {
 		return "", err
@@ -64,7 +73,7 @@ func (c *Container) Broker(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	return "tcp://" + net.JoinHostPort(host, port.Port()), nil
+	return net.JoinHostPort(host, port.Port()), nil
 }
 
 func (c *Container) Client(ctx context.Context) (paho.Client, error) {

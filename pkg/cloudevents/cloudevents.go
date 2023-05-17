@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/ldez/mimetype"
+
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
-	"github.com/lburgazzoli/camel-go/pkg/util/mimetype"
 	"github.com/pkg/errors"
 )
 

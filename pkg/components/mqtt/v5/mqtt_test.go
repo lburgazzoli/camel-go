@@ -1,4 +1,4 @@
-package v3
+package v5
 
 import (
 	"bytes"
@@ -31,7 +31,7 @@ import (
 const simpleMQTT = `
 - route:
     from:
-      uri: "mqtt-v3:camel/iot"
+      uri: "mqtt-v5:camel/iot"
       parameters:
         broker: "{{.broker}}"
       steps:

@@ -6,6 +6,6 @@ type Config struct {
 	Remaining     string `mapstructure:"remaining"`
 	Brokers       string `mapstructure:"brokers"`
 	ConsumerGroup string `mapstructure:"consumerGroup"`
-	User          string `mapstructure:"user"`
+	Username      string `mapstructure:"username"`
 	Password      string `mapstructure:"password"`
 }

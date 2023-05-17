@@ -4,7 +4,7 @@ package v3
 
 type Config struct {
 	Remaining string `mapstructure:"remaining"`
-	Brokers   string `mapstructure:"brokers"`
+	Broker    string `mapstructure:"broker"`
 	ClientID  string `mapstructure:"clientId"`
 	Retained  bool   `mapstructure:"retained"`
 	QoS       byte   `mapstructure:"qus"`

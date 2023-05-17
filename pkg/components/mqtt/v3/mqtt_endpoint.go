@@ -65,7 +65,7 @@ func (e *Endpoint) newClient(optFns ...OptionFn) mqtt.Client {
 		fn(opts)
 	}
 
-	for _, broker := range strings.Split(e.config.Brokers, ",") {
+	for _, broker := range strings.Split(e.config.Broker, ",") {
 		if broker == "" {
 			continue
 		}

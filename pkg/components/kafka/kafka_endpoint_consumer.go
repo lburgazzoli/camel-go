@@ -26,8 +26,7 @@ func (c *Consumer) Endpoint() camel.Endpoint {
 	return c.endpoint
 }
 
-func (c *Consumer) Start(ctx context.Context) error {
-
+func (c *Consumer) Start(_ context.Context) error {
 	if c.running.CompareAndSwap(false, true) {
 		cl, err := c.endpoint.newClient()
 		if err != nil {
@@ -41,7 +40,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 				return
 			}
 
-			c.poll(ctx)
+			c.poll(context.Background())
 		}()
 	}
 
@@ -49,6 +48,11 @@ func (c *Consumer) Start(ctx context.Context) error {
 }
 
 func (c *Consumer) Stop(context.Context) error {
+	if c.running.CompareAndSwap(true, false) {
+		c.client.Close()
+		c.client = nil
+	}
+
 	return nil
 }
 
