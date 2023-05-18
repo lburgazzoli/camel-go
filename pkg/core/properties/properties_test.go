@@ -1,8 +1,9 @@
 package properties
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestProperties(t *testing.T) {

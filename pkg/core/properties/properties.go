@@ -2,10 +2,11 @@ package properties
 
 import (
 	"fmt"
-	"github.com/knadh/koanf/providers/confmap"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/knadh/koanf/providers/confmap"
 
 	"github.com/knadh/koanf/parsers/json"
 	"github.com/knadh/koanf/parsers/toml"
@@ -49,8 +50,8 @@ type defaultProperties struct {
 	konf *koanf.Koanf
 }
 
-func (t *defaultProperties) Add(source map[string]any) error {
-	err := t.konf.Load(
+func (r *defaultProperties) Add(source map[string]any) error {
+	err := r.konf.Load(
 		confmap.Provider(source, "."),
 		nil,
 	)
