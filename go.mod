@@ -20,7 +20,7 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
-	github.com/knqyf263/go-plugin v0.7.0
+	github.com/knqyf263/go-plugin v0.8.0
 	github.com/ldez/mimetype v0.2.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/gomega v1.27.8
