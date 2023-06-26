@@ -144,8 +144,8 @@ github.com/knadh/koanf/providers/file v0.1.0 h1:fs6U7nrV58d3CFAFh8VTde8TM262ObYf
 github.com/knadh/koanf/providers/file v0.1.0/go.mod h1:rjJ/nHQl64iYCtAW2QQnF0eSmDEX/YZ/eNFj5yR6BvA=
 github.com/knadh/koanf/v2 v2.0.1 h1:1dYGITt1I23x8cfx8ZnldtezdyaZtfAuRtIFOiRzK7g=
 github.com/knadh/koanf/v2 v2.0.1/go.mod h1:ZeiIlIDXTE7w1lMT6UVcNiRAS2/rCeLn/GdLNvY1Dus=
-github.com/knqyf263/go-plugin v0.7.0 h1:m1FGUbYOaQ6nI8C8uFPNdWr4e51+9pCQzrMSux4ATFg=
-github.com/knqyf263/go-plugin v0.7.0/go.mod h1:+GzKPLhdIyI9FWBUx5d/wOfK44TME2fXk+l9uNTtVy4=
+github.com/knqyf263/go-plugin v0.8.0 h1:Qlfr4j9V9kFeMthCPbCa7weS0zuU0R6JTEYCgOiRwbc=
+github.com/knqyf263/go-plugin v0.8.0/go.mod h1:64X3Hb/AiYfEV99Lgt4Wzhhuc9AceIHNMLcEI8agI0A=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
