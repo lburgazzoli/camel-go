@@ -37,7 +37,7 @@ require (
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
