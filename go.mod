@@ -9,7 +9,7 @@ require (
 	github.com/dapr/go-sdk v1.8.0
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.golang v0.11.0
-	github.com/eclipse/paho.mqtt.golang v1.4.2
+	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/google/go-containerregistry v0.15.2
 	github.com/imdario/mergo v0.3.16
 	github.com/itchyny/gojq v0.12.13
@@ -68,7 +68,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-memdb v1.3.4 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
