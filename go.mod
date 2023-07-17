@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.21.0
 	github.com/tetratelabs/wazero v1.2.1
-	github.com/twmb/franz-go v1.14.1
+	github.com/twmb/franz-go v1.14.2
 	github.com/twmb/franz-go/pkg/kadm v1.8.1
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
 	go.uber.org/multierr v1.11.0
