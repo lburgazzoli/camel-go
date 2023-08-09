@@ -31,7 +31,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.21.0
-	github.com/tetratelabs/wazero v1.3.1
+	github.com/tetratelabs/wazero v1.4.0
 	github.com/twmb/franz-go v1.14.3
 	github.com/twmb/franz-go/pkg/kadm v1.9.0
 	github.com/twmb/franz-go/plugin/kzap v1.1.2
