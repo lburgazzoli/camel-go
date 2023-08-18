@@ -252,8 +252,8 @@ github.com/tetratelabs/wazero v1.4.0 h1:9/MirYvmkJ/zSUOygKY/ia3t+e+RqIZXKbylIby1
 github.com/tetratelabs/wazero v1.4.0/go.mod h1:0U0G41+ochRKoPKCJlh0jMg1CHkyfK8kDqiirMmKY8A=
 github.com/tinylib/msgp v1.1.5/go.mod h1:eQsjooMTnV42mHu917E26IogZ2930nFyBQdofk10Udg=
 github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31/go.mod h1:onvgF043R+lC5RZ8IT9rBXDaEDnpnw/Cl+HFiw+v/7Q=
-github.com/twmb/franz-go v1.14.3 h1:cq8rxAnVYU1uF3SRVn8eEaUf+AaXKWlB0Cl3Ca7JSa4=
-github.com/twmb/franz-go v1.14.3/go.mod h1:nMAvTC2kHtK+ceaSHeHm4dlxC78389M/1DjpOswEgu4=
+github.com/twmb/franz-go v1.14.4 h1:Bt8hyF8zOmZ/7sYD15Do1gdi3uKT9XQreBbFkMS+skA=
+github.com/twmb/franz-go v1.14.4/go.mod h1:nMAvTC2kHtK+ceaSHeHm4dlxC78389M/1DjpOswEgu4=
 github.com/twmb/franz-go/pkg/kadm v1.9.0 h1:UgwBu0YCd6P8HLdg6ZRA4v9W6/zoI1042fOd2CvvLBE=
 github.com/twmb/franz-go/pkg/kadm v1.9.0/go.mod h1:eG3f+GHUndq1CUSVvjp+WdNq5zePeJi3tEHzyTkao6g=
 github.com/twmb/franz-go/pkg/kmsg v1.6.1 h1:tm6hXPv5antMHLasTfKv9R+X03AjHSkSkXhQo2c5ALM=
