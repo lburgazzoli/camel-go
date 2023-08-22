@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20230812113646-3987052e6743
 	github.com/cbroglie/mustache v1.4.0
-	github.com/cucumber/godog v0.12.6
+	github.com/cucumber/godog v0.13.0
 	github.com/dapr/go-sdk v1.8.0
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.golang v0.11.0
@@ -52,8 +52,8 @@ require (
 	github.com/containerd/containerd v1.7.3 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
-	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
-	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
+	github.com/cucumber/gherkin/go/v26 v26.2.0 // indirect
+	github.com/cucumber/messages/go/v21 v21.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v24.0.0+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
