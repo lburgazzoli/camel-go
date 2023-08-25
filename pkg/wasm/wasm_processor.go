@@ -3,8 +3,6 @@ package wasm
 import (
 	"context"
 
-	"github.com/knqyf263/go-plugin/types/known/timestamppb"
-
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	pp "github.com/lburgazzoli/camel-go/pkg/wasm/plugin/processor"
 )
@@ -18,13 +16,13 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 	camelContext := camel.ExtractContext(ctx)
 
 	content := pp.Message{
-		Id:            message.ID(),
+		ID:            message.ID(),
 		Source:        message.Source(),
 		Type:          message.Type(),
 		Subject:       message.Subject(),
 		ContentType:   message.ContentType(),
 		ContentSchema: message.ContentSchema(),
-		Time:          timestamppb.New(message.Time()),
+		Time:          message.Time(),
 		Attributes:    make(map[string]string),
 		Annotations:   make(map[string]string),
 	}

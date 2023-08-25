@@ -16,7 +16,7 @@ func main() {
 }
 
 func Process(_ context.Context, request *processor.Message) (*processor.Message, error) {
-	fmt.Println("Processing message ", request.Id)
+	fmt.Println("Processing message ", request.ID)
 
 	return request, nil
 }

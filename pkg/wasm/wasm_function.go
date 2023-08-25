@@ -2,23 +2,19 @@ package wasm
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"github.com/tetratelabs/wazero/api"
 )
-
-type VTProtoSerde interface {
-	MarshalVT() ([]byte, error)
-	UnmarshalVT([]byte) error
-}
 
 type Function struct {
 	module *Module
 	fn     api.Function
 }
 
-func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
-	data, err := inout.MarshalVT()
+func (p *Function) invoke(ctx context.Context, inout any) error {
+	data, err := json.Marshal(inout)
 	if err != nil {
 		return err
 	}
@@ -56,6 +52,6 @@ func (p *Function) invoke(ctx context.Context, inout VTProtoSerde) error {
 	case 1:
 		return errors.New(string(bytes))
 	default:
-		return inout.UnmarshalVT(bytes)
+		return json.Unmarshal(bytes, inout)
 	}
 }

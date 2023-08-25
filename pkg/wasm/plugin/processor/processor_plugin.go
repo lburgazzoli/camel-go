@@ -4,6 +4,7 @@ package processor
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"os"
 )
@@ -16,7 +17,6 @@ func RegisterProcessors(p Processor) {
 	processor = p
 }
 
-//
 //export process
 func _process(size uint32) uint64 {
 	b := make([]byte, size)
@@ -27,10 +27,10 @@ func _process(size uint32) uint64 {
 	}
 
 	req := Message{}
-	if err := req.UnmarshalVT(b); err != nil {
+	if err := json.Unmarshal(b, &req); err != nil {
 		return 0
 	}
-	response, err := processor(context.Background(), &req)
+	res, err := processor(context.Background(), &req)
 	if err != nil {
 		n, err := os.Stdout.WriteString(err.Error())
 		if err != nil {
@@ -41,7 +41,7 @@ func _process(size uint32) uint64 {
 		return (uint64(1) << uint64(32)) | uint64(n)
 	}
 
-	b, err = response.MarshalVT()
+	b, err = json.Marshal(res)
 	if err != nil {
 		return 0
 	}

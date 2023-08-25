@@ -7,7 +7,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 LOCAL_BIN_PATH := ${PROJECT_PATH}/bin
 KO_CONFIG_PATH := ${PROJECT_PATH}/etc/ko.yaml
-KO_DOCKER_REPO := "quay.io/lburgazzoli/gamel"
+KO_DOCKER_REPO := "quay.io/lburgazzoli/camel-go"
 CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
 LINT_GOGC := 10
@@ -84,17 +84,25 @@ check/lint: golangci-lint
 build: fmt
 	CGO_ENABLED=0 go build -o $(LOCAL_BIN_PATH)/camel $(BUILD_TAGS) cmd/camel/main.go
 
+.PHONY: image
+image: ko
+	KO_DOCKER_REPO=quay.io/lburgazzoli/camel-go \
+	$(KO) build \
+		--bare \
+		--local \
+		--tags latest \
+		--platform=linux/amd64,linux/arm64 \
+		./cmd/camel
+
 .PHONY: image/publish
 image/publish: ko
-	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=${KO_DOCKER_REPO} $(KO) build --sbom none --bare ./cmd/camel
+	KO_DOCKER_REPO=quay.io/lburgazzoli/camel-go \
+	$(KO) build \
+		--bare \
+		--tags latest \
+		--platform=linux/amd64,linux/arm64 \
+		./cmd/camel
 
-.PHONY: image/local
-image/local: ko
-	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=ko.local $(KO) build --sbom none --bare ./cmd/camel
-
-.PHONY: image/kind
-image/kind: ko
-	KO_CONFIG_PATH=$(KO_CONFIG_PATH) KO_DOCKER_REPO=kind.local $(KO) build --sbom none --bare ./cmd/camel
 
 .PHONY: image/wasm
 image/wasm:
@@ -119,7 +127,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.27.0 \
+		tinygo/tinygo:0.28.1 \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -131,7 +139,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.27.0 \
+		tinygo/tinygo:0.28.1 \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -143,7 +151,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.27.0 \
+		tinygo/tinygo:0.28.1 \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -155,22 +163,12 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.27.0 \
+		tinygo/tinygo:0.28.1 \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
 			-o etc/wasm/fn/to_lower.wasm  \
 			etc/wasm/fn/to_lower.go
-
-.PHONY: generate
-generate: protoc-gen-go-plugin
-	#go run karmem.org/cmd/karmem build --golang -o "pkg/wasm/interop" etc/message.km
-	protoc \
-		--plugin=$(LOCALBIN)/protoc-gen-go-plugin \
-		--proto_path=$(PROJECT_PATH)/etc/proto \
-		--go-plugin_out=$(PROJECT_PATH)/pkg \
-		$(PROJECT_PATH)/etc/proto/processor.proto
-
 
 ##@ Build Dependencies
 

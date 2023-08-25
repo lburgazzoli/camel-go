@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	wz "github.com/tetratelabs/wazero"
 	wzapi "github.com/tetratelabs/wazero/api"
@@ -19,6 +20,7 @@ func NewModule(ctx context.Context, r wz.Runtime, code wz.CompiledModule) (*Modu
 	config := wz.NewModuleConfig()
 	config = config.WithStdout(io.Writer(&answer.stdout))
 	config = config.WithStdin(io.Reader(&answer.stdin))
+	config = config.WithStderr(os.Stderr)
 
 	module, err := answer.wz.InstantiateModule(ctx, code, config)
 	if err != nil {
