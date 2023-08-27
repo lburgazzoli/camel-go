@@ -77,7 +77,7 @@ const simpleComponentImageWASM = `
         - process:
             ref: "consumer-1"
         - to:
-            uri: "wasm:etc/wasm/fn/simple_logger.wasm?image=docker.io/lburgazzoli/camel-go:latest"
+            uri: "wasm:etc/wasm/fn/simple_logger.wasm?image=quay.io/lburgazzoli/camel-go-wasm:latest"
         - process:
             ref: "consumer-2"
 `

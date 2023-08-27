@@ -8,7 +8,7 @@
             uri: "log:from-mqtt"
         - transform:
             wasm:
-              image: "docker.io/lburgazzoli/camel-go:latest"
+              image: "quay.io/lburgazzoli/camel-go-wasm:latest"
               path: "etc/wasm/fn/to_upper.wasm"
         - to:
             uri: "kafka:{{kafka.topic}}"

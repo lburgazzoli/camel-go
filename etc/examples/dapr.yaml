@@ -16,7 +16,7 @@
                 - transform:
                     jq: '.data'
                 - transform:
-                    wasm: "docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/to_upper.wasm"
+                    wasm: "quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/to_upper.wasm"
                 - to: "dapr-pubsub:sensors/near"
                 - to: "log:near"
               #
@@ -28,7 +28,7 @@
                   - transform:
                       jq: '.data'
                   - transform:
-                      wasm: "docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/to_lower.wasm"
+                      wasm: "quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/to_lower.wasm"
                   - to: "dapr-pubsub:sensors/far"
                   - to: "log:far"
             otherwise:

@@ -12,7 +12,7 @@ import (
 func TestPull(t *testing.T) {
 	ctx := context.Background()
 
-	root, err := Pull(ctx, "docker.io/lburgazzoli/camel-go:latest")
+	root, err := Pull(ctx, "quay.io/lburgazzoli/camel-go-wasm:latest")
 
 	defer func() {
 		if root != "" {
@@ -35,7 +35,7 @@ func TestBlob(t *testing.T) {
 
 	content, err := Blob(
 		ctx,
-		"docker.io/lburgazzoli/camel-go:latest",
+		"quay.io/lburgazzoli/camel-go-wasm:latest",
 		"etc/wasm/fn/simple_process.wasm")
 
 	defer func() {

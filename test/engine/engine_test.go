@@ -181,7 +181,7 @@ const simpleInlineImageWASM = `
         - process:
             ref: "consumer-1"
         - transform:
-            wasm: "docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/simple_process.wasm"
+            wasm: "quay.io/lburgazzoli/camel-go-wasm?etc/wasm/fn/simple_process.wasm"
         - process:
             ref: "consumer-2"
 `

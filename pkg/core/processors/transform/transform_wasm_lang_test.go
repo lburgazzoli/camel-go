@@ -74,7 +74,7 @@ func TestTransformWASM(t *testing.T) {
 		require.NotNil(t, wgp)
 
 		l := language.Language{
-			Wasm: wasm.New(wasm.WithRef("docker.io/lburgazzoli/camel-go:latest?etc/wasm/fn/simple_process.wasm")),
+			Wasm: wasm.New(wasm.WithRef("quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/simple_process.wasm")),
 		}
 
 		pv, err := New(WithLanguage(l)).Reify(ctx)

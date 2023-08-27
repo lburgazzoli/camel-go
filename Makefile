@@ -6,12 +6,25 @@ IMG ?= quay.io/lburgazzoli/camel-go:latest
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 LOCAL_BIN_PATH := ${PROJECT_PATH}/bin
-KO_CONFIG_PATH := ${PROJECT_PATH}/etc/ko.yaml
-KO_DOCKER_REPO := "quay.io/lburgazzoli/camel-go"
+
+KO_CONFIG_PATH ?= ${PROJECT_PATH}/etc/ko.yaml
+KO_DOCKER_REPO ?= "quay.io/lburgazzoli/camel-go"
+WASM_CONTAINER_IMAGE_REPO ?= quay.io/lburgazzoli/camel-go-wasm:latest
+
 CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
+
 LINT_GOGC := 10
 LINT_DEADLINE := 10m
+
+## Tools
+GOIMPORT ?= $(LOCALBIN)/goimports
+GOIMPORT_VERSION ?= latest
+KO ?= $(LOCALBIN)/ko
+KO_VERSION ?= main
+TINYGO_VERSION ?= 0.29.0
+GOLANGCI ?= $(LOCALBIN)/golangci-lint
+GOLANGCI_VERSION ?= v1.52.2
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -56,7 +69,7 @@ clean:
 
 .PHONY: fmt
 fmt: goimport
-	$(LOCALBIN)/goimports -l -w .
+	$(GOIMPORT) -l -w .
 	go fmt ./...
 
 .PHONY: test
@@ -72,7 +85,7 @@ check: check/lint
 
 .PHONY: check/lint
 check/lint: golangci-lint
-	@$(LOCALBIN)/golangci-lint run \
+	@$(GOLANGCI) run \
 		--config .golangci.yml \
 		--out-format tab \
 		--skip-dirs etc \
@@ -106,7 +119,7 @@ image/publish: ko
 
 .PHONY: image/wasm
 image/wasm:
-	 oras push --verbose docker.io/lburgazzoli/camel-go:latest \
+	 oras push --verbose $(WASM_CONTAINER_IMAGE_REPO) \
  		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
@@ -127,7 +140,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.28.1 \
+		tinygo/tinygo:$(TINYGO_VERSION) \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -139,7 +152,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.28.1 \
+		tinygo/tinygo:$(TINYGO_VERSION) \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -151,7 +164,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.28.1 \
+		tinygo/tinygo:$(TINYGO_VERSION) \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -163,7 +176,7 @@ build/wasm:
 		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
-		tinygo/tinygo:0.28.1 \
+		tinygo/tinygo:$(TINYGO_VERSION) \
 		tinygo build \
 			-target=wasi \
 			-scheduler=none \
@@ -177,34 +190,21 @@ LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	@mkdir -p $(LOCALBIN)
 
-## Tool Binaries
-GOIMPORT ?= $(LOCALBIN)/goimports
-KO ?= $(LOCALBIN)/ko
-PROTOC_PLUGIN ?= $(LOCALBIN)/protoc-gen-go-plugin
-GL ?= $(LOCALBIN)/golangci-lint
-
 .PHONY: goimport
 goimport: $(GOIMPORT)
 $(GOIMPORT): $(LOCALBIN)
-	@test -s $(LOCALBIN)/goimport || \
-	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
+	@test -s $(GOIMPORT) || \
+	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@$(GOIMPORT_VERSION)
 
 .PHONY: ko
 ko: $(KO)
 $(KO): $(LOCALBIN)
-	@test -s $(LOCALBIN)/ko || \
-	GOBIN=$(LOCALBIN) go install github.com/google/ko@main
-
-.PHONY: protoc-gen-go-plugin
-protoc-gen-go-plugin: $(PROTOC_PLUGIN)
-$(PROTOC_PLUGIN): $(LOCALBIN)
-	@test -s $(LOCALBIN)/protoc-gen-go-plugin || \
-	GOBIN=$(LOCALBIN) go install github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin@main
-
+	@test -s $(KO) || \
+	GOBIN=$(LOCALBIN) go install github.com/google/ko@$(KO_VERSION)
 
 .PHONY: golangci-lint
-golangci-lint: $(GL)
-$(GL): $(LOCALBIN)
-	@test -s $(LOCALBIN)/golangci-lint || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+golangci-lint: $(GOLANGCI)
+$(GOLANGCI): $(LOCALBIN)
+	@test -s $(GOLANGCI) || \
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_VERSION)
 

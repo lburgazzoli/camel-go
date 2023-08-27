@@ -4,7 +4,7 @@
       steps:
         - transform:
             wasm:
-              image: "docker.io/lburgazzoli/camel-go:latest"
+              image: "quay.io/lburgazzoli/camel-go-wasm:latest"
               path: "etc/wasm/fn/simple_process.wasm"
         - to:
             uri: "log:info"
