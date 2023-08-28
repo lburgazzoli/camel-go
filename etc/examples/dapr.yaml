@@ -1,15 +1,10 @@
 - route:
     from:
-      uri: "mqtt-v3:camel/iot"
-      parameters:
-        broker: "tcp://test.mosquitto.org:1883"
+      uri: "dapr-pubsub:sensors/iot"
       steps:
-        - to: "log:from-mqtt"
+        - to: "log:from-pubsub"
         - choice:
             when:
-              #
-              # if from "sensor-1", extract data, make it uppercase, send to sensors/near
-              #
               - jq: '.source == "sensor-1"'
                 steps:
                 - to: "log:sensor-1"
@@ -19,9 +14,6 @@
                     wasm: "quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/to_upper.wasm"
                 - to: "dapr-pubsub:sensors/near"
                 - to: "log:near"
-              #
-              # if from "sensor-2", extract data, make it lowercase, send to sensors/far
-              #
               - jq: '.source == "sensor-2"'
                 steps:
                   - to: "log:sensor-2"

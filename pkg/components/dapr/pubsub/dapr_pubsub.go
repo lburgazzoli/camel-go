@@ -8,12 +8,18 @@ import (
 )
 
 const (
-	Scheme = "dapr-pubsub"
+	Scheme  = "dapr-pubsub"
+	Address = ":6002"
+
+	AttributeEventID     = "camel.apache.org/dapr.event.id"
+	AttributePubSubName  = "camel.apache.org/dapr.pubsub.name"
+	AttributePubSubTopic = "camel.apache.org/dapr.pubsub.topic"
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {
 	component := Component{
 		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
+		s:                NewService(Address),
 	}
 
 	return &component, nil
@@ -21,11 +27,14 @@ func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, err
 
 type Component struct {
 	components.DefaultComponent
+
+	s *Service
 }
 
 func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 	e := Endpoint{
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
+		s:               c.s,
 	}
 
 	if _, err := c.Context().TypeConverter().Convert(&config, &e.config); err != nil {

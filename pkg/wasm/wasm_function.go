@@ -13,8 +13,8 @@ type Function struct {
 	fn     api.Function
 }
 
-func (p *Function) invoke(ctx context.Context, inout any) error {
-	data, err := json.Marshal(inout)
+func (p *Function) invoke(ctx context.Context, in any, out any) error {
+	data, err := json.Marshal(in)
 	if err != nil {
 		return err
 	}
@@ -52,6 +52,6 @@ func (p *Function) invoke(ctx context.Context, inout any) error {
 	case 1:
 		return errors.New(string(bytes))
 	default:
-		return json.Unmarshal(bytes, inout)
+		return json.Unmarshal(bytes, &out)
 	}
 }

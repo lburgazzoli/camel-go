@@ -1,23 +1,20 @@
-////go:build components_dapr_pubsub || components_all
+////go:build components_http || components_all
 
-package pubsub
+package http
 
 import (
 	"context"
 
 	"github.com/asynkron/protoactor-go/actor"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
+	"github.com/lburgazzoli/camel-go/pkg/core/errors"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
 type Endpoint struct {
 	config Config
 	components.DefaultEndpoint
-
-	s *Service
 }
 
 func (e *Endpoint) Start(context.Context) error {
@@ -28,15 +25,6 @@ func (e *Endpoint) Stop(context.Context) error {
 	return nil
 }
 
-func (e *Endpoint) Consumer(pid *actor.PID) (api.Consumer, error) {
-	c := Consumer{
-		DefaultConsumer: components.NewDefaultConsumer(e, pid),
-		endpoint:        e,
-	}
-
-	return &c, nil
-}
-
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
 		DefaultVerticle: processors.NewDefaultVerticle(),
@@ -45,4 +33,8 @@ func (e *Endpoint) Producer() (api.Producer, error) {
 	}
 
 	return &c, nil
+}
+
+func (e *Endpoint) Consumer(_ *actor.PID) (api.Consumer, error) {
+	return nil, errors.NotImplementedf("TODO")
 }

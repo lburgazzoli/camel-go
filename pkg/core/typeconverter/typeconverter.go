@@ -21,6 +21,8 @@ func NewDefaultTypeConverter() (camel.TypeConverter, error) {
 	hooks = append(hooks, mapstructure.StringToTimeDurationHookFunc())
 	hooks = append(hooks, StringToRawJSON())
 	hooks = append(hooks, BytesToRawJSON())
+	hooks = append(hooks, TimeToBytes())
+	hooks = append(hooks, TimeToString())
 
 	tc := defaultTypeConverter{
 		decodeHook: mapstructure.ComposeDecodeHookFunc(hooks...),

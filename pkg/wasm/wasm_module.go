@@ -74,3 +74,23 @@ func (m *Module) Processor(_ context.Context) (*Processor, error) {
 
 	return &p, nil
 }
+
+func (m *Module) Predicate(_ context.Context) (*Predicate, error) {
+	if m.module == nil {
+		return nil, nil
+	}
+
+	fn := m.module.ExportedFunction("test")
+	if fn == nil {
+		return nil, errors.New("test is not exported")
+	}
+
+	p := Predicate{
+		Function: Function{
+			module: m,
+			fn:     fn,
+		},
+	}
+
+	return &p, nil
+}

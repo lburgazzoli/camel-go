@@ -2,6 +2,7 @@ package message
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -196,9 +197,7 @@ func (m *defaultMessage) validateAttribute(key string) error {
 func (m *defaultMessage) Attributes() map[string]any {
 	answer := make(map[string]any)
 
-	for k, v := range m.attributes {
-		answer[k] = v
-	}
+	maps.Copy(answer, m.attributes)
 
 	return answer
 }
@@ -235,10 +234,14 @@ func (m *defaultMessage) SetAttribute(key string, val any) error {
 	return nil
 }
 
-func (m *defaultMessage) EachAttribute(fn func(string, any)) {
+func (m *defaultMessage) EachAttribute(fn func(string, any) error) error {
 	for k, v := range m.attributes {
-		fn(k, v)
+		if err := fn(k, v); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 //
@@ -248,9 +251,7 @@ func (m *defaultMessage) EachAttribute(fn func(string, any)) {
 func (m *defaultMessage) Headers() map[string]any {
 	answer := make(map[string]any)
 
-	for k, v := range m.headers {
-		answer[k] = v
-	}
+	maps.Copy(answer, m.headers)
 
 	return answer
 }
@@ -258,9 +259,7 @@ func (m *defaultMessage) Headers() map[string]any {
 func (m *defaultMessage) SetHeaders(headers map[string]any) {
 	m.headers = make(map[string]any)
 
-	for k, v := range headers {
-		m.attributes[k] = v
-	}
+	maps.Copy(headers, m.headers)
 }
 
 func (m *defaultMessage) Header(key string) (any, bool) {
@@ -281,10 +280,14 @@ func (m *defaultMessage) SetHeader(key string, val any) {
 	m.headers[key] = val
 }
 
-func (m *defaultMessage) EachHeader(fn func(string, any)) {
+func (m *defaultMessage) EachHeader(fn func(string, any) error) error {
 	for k, v := range m.headers {
-		fn(k, v)
+		if err := fn(k, v); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 //

@@ -3,6 +3,7 @@ package typeconverter
 import (
 	"encoding/json"
 	"reflect"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -63,5 +64,51 @@ func BytesToRawJSON() mapstructure.DecodeHookFunc {
 		}
 
 		return result, nil
+	}
+}
+
+func TimeToBytes() mapstructure.DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+
+		if f != reflect.TypeOf(time.Time{}) {
+			return data, nil
+		}
+		if t != reflect.TypeOf([]byte{}) {
+			return data, nil
+		}
+
+		in, ok := data.(time.Time)
+		if !ok {
+			return nil, errors.New("type is not time.Time")
+		}
+
+		res := in.Format(time.RFC3339Nano)
+
+		return []byte(res), nil
+	}
+}
+
+func TimeToString() mapstructure.DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+
+		if f != reflect.TypeOf(time.Time{}) {
+			return data, nil
+		}
+		if t.Kind() != reflect.String {
+			return data, nil
+		}
+
+		in, ok := data.(time.Time)
+		if !ok {
+			return nil, errors.New("type is not time.Time")
+		}
+
+		return in.Format(time.RFC3339Nano), nil
 	}
 }

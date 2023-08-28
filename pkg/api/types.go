@@ -189,14 +189,14 @@ type Message interface {
 	SetHeaders(map[string]any)
 	Header(string) (any, bool)
 	SetHeader(string, any)
-	EachHeader(func(string, any))
+	EachHeader(func(string, any) error) error
 
 	// Attributes ---
 	Attributes() map[string]any
 	SetAttributes(map[string]any) error
 	Attribute(string) (any, bool)
 	SetAttribute(string, any) error
-	EachAttribute(func(string, any))
+	EachAttribute(func(string, any) error) error
 
 	CopyTo(message Message) error
 }

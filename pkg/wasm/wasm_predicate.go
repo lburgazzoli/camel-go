@@ -7,11 +7,11 @@ import (
 	pp "github.com/lburgazzoli/camel-go/pkg/wasm/plugin/processor"
 )
 
-type Processor struct {
+type Predicate struct {
 	Function
 }
 
-func (p *Processor) Process(ctx context.Context, message camel.Message) error {
+func (p *Processor) Test(ctx context.Context, message camel.Message) (bool, error) {
 
 	camelContext := camel.ExtractContext(ctx)
 
@@ -39,7 +39,7 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 
 		return nil
 	}); err != nil {
-		return err
+		return false, err
 	}
 
 	if err := message.EachAttribute(func(k string, v any) error {
@@ -54,33 +54,20 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 
 		return nil
 	}); err != nil {
-		return err
+		return false, err
 	}
 
 	_, err := camelContext.TypeConverter().Convert(message.Content(), &content.Data)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	err = p.invoke(ctx, &content, &content)
+	eval := pp.Evaluation{}
+
+	err = p.invoke(ctx, &content, &eval)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	message.SetSource(content.Source)
-	message.SetType(content.Type)
-	message.SetSubject(content.Subject)
-	message.SetContentType(content.ContentType)
-	message.SetContentSchema(content.ContentSchema)
-	message.SetContent(content.Data)
-
-	for k, v := range content.Headers {
-		message.SetHeader(k, v)
-	}
-	for k, v := range content.Attributes {
-		// TODO: handle of reserved attributes
-		_ = message.SetAttribute(k, v)
-	}
-
-	return nil
+	return eval.Result, nil
 }

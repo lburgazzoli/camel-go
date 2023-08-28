@@ -22,8 +22,8 @@ type Producer struct {
 	client   dapr.Client
 	tc       api.TypeConverter
 
-	componentName string
-	topicName     string
+	pubsubName string
+	topicName  string
 }
 
 func (p *Producer) Endpoint() api.Endpoint {
@@ -33,10 +33,10 @@ func (p *Producer) Endpoint() api.Endpoint {
 func (p *Producer) Start(context.Context) error {
 	ct := strings.Split(p.endpoint.config.Remaining, "/")
 	if len(ct) != 2 {
-		return camelerrors.MissingParameter("componentName/topicName", "missing componentName/topicName")
+		return camelerrors.MissingParameter("pubsubName/topicName", "missing pubsubName/topicName")
 	}
 
-	p.componentName = ct[0]
+	p.pubsubName = ct[0]
 	p.topicName = ct[1]
 
 	cl, err := dapr.NewClient()
@@ -89,7 +89,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		opts = append(opts, dapr.PublishEventWithContentType(msg.ContentType()))
 	}
 
-	if err := p.client.PublishEvent(ctx, p.componentName, p.topicName, data, opts...); err != nil {
+	if err := p.client.PublishEvent(ctx, p.pubsubName, p.topicName, data, opts...); err != nil {
 		msg.SetError(err)
 		return
 	}

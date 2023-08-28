@@ -15,6 +15,7 @@ import (
 
 const TAG = "endpoint"
 const RemainingKey = "remaining"
+const URIKey = "uri"
 
 func init() {
 	processors.Types[TAG] = func() interface{} {
@@ -95,6 +96,7 @@ func (e *Endpoint) create(ctx api.Context) (api.Endpoint, error) {
 	r, _ := ctx.Properties().String(u.Opaque)
 
 	params[RemainingKey] = r
+	params[URIKey] = e.URI
 
 	for k, v := range params {
 		switch val := v.(type) {

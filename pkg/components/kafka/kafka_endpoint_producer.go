@@ -77,7 +77,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	})
 
 	// copy relevant attributes as ce headers
-	msg.EachAttribute(func(k string, v any) {
+	_ = msg.EachAttribute(func(k string, v any) error {
 		switch k {
 		case api.MessageAttributeID:
 			k = "id"
@@ -90,29 +90,32 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		case api.MessageAttributeContentSchema:
 			k = "datacontentschema"
 		default:
-			return
+			return nil
 		}
 
 		h, err := p.setHeader(k, v)
 		if err != nil {
 			msg.SetError(err)
-			return
+			return nil
 		}
 
 		record.Headers = append(record.Headers, h)
+
+		return nil
 
 	})
 
 	// copy remaining headers a standard headers
-	msg.EachHeader(func(k string, v any) {
+	_ = msg.EachHeader(func(k string, v any) error {
 		h, err := p.setHeader(k, v)
 		if err != nil {
 			msg.SetError(err)
-			return
+			return nil
 		}
 
 		record.Headers = append(record.Headers, h)
 
+		return nil
 	})
 
 	if v := msg.Subject(); v != "" {

@@ -80,7 +80,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	props.User.Add("ce_specversion", "1.0")
 
 	// copy relevant attributes as ce headers
-	msg.EachAttribute(func(k string, v any) {
+	_ = msg.EachAttribute(func(k string, v any) error {
 		switch k {
 		case api.MessageAttributeID:
 			k = "id"
@@ -91,23 +91,27 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		case api.MessageAttributeContentSchema:
 			k = "datacontentschema"
 		default:
-			return
+			return nil
 		}
 
 		err := p.setUserProperty(&props, k, v)
 		if err != nil {
 			msg.SetError(err)
-			return
+			return nil
 		}
+
+		return nil
 	})
 
 	// copy remaining headers a standard headers
-	msg.EachHeader(func(k string, v any) {
+	_ = msg.EachHeader(func(k string, v any) error {
 		err := p.setUserProperty(&props, k, v)
 		if err != nil {
 			msg.SetError(err)
-			return
+			return nil
 		}
+
+		return nil
 	})
 
 	pb := &paho.Publish{
