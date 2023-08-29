@@ -146,16 +146,6 @@ type Endpoint interface {
 	Logger() *zap.Logger
 }
 
-const (
-	MessageAttributeID            string = "camel.apache.org/message.id"
-	MessageAttributeTime          string = "camel.apache.org/message.time"
-	MessageAttributeType          string = "camel.apache.org/message.type"
-	MessageAttributeSource        string = "camel.apache.org/message.source"
-	MessageAttributeSubject       string = "camel.apache.org/message.subject"
-	MessageAttributeContentType   string = "camel.apache.org/message.content.type"
-	MessageAttributeContentSchema string = "camel.apache.org/message.content.schema"
-)
-
 //nolint:interfacebloat
 type Message interface {
 	ID() string
@@ -193,9 +183,9 @@ type Message interface {
 
 	// Attributes ---
 	Attributes() map[string]any
-	SetAttributes(map[string]any) error
+	SetAttributes(map[string]any)
 	Attribute(string) (any, bool)
-	SetAttribute(string, any) error
+	SetAttribute(string, any)
 	EachAttribute(func(string, any) error) error
 
 	CopyTo(message Message) error

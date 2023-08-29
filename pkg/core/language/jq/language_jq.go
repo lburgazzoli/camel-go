@@ -158,9 +158,7 @@ func (l *Jq) compute(ctx context.Context, camelContext camel.Context, query *goj
 		out = append(out, v)
 	}
 
-	if err := m.SetAttribute(AnnotationJqResults, strconv.Itoa(len(out))); err != nil {
-		panic(err)
-	}
+	m.SetAttribute(AnnotationJqResults, strconv.Itoa(len(out)))
 
 	if len(out) == 1 {
 		return out[0], nil

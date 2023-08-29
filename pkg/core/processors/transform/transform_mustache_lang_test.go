@@ -49,7 +49,7 @@ func TestTransformMustache(t *testing.T) {
 		msg := c.NewMessage()
 
 		msg.SetContent(uuid.New())
-		_ = msg.SetAttribute("foo", "bar")
+		msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
 		require.Nil(t, err)

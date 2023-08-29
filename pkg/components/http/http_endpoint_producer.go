@@ -1,4 +1,4 @@
-////go:build components_http || components_all
+// //go:build components_http || components_all
 
 package http
 
@@ -23,7 +23,6 @@ type Producer struct {
 	endpoint *Endpoint
 	tc       api.TypeConverter
 
-	url      string
 	once     sync.Once
 	htclient *http.Client
 }
@@ -83,7 +82,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	if err := msg.EachHeader(func(k string, v any) error {
 		var hval []byte
 
-		_, err := p.tc.Convert(msg.Content(), &hval)
+		_, err := p.tc.Convert(v, &hval)
 		if err != nil {
 			return err
 		}
@@ -116,11 +115,10 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		}
 
 		msg.SetContent(b)
-
-		_ = msg.SetAttribute(AttributeStatusCode, res.StatusCode)
-		_ = msg.SetAttribute(AttributeStatusMessage, res.Status)
-		_ = msg.SetAttribute(AttributeProto, res.Proto)
-		_ = msg.SetAttribute(AttributeContentLength, res.ContentLength)
+		msg.SetAttribute(AttributeStatusCode, res.StatusCode)
+		msg.SetAttribute(AttributeStatusMessage, res.Status)
+		msg.SetAttribute(AttributeProto, res.Proto)
+		msg.SetAttribute(AttributeContentLength, res.ContentLength)
 
 		for name, headers := range res.Header {
 			val := any(headers)

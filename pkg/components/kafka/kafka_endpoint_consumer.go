@@ -1,4 +1,4 @@
-////go:build components_kafka || components_all
+// //go:build components_kafka || components_all
 
 package kafka
 
@@ -104,10 +104,10 @@ func (c *Consumer) poll(ctx context.Context) {
 
 			m.SetContent(record.Value)
 
-			_ = m.SetAttribute(AttributeOffset, strconv.FormatInt(record.Offset, 10))
-			_ = m.SetAttribute(AttributePartition, strconv.FormatInt(int64(record.Partition), 10))
-			_ = m.SetAttribute(AttributeTopic, record.Topic)
-			_ = m.SetAttribute(AttributeKey, string(record.Key))
+			m.SetAttribute(AttributeOffset, strconv.FormatInt(record.Offset, 10))
+			m.SetAttribute(AttributePartition, strconv.FormatInt(int64(record.Partition), 10))
+			m.SetAttribute(AttributeTopic, record.Topic)
+			m.SetAttribute(AttributeKey, string(record.Key))
 
 			if err := camelCtx.SendTo(c.Target(), m); err != nil {
 				panic(err)

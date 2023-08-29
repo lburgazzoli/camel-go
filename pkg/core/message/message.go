@@ -1,11 +1,8 @@
 package message
 
 import (
-	"fmt"
 	"maps"
 	"time"
-
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
 
@@ -17,15 +14,27 @@ func New(ctx api.Context) api.Message {
 	m := defaultMessage{
 		ctx:        ctx,
 		attributes: make(map[string]any),
+		meta: meta{
+			ID:   uuid.New(),
+			Time: time.Now(),
+		},
 	}
-
-	m.attributes[api.MessageAttributeID] = uuid.New()
-	m.attributes[api.MessageAttributeTime] = time.Now()
 
 	return &m
 }
 
+type meta struct {
+	ID            string    `json:"id,omitempty"`
+	Source        string    `json:"source,omitempty"`
+	Type          string    `json:"type,omitempty"`
+	Subject       string    `json:"subject,omitempty"`
+	ContentType   string    `json:"content_type,omitempty"`
+	ContentSchema string    `json:"content_schema,omitempty"`
+	Time          time.Time `json:"time,omitempty"`
+}
 type defaultMessage struct {
+	meta
+
 	ctx        api.Context
 	err        error
 	headers    map[string]any
@@ -38,121 +47,51 @@ func (m *defaultMessage) Context() api.Context {
 }
 
 func (m *defaultMessage) ID() string {
-	v, ok := m.attributes[api.MessageAttributeID]
-	if !ok {
-		panic(camelerrors.InternalErrorf("undefined %s", api.MessageAttributeID))
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeID))
-	}
-
-	return answer
+	return m.meta.ID
 }
 
 func (m *defaultMessage) Time() time.Time {
-	v, ok := m.attributes[api.MessageAttributeTime]
-	if !ok {
-		panic(camelerrors.InternalErrorf("undefined %s", api.MessageAttributeTime))
-	}
-
-	answer, ok := v.(time.Time)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeTime))
-	}
-
-	return answer
+	return m.meta.Time
 }
 
 func (m *defaultMessage) Type() string {
-	v, ok := m.attributes[api.MessageAttributeType]
-	if !ok {
-		return ""
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeType))
-	}
-
-	return answer
+	return m.meta.Type
 }
 
 func (m *defaultMessage) SetType(v string) {
-	m.attributes[api.MessageAttributeType] = v
+	m.meta.Type = v
 }
 
 func (m *defaultMessage) Source() string {
-	v, ok := m.attributes[api.MessageAttributeSource]
-	if !ok {
-		return ""
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeSource))
-	}
-
-	return answer
+	return m.meta.Source
 }
 
 func (m *defaultMessage) SetSource(v string) {
-	m.attributes[api.MessageAttributeSource] = v
+	m.meta.Source = v
 }
 
 func (m *defaultMessage) Subject() string {
-	v, ok := m.attributes[api.MessageAttributeSubject]
-	if !ok {
-		return ""
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeSubject))
-	}
-
-	return answer
+	return m.meta.Subject
 }
 
 func (m *defaultMessage) SetSubject(v string) {
-	m.attributes[api.MessageAttributeSubject] = v
+	m.meta.Subject = v
 }
 
 func (m *defaultMessage) ContentSchema() string {
-	v, ok := m.attributes[api.MessageAttributeContentSchema]
-	if !ok {
-		return ""
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeContentSchema))
-	}
-
-	return answer
+	return m.meta.ContentSchema
 }
 
 func (m *defaultMessage) SetContentSchema(v string) {
-	m.attributes[api.MessageAttributeContentSchema] = v
+	m.meta.ContentSchema = v
 }
 
 func (m *defaultMessage) ContentType() string {
-	v, ok := m.attributes[api.MessageAttributeContentType]
-	if !ok {
-		return ""
-	}
-
-	answer, ok := v.(string)
-	if !ok {
-		panic(camelerrors.InternalErrorf("wrong type for %s", api.MessageAttributeContentType))
-	}
-
-	return answer
+	return m.meta.ContentType
 }
 
 func (m *defaultMessage) SetContentType(v string) {
-	m.attributes[api.MessageAttributeContentType] = v
+	m.meta.ContentType = v
 }
 
 //
@@ -183,17 +122,6 @@ func (m *defaultMessage) SetContent(content interface{}) {
 // Attributes
 //
 
-func (m *defaultMessage) validateAttribute(key string) error {
-	switch key {
-	case api.MessageAttributeID:
-		return fmt.Errorf("attempt to set a reserved attribute: %s", key)
-	case api.MessageAttributeTime:
-		return fmt.Errorf("attempt to set a reserved attribute: %s", key)
-	default:
-		return nil
-	}
-}
-
 func (m *defaultMessage) Attributes() map[string]any {
 	answer := make(map[string]any)
 
@@ -202,36 +130,28 @@ func (m *defaultMessage) Attributes() map[string]any {
 	return answer
 }
 
-func (m *defaultMessage) SetAttributes(attributes map[string]any) error {
+func (m *defaultMessage) SetAttributes(attributes map[string]any) {
 	m.attributes = make(map[string]any)
-	m.attributes[api.MessageAttributeID] = m.ID()
-	m.attributes[api.MessageAttributeTime] = m.Time()
 
-	for k, v := range attributes {
-		if err := m.validateAttribute(k); err != nil {
-			return err
-		}
-
-		m.attributes[k] = v
-	}
-
-	return nil
+	maps.Copy(attributes, m.attributes)
 }
 
 func (m *defaultMessage) Attribute(key string) (any, bool) {
+	if m.attributes == nil {
+		return nil, false
+	}
+
 	r, ok := m.attributes[key]
 
 	return r, ok
 }
 
-func (m *defaultMessage) SetAttribute(key string, val any) error {
-	if err := m.validateAttribute(key); err != nil {
-		return err
+func (m *defaultMessage) SetAttribute(key string, val any) {
+	if m.attributes == nil {
+		m.attributes = make(map[string]any)
 	}
 
 	m.attributes[key] = val
-
-	return nil
 }
 
 func (m *defaultMessage) EachAttribute(fn func(string, any) error) error {

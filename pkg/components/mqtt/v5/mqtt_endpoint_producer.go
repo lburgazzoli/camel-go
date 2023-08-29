@@ -1,4 +1,4 @@
-////go:build components_mqtt_v5 || components_all
+// //go:build components_mqtt_v5 || components_all
 
 package v5
 
@@ -80,28 +80,23 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	props.User.Add("ce_specversion", "1.0")
 
 	// copy relevant attributes as ce headers
-	_ = msg.EachAttribute(func(k string, v any) error {
-		switch k {
-		case api.MessageAttributeID:
-			k = "id"
-		case api.MessageAttributeTime:
-			k = "time"
-		case api.MessageAttributeSource:
-			k = "source"
-		case api.MessageAttributeContentSchema:
-			k = "datacontentschema"
-		default:
-			return nil
-		}
 
-		err := p.setUserProperty(&props, k, v)
-		if err != nil {
-			msg.SetError(err)
-			return nil
-		}
-
-		return nil
-	})
+	if err := p.setUserProperty(&props, "id", msg.ID()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setUserProperty(&props, "time", msg.Time()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setUserProperty(&props, "source", msg.Source()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setUserProperty(&props, "datacontentschema", msg.ContentSchema()); err != nil {
+		msg.SetError(err)
+		return
+	}
 
 	// copy remaining headers a standard headers
 	_ = msg.EachHeader(func(k string, v any) error {

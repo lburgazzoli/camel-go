@@ -1,4 +1,4 @@
-////go:build components_kafka || components_all
+// //go:build components_kafka || components_all
 
 package kafka
 
@@ -77,46 +77,34 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	})
 
 	// copy relevant attributes as ce headers
-	_ = msg.EachAttribute(func(k string, v any) error {
-		switch k {
-		case api.MessageAttributeID:
-			k = "id"
-		case api.MessageAttributeTime:
-			k = "time"
-		case api.MessageAttributeSource:
-			k = "source"
-		case api.MessageAttributeContentType:
-			k = "content-type"
-		case api.MessageAttributeContentSchema:
-			k = "datacontentschema"
-		default:
-			return nil
-		}
-
-		h, err := p.setHeader(k, v)
-		if err != nil {
-			msg.SetError(err)
-			return nil
-		}
-
-		record.Headers = append(record.Headers, h)
-
-		return nil
-
-	})
+	if err := p.setHeader(record, "id", msg.ID()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setHeader(record, "time", msg.Time()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setHeader(record, "source", msg.Source()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setHeader(record, "content-type", msg.ContentType()); err != nil {
+		msg.SetError(err)
+		return
+	}
+	if err := p.setHeader(record, "datacontentschema", msg.ContentSchema()); err != nil {
+		msg.SetError(err)
+		return
+	}
 
 	// copy remaining headers a standard headers
-	_ = msg.EachHeader(func(k string, v any) error {
-		h, err := p.setHeader(k, v)
-		if err != nil {
-			msg.SetError(err)
-			return nil
-		}
-
-		record.Headers = append(record.Headers, h)
-
-		return nil
-	})
+	if err := msg.EachHeader(func(k string, v any) error {
+		return p.setHeader(record, k, v)
+	}); err != nil {
+		msg.SetError(err)
+		return
+	}
 
 	if v := msg.Subject(); v != "" {
 		record.Key = []byte(v)
@@ -135,12 +123,24 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		msg.SetError(errors.Wrap(err, "record had a produce error while synchronously producing"))
 	}
 	if r != nil {
-		_ = msg.SetAttribute(AttributeOffset, strconv.FormatInt(r.Offset, 10))
-		_ = msg.SetAttribute(AttributePartition, strconv.FormatInt(int64(r.Partition), 10))
+		msg.SetAttribute(AttributeOffset, strconv.FormatInt(r.Offset, 10))
+		msg.SetAttribute(AttributePartition, strconv.FormatInt(int64(r.Partition), 10))
 	}
 }
 
-func (p *Producer) setHeader(k string, v any) (kgo.RecordHeader, error) {
+func (p *Producer) setHeader(r *kgo.Record, k string, v any) error {
+
+	h, err := p.header(k, v)
+	if err != nil {
+		return err
+	}
+
+	r.Headers = append(r.Headers, h)
+
+	return nil
+}
+
+func (p *Producer) header(k string, v any) (kgo.RecordHeader, error) {
 	h := kgo.RecordHeader{}
 	h.Key = k
 

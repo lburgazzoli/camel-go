@@ -1,4 +1,4 @@
-////go:build components_dapr_pubsub || components_all
+// //go:build components_dapr_pubsub || components_all
 
 package pubsub
 
@@ -81,9 +81,9 @@ func (c *Consumer) handler(_ context.Context, e *common.TopicEvent) (bool, error
 	m.SetSubject(e.Subject)
 	m.SetContentType(e.DataContentType)
 
-	_ = m.SetAttribute(AttributeEventID, e.ID)
-	_ = m.SetAttribute(AttributePubSubName, e.PubsubName)
-	_ = m.SetAttribute(AttributePubSubTopic, e.Topic)
+	m.SetAttribute(AttributeEventID, e.ID)
+	m.SetAttribute(AttributePubSubName, e.PubsubName)
+	m.SetAttribute(AttributePubSubTopic, e.Topic)
 
 	switch {
 	case e.Data != nil:

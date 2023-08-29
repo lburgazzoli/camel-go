@@ -1,4 +1,4 @@
-////go:build components_mqtt_v3 || components_all
+// //go:build components_mqtt_v3 || components_all
 
 package v3
 
@@ -92,10 +92,10 @@ func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
 	m.SetSource(component.Scheme())
 	m.SetContent(msg.Payload())
 
-	_ = m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
-	_ = m.SetAttribute(AttributeMqttMessageRetained, msg.Retained())
-	_ = m.SetAttribute(AttributeMqttMessageDuplicate, msg.Duplicate())
-	_ = m.SetAttribute(AttributeMqttMessageQUOS, msg.Qos())
+	m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(msg.MessageID()), 10))
+	m.SetAttribute(AttributeMqttMessageRetained, msg.Retained())
+	m.SetAttribute(AttributeMqttMessageDuplicate, msg.Duplicate())
+	m.SetAttribute(AttributeMqttMessageQUOS, msg.Qos())
 
 	if err := component.Context().SendTo(c.Target(), m); err != nil {
 		panic(err)

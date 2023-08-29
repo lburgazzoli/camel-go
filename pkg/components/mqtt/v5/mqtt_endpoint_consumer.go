@@ -1,4 +1,4 @@
-////go:build components_mqtt_v5 || components_all
+// //go:build components_mqtt_v5 || components_all
 
 package v5
 
@@ -98,9 +98,9 @@ func (c *Consumer) handler(pub *paho.Publish) {
 		m.SetContentType(pub.Properties.ContentType)
 	}
 
-	_ = m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(pub.PacketID), 10))
-	_ = m.SetAttribute(AttributeMqttMessageRetained, pub.Retain)
-	_ = m.SetAttribute(AttributeMqttMessageQUOS, pub.QoS)
+	m.SetAttribute(AttributeMqttMessageID, strconv.FormatUint(uint64(pub.PacketID), 10))
+	m.SetAttribute(AttributeMqttMessageRetained, pub.Retain)
+	m.SetAttribute(AttributeMqttMessageQUOS, pub.QoS)
 
 	if err := component.Context().SendTo(c.Target(), m); err != nil {
 		panic(err)

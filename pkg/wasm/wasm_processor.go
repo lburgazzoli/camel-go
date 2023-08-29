@@ -78,8 +78,7 @@ func (p *Processor) Process(ctx context.Context, message camel.Message) error {
 		message.SetHeader(k, v)
 	}
 	for k, v := range content.Attributes {
-		// TODO: handle of reserved attributes
-		_ = message.SetAttribute(k, v)
+		message.SetAttribute(k, v)
 	}
 
 	return nil

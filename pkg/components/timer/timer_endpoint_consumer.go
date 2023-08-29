@@ -1,4 +1,4 @@
-////go:build components_timer || components_all
+// //go:build components_timer || components_all
 
 package timer
 
@@ -86,9 +86,9 @@ func (c *Consumer) run(_ context.Context) {
 	m.SetType("camel.timer.triggered")
 	m.SetSource(component.Scheme())
 
-	_ = m.SetAttribute(AttributeTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
-	_ = m.SetAttribute(AttributeTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
-	_ = m.SetAttribute(AttributeTimerName, c.endpoint.config.Remaining)
+	m.SetAttribute(AttributeTimerFiredCount, strconv.FormatUint(atomic.AddUint64(&c.counter, 1), 10))
+	m.SetAttribute(AttributeTimerStarted, strconv.FormatInt(c.started.UnixMilli(), 19))
+	m.SetAttribute(AttributeTimerName, c.endpoint.config.Remaining)
 
 	if err := camelCtx.SendTo(c.Target(), m); err != nil {
 		panic(err)
