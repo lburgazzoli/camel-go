@@ -1,8 +1,11 @@
 package support
 
 import (
+	"bytes"
 	"context"
+	"strings"
 	"testing"
+	"text/template"
 
 	"go.uber.org/zap"
 
@@ -29,4 +32,23 @@ func Run(t *testing.T, name string, fn func(*testing.T, context.Context)) {
 
 		fn(t, ctx)
 	})
+}
+
+func LoadRoutes(ctx context.Context, route string, params any) error {
+
+	c := camel.ExtractContext(ctx)
+
+	tmpl, err := template.New("route").Parse(route)
+	if err != nil {
+		return err
+	}
+
+	var doc bytes.Buffer
+
+	err = tmpl.Execute(&doc, params)
+	if err != nil {
+		return err
+	}
+
+	return c.LoadRoutes(ctx, strings.NewReader(doc.String()))
 }

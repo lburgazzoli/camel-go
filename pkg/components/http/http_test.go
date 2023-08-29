@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -33,7 +33,7 @@ const simpleHTTPGet = `
         - process:
             ref: "consumer-1"
         - to:
-            uri: "http://localhost:3333/uuid"
+            uri: "{{.URL}}"
         - process:
             ref: "consumer-2"
 `
@@ -42,24 +42,21 @@ func TestSimpleHTTPGet(t *testing.T) {
 	support.Run(t, "http_get", func(t *testing.T, ctx context.Context) {
 		t.Helper()
 
-		go func() {
-			http.HandleFunc("/uuid", func(w http.ResponseWriter, r *http.Request) {
-				answer := map[string]any{
-					"uuid": xid.New().String(),
-				}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			answer := map[string]any{
+				"uuid": xid.New().String(),
+			}
 
-				data, err := json.Marshal(answer)
-				require.NoError(t, err)
+			data, err := json.Marshal(answer)
+			require.NoError(t, err)
 
-				w.Header().Set("Content-Type", "application/json")
-				_, err = io.WriteString(w, string(data))
-				require.NoError(t, err)
-			})
+			w.Header().Set("Content-Type", "application/json")
+			_, err = io.WriteString(w, string(data))
+			require.NoError(t, err)
+		}))
 
-			require.NoError(
-				t,
-				http.ListenAndServe(":3333", nil),
-			)
+		defer func() {
+			ts.Close()
 		}()
 
 		wg := make(chan camel.Message)
@@ -75,7 +72,14 @@ func TestSimpleHTTPGet(t *testing.T) {
 			return nil
 		})
 
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleHTTPGet))
+		err := support.LoadRoutes(
+			ctx,
+			simpleHTTPGet,
+			map[string]string{
+				"URL": ts.URL,
+			},
+		)
+
 		assert.Nil(t, err)
 
 		select {
