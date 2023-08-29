@@ -130,8 +130,21 @@ image/wasm:
 run/examples/dapr:
 	dapr run --app-id pub \
          --log-level debug \
+         --app-protocol http \
+	  	 --app-port 8080 \
+		 --dapr-http-port 3500 \
          --resources-path ./etc/dapr/config \
-         -- go run cmd/camel/main.go run --route ./etc/examples/dapr.yaml
+         -- go run cmd/camel/main.go run --dev --route ./etc/examples/dapr.yaml
+
+.PHONY: run/examples/daprsub
+run/examples/daprsub:
+	dapr run --app-id pub \
+         --log-level debug \
+         --app-protocol http \
+	  	 --app-port 8080 \
+		 --dapr-http-port 3500 \
+         --resources-path ./etc/dapr/config \
+         -- go run etc/dapr/sub/main.go
 
 .PHONY: build/wasm
 build/wasm:

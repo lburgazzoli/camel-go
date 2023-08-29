@@ -93,11 +93,12 @@ func (e *DefaultEndpoint) Logger() *zap.Logger {
 //
 
 func NewDefaultConsumer(endpoint api.Endpoint, target *actor.PID) DefaultConsumer {
-	id := uuid.New()
+	v := processors.NewDefaultVerticle()
 
 	return DefaultConsumer{
-		target: target,
-		logger: endpoint.Logger().With(zap.String("consumer.id", id)).Sugar(),
+		DefaultVerticle: v,
+		target:          target,
+		logger:          endpoint.Logger().With(zap.String("consumer.id", v.ID())).Sugar(),
 	}
 }
 

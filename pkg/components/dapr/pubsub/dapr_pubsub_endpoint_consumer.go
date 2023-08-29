@@ -4,7 +4,10 @@ package pubsub
 
 import (
 	"context"
+	"strings"
 	"sync/atomic"
+
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/dapr/go-sdk/service/common"
@@ -28,18 +31,33 @@ func (c *Consumer) Endpoint() camel.Endpoint {
 
 func (c *Consumer) Start(_ context.Context) error {
 	if c.running.CompareAndSwap(false, true) {
+		ct := strings.Split(c.endpoint.config.Remaining, "/")
+		if len(ct) != 2 {
+			return camelerrors.MissingParameter("pubsubName/topicName", "missing pubsubName/topicName")
+		}
+
+		c.pubsubName = ct[0]
+		c.topicName = ct[1]
+
 		sub := common.Subscription{
 			PubsubName: c.pubsubName,
 			Topic:      c.topicName,
 			Route:      "/" + c.endpoint.ID() + "/" + c.ID(),
 		}
 
+		c.Logger().Debugf("subscribing to %+v", sub)
+
 		err := c.endpoint.s.AddTopicEventHandler(&sub, c.handler)
 		if err != nil {
 			return err
 		}
 
-		return c.endpoint.s.Start()
+		c.Logger().Debugf("subscribed to %+v", sub)
+
+		err = c.endpoint.s.Start()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -74,23 +92,24 @@ func (c *Consumer) handler(_ context.Context, e *common.TopicEvent) (bool, error
 	component := c.endpoint.Component()
 	camelCtx := component.Context()
 
+	c.Logger().Infof("event - PubsubName: %s, Topic: %s, ID: %s, Content-Type: %s, Data: %s",
+		e.PubsubName,
+		e.Topic,
+		e.ID,
+		e.DataContentType,
+		string(e.RawData))
+
 	m := camelCtx.NewMessage()
 
 	m.SetType(e.Type)
 	m.SetSource(e.Source)
 	m.SetSubject(e.Subject)
 	m.SetContentType(e.DataContentType)
+	m.SetContent(e.RawData)
 
 	m.SetAttribute(AttributeEventID, e.ID)
 	m.SetAttribute(AttributePubSubName, e.PubsubName)
 	m.SetAttribute(AttributePubSubTopic, e.Topic)
-
-	switch {
-	case e.Data != nil:
-		m.SetContent(e.Data)
-	case e.RawData != nil:
-		m.SetContent(e.RawData)
-	}
 
 	if err := camelCtx.SendTo(c.Target(), m); err != nil {
 		panic(err)

@@ -1,4 +1,4 @@
-////go:build components_dapr_pubsub || components_all
+// //go:build components_dapr_pubsub || components_all
 
 package pubsub
 
@@ -9,7 +9,7 @@ import (
 
 const (
 	Scheme  = "dapr-pubsub"
-	Address = ":6002"
+	Address = ":8080"
 
 	AttributeEventID     = "camel.apache.org/dapr.event.id"
 	AttributePubSubName  = "camel.apache.org/dapr.pubsub.name"
@@ -17,10 +17,9 @@ const (
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {
-	component := Component{
-		DefaultComponent: components.NewDefaultComponent(ctx, Scheme),
-		s:                NewService(Address),
-	}
+	component := Component{}
+	component.DefaultComponent = components.NewDefaultComponent(ctx, Scheme)
+	component.s = NewService(Address, component.Logger().Sugar())
 
 	return &component, nil
 }
