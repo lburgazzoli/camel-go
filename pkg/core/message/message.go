@@ -14,7 +14,7 @@ func New(ctx api.Context) api.Message {
 	m := defaultMessage{
 		ctx:        ctx,
 		attributes: make(map[string]any),
-		meta: meta{
+		meta: defaultMessageMeta{
 			ID:   uuid.New(),
 			Time: time.Now(),
 		},
@@ -23,20 +23,21 @@ func New(ctx api.Context) api.Message {
 	return &m
 }
 
-type meta struct {
-	ID            string    `json:"id,omitempty"`
-	Source        string    `json:"source,omitempty"`
-	Type          string    `json:"type,omitempty"`
-	Subject       string    `json:"subject,omitempty"`
-	ContentType   string    `json:"content_type,omitempty"`
-	ContentSchema string    `json:"content_schema,omitempty"`
-	Time          time.Time `json:"time,omitempty"`
+type defaultMessageMeta struct {
+	ID            string
+	Source        string
+	Type          string
+	Subject       string
+	ContentType   string
+	ContentSchema string
+	Time          time.Time
 }
-type defaultMessage struct {
-	meta
 
-	ctx        api.Context
-	err        error
+type defaultMessage struct {
+	ctx api.Context
+	err error
+
+	meta       defaultMessageMeta
 	headers    map[string]any
 	attributes map[string]any
 	content    interface{}
