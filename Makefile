@@ -126,25 +126,24 @@ image/wasm:
 		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 
-.PHONY: run/examples/dapr
-run/examples/dapr:
-	dapr run --app-id pub \
+.PHONY: run/examples/dapr/flow
+run/examples/dapr/flow:
+	dapr run \
+		 --app-id flow \
          --log-level debug \
          --app-protocol http \
 	  	 --app-port 8080 \
 		 --dapr-http-port 3500 \
-         --resources-path ./etc/dapr/config \
-         -- go run cmd/camel/main.go run --dev --route ./etc/examples/dapr.yaml
+         --resources-path ./etc/examples/dapr/config \
+         -- go run cmd/camel/main.go run --dev --route ./etc/examples/dapr/dapr.yaml
 
-.PHONY: run/examples/daprsub
-run/examples/daprsub:
-	dapr run --app-id pub \
-         --log-level debug \
-         --app-protocol http \
-	  	 --app-port 8080 \
-		 --dapr-http-port 3500 \
-         --resources-path ./etc/dapr/config \
-         -- go run etc/dapr/sub/main.go
+.PHONY: run/examples/dapr/pub
+run/examples/dapr/pub:
+	dapr run \
+		 --app-id pub \
+         --log-level info \
+         --resources-path ./etc/examples/dapr/config \
+         -- go run cmd/camel/main.go dapr pub --pubsub-name sensors --topic iot source=sensor-1 data=foo
 
 .PHONY: build/wasm
 build/wasm:
