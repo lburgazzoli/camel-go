@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+env:
+  CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+  WASM_CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -15,9 +19,6 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    env:
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      WASM_CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
     steps:
       - name: check-out
         uses: actions/checkout@v3
