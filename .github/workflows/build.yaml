@@ -25,7 +25,19 @@ jobs:
           check-latest: true
           cache: true
           cache-dependency-path: go.sum
+      - name: "Login to Container registry"
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - name: 'Build WASM'
+        run: make build/wasm
+      - name: 'Push WASM'
+        run: make image/wasm
       - name: check
         run: make check
       - name: test
         run: make test
+      - name: 'Push Image'
+        run: make image/publish

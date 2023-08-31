@@ -1,7 +1,14 @@
 
-# Image URL to use all building/pushing image targets
-IMG ?= quay.io/lburgazzoli/camel-go:latest
+CONTAINER_REGISTRY ?= quay.io
+CONTAINER_REGISTRY_REPOSITORY ?= lburgazzoli/camel-go
+CONTAINER_TAG ?= latest
+CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY):$(CONTAINER_TAG)
 
+
+WASM_CONTAINER_REGISTRY ?= quay.io
+WASM_CONTAINER_REGISTRY_REPOSITORY ?= lburgazzoli/camel-go-wasm
+WASM_CONTAINER_TAG ?= latest
+WASM_CONTAINER_IMAGE ?= $(WASM_CONTAINER_REGISTRY)/$(WASM_CONTAINER_REGISTRY_REPOSITORY):$(WASM_CONTAINER_TAG)
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
@@ -99,27 +106,27 @@ build: fmt
 
 .PHONY: image
 image: ko
-	KO_DOCKER_REPO=quay.io/lburgazzoli/camel-go \
+	KO_DOCKER_REPO=$(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY) \
 	$(KO) build \
 		--bare \
 		--local \
-		--tags latest \
+		--tags $(CONTAINER_TAG) \
 		--platform=linux/amd64,linux/arm64 \
 		./cmd/camel
 
 .PHONY: image/publish
 image/publish: ko
-	KO_DOCKER_REPO=quay.io/lburgazzoli/camel-go \
+	KO_DOCKER_REPO=$(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY) \
 	$(KO) build \
 		--bare \
-		--tags latest \
+		--tags $(CONTAINER_TAG) \
 		--platform=linux/amd64,linux/arm64 \
 		./cmd/camel
 
 
 .PHONY: image/wasm
 image/wasm:
-	 oras push --verbose $(WASM_CONTAINER_IMAGE_REPO) \
+	 oras push --verbose $(WASM_CONTAINER_IMAGE) \
  		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
