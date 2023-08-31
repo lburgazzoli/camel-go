@@ -35,10 +35,10 @@ jobs:
           registry: ${{ secrets.CONTAINER_REGISTRY }}
           username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-      - name: 'Build WASM'
-        run: make wasm/build
-      - name: 'Push WASM'
-        run: make wasm/publish
+      #- name: 'Build WASM'
+      #  run: make wasm/build
+      #- name: 'Push WASM'
+      #  run: make wasm/publish
       - name: check
         run: make check
       - name: test
