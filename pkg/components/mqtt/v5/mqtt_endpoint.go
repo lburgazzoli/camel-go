@@ -4,6 +4,7 @@ package v5
 
 import (
 	"context"
+	"log/slog"
 	"net"
 	"net/url"
 
@@ -68,18 +69,23 @@ func (e *Endpoint) newClient(opts ...OptionFn) (*Client, error) {
 		return nil, errors.Wrapf(err, "failed to dial to %s", e.config.Broker)
 	}
 
-	sl := e.Logger().Sugar()
-
 	cc.Conn = conn
 	cc.OnServerDisconnect = func(disconnect *paho.Disconnect) {
-		sl.Warnf("disconnected %v", disconnect)
+		if disconnect.Properties != nil {
+			e.Logger().Warn("disconnected",
+				slog.Int("code", int(disconnect.ReasonCode)),
+				slog.String("reason", disconnect.Properties.ReasonString),
+			)
+		} else {
+			e.Logger().Warn("disconnected", slog.Int("code", int(disconnect.ReasonCode)))
+		}
 	}
 	cc.OnClientError = func(err error) {
-		sl.Warnf("client error %v", err)
+		e.Logger().Warn("client error", slog.String("error", err.Error()))
 	}
 
 	c := Client{
-		logger: sl,
+		logger: e.Logger(),
 		cfg:    &e.config,
 		client: paho.NewClient(cc),
 	}

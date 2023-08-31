@@ -27,7 +27,7 @@ func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
 		DefaultVerticle: processors.NewDefaultVerticle(),
 		endpoint:        e,
-		logger:          e.Logger().Named(e.config.Remaining),
+		logger:          e.Logger().WithGroup(e.config.Remaining),
 	}
 
 	return &c, nil

@@ -1,9 +1,8 @@
 package pubsub
 
 import (
+	"log/slog"
 	"sync"
-
-	"go.uber.org/zap"
 
 	"github.com/dapr/go-sdk/service/common"
 
@@ -12,11 +11,11 @@ import (
 
 // TODO: better ref counter
 
-func NewService(address string, l *zap.SugaredLogger) *Service {
+func NewService(address string, l *slog.Logger) *Service {
 	return &Service{
 		cnt: 0,
 		svc: daprd.NewService(address),
-		log: l.With(zap.String("subsystem", "daprd")),
+		log: l.With(slog.String("subsystem", "daprd")),
 	}
 }
 
@@ -24,7 +23,7 @@ type Service struct {
 	mu  sync.Mutex
 	cnt uint32
 	svc common.Service
-	log *zap.SugaredLogger
+	log *slog.Logger
 }
 
 func (s *Service) Start() error {

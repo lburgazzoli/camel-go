@@ -1,6 +1,8 @@
 package log
 
 import (
+	"log/slog"
+
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -24,5 +26,9 @@ func (a *Log) HandleFailure(
 	reason interface{},
 	message interface{}) {
 
-	a.context.Logger().Sugar().Infof("--> %s, %s", reason, message)
+	a.context.Logger().Info(
+		"failure",
+		slog.Any("reason", reason),
+		slog.Any("message", message),
+	)
 }

@@ -4,6 +4,7 @@ package v5
 
 import (
 	"context"
+	"log/slog"
 	"strconv"
 	"sync/atomic"
 
@@ -82,7 +83,12 @@ func (c *Consumer) Receive(ctx actor.Context) {
 }
 
 func (c *Consumer) handler(pub *paho.Publish) {
-	c.Logger().Infof("handling publish %v", pub)
+	c.Logger().Debug("message received", slog.Group(
+		"message",
+		slog.Uint64("id", uint64(pub.PacketID)),
+		slog.String("topic", pub.Topic),
+		slog.Bool("retained", pub.Retain),
+	))
 
 	component := c.endpoint.Component()
 	camelCtx := component.Context()

@@ -19,7 +19,7 @@ const (
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {
 	component := Component{}
 	component.DefaultComponent = components.NewDefaultComponent(ctx, Scheme)
-	component.s = NewService(Address, component.Logger().Sugar())
+	component.s = NewService(Address, component.Logger())
 
 	return &component, nil
 }

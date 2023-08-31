@@ -4,6 +4,7 @@ package v3
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -73,17 +74,15 @@ func (e *Endpoint) newClient(optFns ...OptionFn) mqtt.Client {
 		opts = opts.AddBroker(broker)
 	}
 
-	sl := e.Logger().Sugar()
-
 	// Log events
 	opts.OnConnectionLost = func(cl mqtt.Client, err error) {
-		sl.Warnf("connection lost (error: %s)", err.Error())
+		e.Logger().Warn("connection lost", slog.String("error", err.Error()))
 	}
 	opts.OnConnect = func(cl mqtt.Client) {
-		sl.Info("connection established")
+		e.Logger().Info("connection established")
 	}
 	opts.OnReconnecting = func(mqtt.Client, *mqtt.ClientOptions) {
-		sl.Info("attempting to reconnect")
+		e.Logger().Info("attempting to reconnect")
 	}
 
 	return mqtt.NewClient(opts)

@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"reflect"
 	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/message"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/errors/log"
-
-	"go.uber.org/zap"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
 
@@ -30,7 +29,7 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
-func NewDefaultContext(logger *zap.Logger, opts ...Option) camel.Context {
+func NewDefaultContext(logger *slog.Logger, opts ...Option) camel.Context {
 	p, err := properties.NewDefaultProperties()
 	if err != nil {
 		// TODO: must return an error
@@ -58,7 +57,7 @@ func NewDefaultContext(logger *zap.Logger, opts ...Option) camel.Context {
 		properties:    p,
 		typeConverter: tc,
 		verticles:     make(map[string]vh),
-		logger:        logger.With(zap.String("context.id", id)),
+		logger:        logger.With(slog.String("context.id", id)),
 	}
 
 	for _, opt := range opts {
@@ -97,7 +96,7 @@ type defaultContext struct {
 	properties    camel.Properties
 	typeConverter camel.TypeConverter
 	verticles     map[string]vh
-	logger        *zap.Logger
+	logger        *slog.Logger
 	errorHandler  camelerrors.Handler
 }
 
@@ -210,6 +209,6 @@ func (c *defaultContext) TypeConverter() camel.TypeConverter {
 	return c.typeConverter
 }
 
-func (c *defaultContext) Logger() *zap.Logger {
+func (c *defaultContext) Logger() *slog.Logger {
 	return c.logger
 }

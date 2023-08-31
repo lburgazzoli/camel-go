@@ -5,16 +5,15 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"log/slog"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/asynkron/protoactor-go/actor"
+	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
-	"github.com/twmb/franz-go/plugin/kzap"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
@@ -62,7 +61,7 @@ func (e *Endpoint) newClient() (*kgo.Client, error) {
 
 		opts = append(opts, kgo.SASL(authMechanism))
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
-		opts = append(opts, kgo.WithLogger(kzap.New(e.Logger())))
+		opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
 	}
 
 	return kgo.NewClient(opts...)

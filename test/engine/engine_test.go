@@ -4,15 +4,16 @@ package engine
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"strings"
+
+	"testing"
+	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
-
-	"testing"
-	"time"
 
 	// helper to include everything.
 	_ "github.com/lburgazzoli/camel-go/pkg/components/dapr/pubsub"
@@ -233,8 +234,7 @@ const simpleError = `
 func TestSimpleError(t *testing.T) {
 	t.Skip("TODO")
 
-	l, err := zap.NewDevelopment()
-	assert.Nil(t, err)
+	l := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	camelContext := core.NewContext(l, camelc.WithLogErrorHandler())
 	ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
@@ -252,7 +252,7 @@ func TestSimpleError(t *testing.T) {
 		return errors.New("foo")
 	})
 
-	err = c.LoadRoutes(ctx, strings.NewReader(simpleError))
+	err := c.LoadRoutes(ctx, strings.NewReader(simpleError))
 	assert.Nil(t, err)
 
 	select {

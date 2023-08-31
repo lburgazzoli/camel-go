@@ -3,69 +3,62 @@
 package v3
 
 import (
+	"fmt"
+	"log/slog"
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/lburgazzoli/camel-go/pkg/core"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func init() {
 	// TODO: do some investigation if there is a way to set per client
 	//       logging instead of a global one
-	mqtt.DEBUG = &mqttLogger{level: zapcore.DebugLevel}
-	mqtt.WARN = &mqttLogger{level: zapcore.WarnLevel}
-	mqtt.ERROR = &mqttLogger{level: zapcore.ErrorLevel}
+	mqtt.DEBUG = &mqttLogger{level: slog.LevelDebug}
+	mqtt.WARN = &mqttLogger{level: slog.LevelWarn}
+	mqtt.ERROR = &mqttLogger{level: slog.LevelError}
 }
 
 type mqttLogger struct {
 	m      sync.Mutex
-	level  zapcore.Level
-	logger *zap.SugaredLogger
+	level  slog.Level
+	logger *slog.Logger
 }
 
 func (l *mqttLogger) Println(v ...interface{}) {
 	l.m.Lock()
 	defer l.m.Unlock()
 
-	if core.L == nil {
-		return
-	}
 	if l.logger == nil {
-		l.logger = core.L.Named(Scheme).Sugar()
+		l.logger = slog.Default().WithGroup(Scheme)
 	}
 
 	switch l.level {
-	case zapcore.DebugLevel:
-		l.logger.Debug(v...)
-	case zapcore.InfoLevel:
-		l.logger.Info(v...)
-	case zapcore.WarnLevel:
-		l.logger.Warn(v...)
-	case zapcore.ErrorLevel:
-		l.logger.Error(v...)
+	case slog.LevelDebug:
+		l.logger.Debug(fmt.Sprint(v...))
+	case slog.LevelInfo:
+		l.logger.Info(fmt.Sprint(v...))
+	case slog.LevelWarn:
+		l.logger.Warn(fmt.Sprint(v...))
+	case slog.LevelError:
+		l.logger.Error(fmt.Sprint(v...))
 	}
 }
 func (l *mqttLogger) Printf(format string, v ...interface{}) {
 	l.m.Lock()
 	defer l.m.Unlock()
 
-	if core.L == nil {
-		return
-	}
 	if l.logger == nil {
-		l.logger = core.L.Named(Scheme).Sugar()
+		l.logger = slog.Default().WithGroup(Scheme)
 	}
 
 	switch l.level {
-	case zapcore.DebugLevel:
-		l.logger.Debugf(format, v...)
-	case zapcore.InfoLevel:
-		l.logger.Infof(format, v...)
-	case zapcore.WarnLevel:
-		l.logger.Warnf(format, v...)
-	case zapcore.ErrorLevel:
-		l.logger.Errorf(format, v...)
+	case slog.LevelDebug:
+		l.logger.Debug(fmt.Sprintf(format, v...))
+	case slog.LevelInfo:
+		l.logger.Info(fmt.Sprintf(format, v...))
+	case slog.LevelWarn:
+		l.logger.Warn(fmt.Sprintf(format, v...))
+	case slog.LevelError:
+		l.logger.Error(fmt.Sprintf(format, v...))
 	}
 }

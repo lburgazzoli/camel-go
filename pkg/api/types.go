@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"time"
-
-	"go.uber.org/zap"
 
 	"github.com/asynkron/protoactor-go/actor"
 )
@@ -121,7 +120,7 @@ type Context interface {
 	// TODO: must be hidden maybe
 	RequestTo(*actor.PID, Message, time.Duration) (Message, error)
 
-	Logger() *zap.Logger
+	Logger() *slog.Logger
 
 	NewMessage() Message
 }
@@ -133,7 +132,7 @@ type Component interface {
 	Scheme() string
 	Endpoint(Parameters) (Endpoint, error)
 
-	Logger() *zap.Logger
+	Logger() *slog.Logger
 }
 
 type Endpoint interface {
@@ -143,7 +142,7 @@ type Endpoint interface {
 	Context() Context
 	Component() Component
 
-	Logger() *zap.Logger
+	Logger() *slog.Logger
 }
 
 //nolint:interfacebloat

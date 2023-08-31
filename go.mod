@@ -10,7 +10,9 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.golang v0.11.0
 	github.com/eclipse/paho.mqtt.golang v1.4.3
+	github.com/gin-gonic/gin v1.9.1
 	github.com/google/go-containerregistry v0.16.1
+	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/imdario/mergo v0.3.16
 	github.com/itchyny/gojq v0.12.13
 	github.com/knadh/koanf/parsers/json v0.1.0
@@ -33,9 +35,8 @@ require (
 	github.com/tetratelabs/wazero v1.5.0
 	github.com/twmb/franz-go v1.14.4
 	github.com/twmb/franz-go/pkg/kadm v1.9.0
-	github.com/twmb/franz-go/plugin/kzap v1.1.2
+	go.opentelemetry.io/otel/trace v1.16.0
 	go.uber.org/multierr v1.11.0
-	go.uber.org/zap v1.25.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -64,8 +65,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-contrib/zap v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -79,7 +78,6 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-memdb v1.3.4 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -126,7 +124,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.39.0 // indirect
-	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect

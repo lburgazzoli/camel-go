@@ -1,11 +1,12 @@
 package components
 
 import (
+	"log/slog"
+
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"go.uber.org/zap"
 )
 
 type ComponentFactory func(api.Context, map[string]interface{}) (api.Component, error)
@@ -23,7 +24,7 @@ func NewDefaultComponent(ctx api.Context, scheme string) DefaultComponent {
 		ctx:    ctx,
 		scheme: scheme,
 		id:     id,
-		logger: ctx.Logger().With(zap.String("component.scheme", scheme), zap.String("component.id", id)),
+		logger: ctx.Logger().With(slog.String("component.scheme", scheme), slog.String("component.id", id)),
 	}
 
 	return dc
@@ -33,7 +34,7 @@ type DefaultComponent struct {
 	ctx    api.Context
 	scheme string
 	id     string
-	logger *zap.Logger
+	logger *slog.Logger
 }
 
 func (c *DefaultComponent) Context() api.Context {
@@ -48,7 +49,7 @@ func (c *DefaultComponent) Scheme() string {
 	return c.scheme
 }
 
-func (c *DefaultComponent) Logger() *zap.Logger {
+func (c *DefaultComponent) Logger() *slog.Logger {
 	return c.logger
 }
 
@@ -62,14 +63,14 @@ func NewDefaultEndpoint(component api.Component) DefaultEndpoint {
 	return DefaultEndpoint{
 		component: component,
 		id:        id,
-		logger:    component.Logger().With(zap.String("endpoint.id", id)),
+		logger:    component.Logger().With(slog.String("endpoint.id", id)),
 	}
 }
 
 type DefaultEndpoint struct {
 	component api.Component
 	id        string
-	logger    *zap.Logger
+	logger    *slog.Logger
 }
 
 func (e *DefaultEndpoint) Context() api.Context {
@@ -84,7 +85,7 @@ func (e *DefaultEndpoint) ID() string {
 	return e.id
 }
 
-func (e *DefaultEndpoint) Logger() *zap.Logger {
+func (e *DefaultEndpoint) Logger() *slog.Logger {
 	return e.logger
 }
 
@@ -98,18 +99,18 @@ func NewDefaultConsumer(endpoint api.Endpoint, target *actor.PID) DefaultConsume
 	return DefaultConsumer{
 		DefaultVerticle: v,
 		target:          target,
-		logger:          endpoint.Logger().With(zap.String("consumer.id", v.ID())).Sugar(),
+		logger:          endpoint.Logger().With(slog.String("consumer.id", v.ID())),
 	}
 }
 
 type DefaultConsumer struct {
 	processors.DefaultVerticle
 
-	logger *zap.SugaredLogger
+	logger *slog.Logger
 	target *actor.PID
 }
 
-func (c *DefaultConsumer) Logger() *zap.SugaredLogger {
+func (c *DefaultConsumer) Logger() *slog.Logger {
 	return c.logger
 }
 

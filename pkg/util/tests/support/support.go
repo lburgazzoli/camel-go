@@ -3,11 +3,11 @@ package support
 import (
 	"bytes"
 	"context"
+	"log/slog"
+	"os"
 	"strings"
 	"testing"
 	"text/template"
-
-	"go.uber.org/zap"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core"
@@ -17,10 +17,10 @@ import (
 func Run(t *testing.T, name string, fn func(*testing.T, context.Context)) {
 	t.Helper()
 
-	t.Run(name, func(t *testing.T) {
-		l, err := zap.NewDevelopment()
-		assert.Nil(t, err)
+	l := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	slog.SetDefault(l)
 
+	t.Run(name, func(t *testing.T) {
 		camelContext := core.NewContext(l)
 		ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
 

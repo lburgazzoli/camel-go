@@ -1,13 +1,12 @@
 package run
 
 import (
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/lburgazzoli/camel-go/pkg/health"
-
-	"go.uber.org/zap"
 
 	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/spf13/cobra"
@@ -49,27 +48,15 @@ func NewRunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var logger *slog.Logger
+
 			if o.Development {
-				l, err := zap.NewDevelopment()
-				if err != nil {
-					return err
-				}
-
-				core.L = l
+				logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 			} else {
-				l, err := zap.NewProduction()
-				if err != nil {
-					return err
-				}
-
-				core.L = l
+				logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 			}
 
-			defer func() {
-				if core.L != nil {
-					_ = core.L.Sync()
-				}
-			}()
+			slog.SetDefault(logger)
 
 			done := make(chan os.Signal, 1)
 			signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
@@ -77,14 +64,14 @@ func NewRunCmd() *cobra.Command {
 			var h *health.Service
 
 			if o.Health {
-				h = health.New(o.HealthAddress, o.HealthPrefix, core.L)
+				h = health.New(o.HealthAddress, o.HealthPrefix, logger)
 
 				if err := h.Start(cmd.Context()); err != nil {
 					return err
 				}
 			}
 
-			camelContext := core.NewContext(core.L)
+			camelContext := core.NewContext(logger)
 
 			for i := range o.Configs {
 				if err := camelContext.Properties().AddSource(o.Configs[i]); err != nil {

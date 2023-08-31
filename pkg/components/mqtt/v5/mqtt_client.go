@@ -3,15 +3,14 @@ package v5
 import (
 	"context"
 	"fmt"
-
-	"go.uber.org/zap"
+	"log/slog"
 
 	"github.com/eclipse/paho.golang/paho"
 	"github.com/pkg/errors"
 )
 
 type Client struct {
-	logger *zap.SugaredLogger
+	logger *slog.Logger
 	cfg    *Config
 	client *paho.Client
 }
@@ -64,7 +63,7 @@ func (c *Client) Stop(_ context.Context) error {
 }
 
 func (c *Client) Subscribe(ctx context.Context, topic string) error {
-	c.logger.Infof("subscribing to: %s", topic)
+	c.logger.Info("subscribing", slog.String("topic", topic))
 
 	_, err := c.client.Subscribe(ctx, &paho.Subscribe{
 		Subscriptions: map[string]paho.SubscribeOptions{

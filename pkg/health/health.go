@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"path"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	ginzap "github.com/gin-contrib/zap"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func init() {
@@ -21,11 +22,12 @@ func init() {
 
 type Check func() error
 
-func New(address string, prefix string, logger *zap.Logger) *Service {
+func New(address string, prefix string, logger *slog.Logger) *Service {
 	s := Service{}
+	s.l = logger.WithGroup("health")
 
 	s.router = gin.New()
-	s.router.Use(ginzap.Ginzap(logger.Named("health"), time.RFC3339, true))
+	s.router.Use(s.log)
 	s.router.GET(path.Join(prefix, "/ready"), s.ready)
 	s.router.GET(path.Join(prefix, "/live"), s.live)
 
@@ -43,6 +45,7 @@ func New(address string, prefix string, logger *zap.Logger) *Service {
 
 type Service struct {
 	lock    sync.Mutex
+	l       *slog.Logger
 	running atomic.Bool
 	router  *gin.Engine
 	srv     *http.Server
@@ -132,5 +135,41 @@ func (s *Service) handle(c *gin.Context, checks ...map[string]Check) {
 		c.JSON(status, gin.H{
 			"status": "OK",
 		})
+	}
+}
+
+func (s *Service) log(c *gin.Context) {
+	start := time.Now()
+
+	// some evil middlewares modify this values
+	urlPath := c.Request.URL.Path
+	urlQuery := c.Request.URL.RawQuery
+
+	c.Next()
+
+	end := time.Now()
+	latency := end.Sub(start)
+	end = end.UTC()
+
+	fields := []any{
+		slog.Int("status", c.Writer.Status()),
+		slog.String("method", c.Request.Method),
+		slog.String("path", urlPath),
+		slog.String("query", urlQuery),
+		slog.String("ip", c.ClientIP()),
+		slog.String("user-agent", c.Request.UserAgent()),
+		slog.Duration("latency", latency),
+	}
+
+	if trace.SpanFromContext(c.Request.Context()).SpanContext().HasTraceID() {
+		fields = append(fields, trace.SpanFromContext(c.Request.Context()).SpanContext().TraceID().String())
+	}
+
+	if len(c.Errors) > 0 {
+		for _, e := range c.Errors.Errors() {
+			s.l.Error(e, fields...)
+		}
+	} else {
+		s.l.Info(urlPath, fields...)
 	}
 }

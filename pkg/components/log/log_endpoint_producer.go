@@ -3,19 +3,19 @@ package log
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"go.uber.org/zap"
 )
 
 type Producer struct {
 	processors.DefaultVerticle
 
 	endpoint *Endpoint
-	logger   *zap.Logger
+	logger   *slog.Logger
 }
 
 func (p *Producer) Endpoint() camel.Endpoint {
@@ -41,8 +41,8 @@ func (p *Producer) Receive(ac actor.Context) {
 
 		p.logger.Info(
 			content,
-			zap.String("message.type", msg.Type()),
-			zap.String("message.id", msg.ID()))
+			slog.String("message.type", msg.Type()),
+			slog.String("message.id", msg.ID()))
 
 		ac.Request(ac.Parent(), msg)
 	}

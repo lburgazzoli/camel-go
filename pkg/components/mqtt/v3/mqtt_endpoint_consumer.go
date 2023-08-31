@@ -4,6 +4,7 @@ package v3
 
 import (
 	"context"
+	"log/slog"
 	"strconv"
 
 	"github.com/lburgazzoli/camel-go/pkg/components"
@@ -33,7 +34,7 @@ func (c *Consumer) Start(context.Context) error {
 		return token.Error()
 	}
 
-	c.Logger().Infof("subscribing to %s", c.endpoint.config.Remaining)
+	c.Logger().Info("subscribing", slog.String("topic", c.endpoint.config.Remaining))
 
 	token := c.client.Subscribe(c.endpoint.config.Remaining, 0, c.handler)
 	token.Wait()
@@ -42,7 +43,7 @@ func (c *Consumer) Start(context.Context) error {
 		return token.Error()
 	}
 
-	c.Logger().Infof("subscribed to %s", c.endpoint.config.Remaining)
+	c.Logger().Info("subscribed", slog.String("topic", c.endpoint.config.Remaining))
 
 	return nil
 }
@@ -80,7 +81,12 @@ func (c *Consumer) Receive(ctx actor.Context) {
 }
 
 func (c *Consumer) handler(_ mqtt.Client, msg mqtt.Message) {
-	c.Logger().Infof("handing message %v", msg)
+	c.Logger().Debug("message received", slog.Group(
+		"message",
+		slog.Uint64("id", uint64(msg.MessageID())),
+		slog.String("topic", msg.Topic()),
+		slog.Bool("retained", msg.Retained()),
+	))
 
 	component := c.endpoint.Component()
 	camelCtx := component.Context()

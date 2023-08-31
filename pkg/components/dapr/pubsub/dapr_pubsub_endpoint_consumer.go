@@ -4,6 +4,7 @@ package pubsub
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 	"sync/atomic"
 
@@ -45,14 +46,24 @@ func (c *Consumer) Start(_ context.Context) error {
 			Route:      "/" + c.endpoint.ID() + "/" + c.ID(),
 		}
 
-		c.Logger().Debugf("subscribing to %+v", sub)
+		c.Logger().Debug("subscribing", slog.Group(
+			"subscription",
+			slog.String("pubsubName", sub.PubsubName),
+			slog.String("topic", sub.Topic),
+			slog.String("route", sub.Route),
+		))
 
 		err := c.endpoint.s.AddTopicEventHandler(&sub, c.handler)
 		if err != nil {
 			return err
 		}
 
-		c.Logger().Debugf("subscribed to %+v", sub)
+		c.Logger().Debug("subscribed", slog.Group(
+			"subscription",
+			slog.String("pubsubName", sub.PubsubName),
+			slog.String("topic", sub.Topic),
+			slog.String("route", sub.Route),
+		))
 
 		err = c.endpoint.s.Start()
 		if err != nil {
@@ -92,12 +103,13 @@ func (c *Consumer) handler(_ context.Context, e *common.TopicEvent) (bool, error
 	component := c.endpoint.Component()
 	camelCtx := component.Context()
 
-	c.Logger().Infof("event - PubsubName: %s, Topic: %s, ID: %s, Content-Type: %s, Data: %s",
-		e.PubsubName,
-		e.Topic,
-		e.ID,
-		e.DataContentType,
-		string(e.RawData))
+	c.Logger().Debug("event received", slog.Group(
+		"event",
+		slog.String("pubsubName", e.PubsubName),
+		slog.String("topic", e.Topic),
+		slog.String("id", e.ID),
+		slog.String("content-type", e.DataContentType),
+	))
 
 	m := camelCtx.NewMessage()
 
