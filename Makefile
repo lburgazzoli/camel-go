@@ -124,14 +124,6 @@ image/publish: ko
 		./cmd/camel
 
 
-.PHONY: image/wasm
-image/wasm:
-	 oras push --verbose $(WASM_CONTAINER_IMAGE) \
- 		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
- 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
-		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
-
 
 .PHONY: run/examples/dapr/flow
 run/examples/dapr/flow:
@@ -152,12 +144,21 @@ run/examples/dapr/pub:
          --resources-path ./etc/examples/dapr/config \
          -- go run cmd/camel/main.go dapr pub --pubsub-name sensors --topic iot source=sensor-1 data=foo
 
-.PHONY: build/wasm
-build/wasm:
-	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
+.PHONY: wasm/build
+wasm/build:
+	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
+
+
+.PHONY: wasm/publish
+wasm/publish:
+	 oras push --verbose $(WASM_CONTAINER_IMAGE) \
+ 		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
 ##@ Build Dependencies
 

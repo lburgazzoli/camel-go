@@ -36,9 +36,9 @@ jobs:
           username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
       - name: 'Build WASM'
-        run: make build/wasm
+        run: make wasm/build
       - name: 'Push WASM'
-        run: make image/wasm
+        run: make wasm/publish
       - name: check
         run: make check
       - name: test
