@@ -1,10 +1,11 @@
 package run
 
 import (
-	"context"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/lburgazzoli/camel-go/pkg/health"
 
 	"go.uber.org/zap"
 
@@ -31,18 +32,23 @@ import (
 
 func NewRunCmd() *cobra.Command {
 	type opts struct {
-		Routes      []string
-		Configs     []string
-		Development bool
+		Routes        []string
+		Configs       []string
+		Development   bool
+		Health        bool
+		HealthAddress string
+		HealthPrefix  string
 	}
 
 	var o opts
+	o.Health = true
+	o.HealthPrefix = ""
+	o.HealthAddress = ":8081"
 
 	cmd := cobra.Command{
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			if o.Development {
 				l, err := zap.NewDevelopment()
 				if err != nil {
@@ -68,7 +74,16 @@ func NewRunCmd() *cobra.Command {
 			done := make(chan os.Signal, 1)
 			signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
-			ctx := context.Background()
+			var h *health.Service
+
+			if o.Health {
+				h = health.New(o.HealthAddress, o.HealthPrefix, core.L)
+
+				if err := h.Start(cmd.Context()); err != nil {
+					return err
+				}
+			}
+
 			camelContext := core.NewContext(core.L)
 
 			for i := range o.Configs {
@@ -84,23 +99,43 @@ func NewRunCmd() *cobra.Command {
 				}
 
 				if err := camelContext.LoadRoutes(cmd.Context(), file); err != nil {
+					_ = file.Close()
+
+					return err
+				}
+
+				if err := file.Close(); err != nil {
 					return err
 				}
 			}
 
-			if err := camelContext.Start(ctx); err != nil {
+			if err := camelContext.Start(cmd.Context()); err != nil {
 				return err
 			}
 
 			<-done
 
-			return camelContext.Stop(ctx)
+			if err := camelContext.Stop(cmd.Context()); err != nil {
+				return err
+			}
+
+			if h != nil {
+				if err := h.Stop(cmd.Context()); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		},
 	}
 
 	cmd.Flags().StringSliceVar(&o.Routes, "route", nil, "routes")
 	cmd.Flags().StringSliceVar(&o.Configs, "config", nil, "configs")
 	cmd.Flags().BoolVar(&o.Development, "dev", false, "development")
+
+	cmd.Flags().BoolVar(&o.Health, "health-check-enabled", o.Health, "health-check-enabled")
+	cmd.Flags().StringVar(&o.HealthPrefix, "health-check-prefix", o.HealthPrefix, "health-check-prefix")
+	cmd.Flags().StringVar(&o.HealthAddress, "health-check-address", o.HealthAddress, "health-check-address")
 
 	_ = cmd.MarkFlagRequired("routes")
 
