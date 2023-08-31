@@ -156,7 +156,6 @@ run/examples/dapr/pub:
 build/wasm:
 	@docker run \
 		--rm \
-		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
 		tinygo/tinygo:$(TINYGO_VERSION) \
@@ -168,7 +167,6 @@ build/wasm:
 
 	@docker run \
 		--rm \
-		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
 		tinygo/tinygo:$(TINYGO_VERSION) \
@@ -180,7 +178,6 @@ build/wasm:
 
 	@docker run \
 		--rm \
-		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
 		tinygo/tinygo:$(TINYGO_VERSION) \
@@ -192,7 +189,6 @@ build/wasm:
 
 	@docker run \
 		--rm \
-		-ti \
 		-v $(PROJECT_PATH):/src:Z \
 		-w /src \
 		tinygo/tinygo:$(TINYGO_VERSION) \
