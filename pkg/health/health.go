@@ -149,7 +149,6 @@ func (s *Service) log(c *gin.Context) {
 
 	end := time.Now()
 	latency := end.Sub(start)
-	end = end.UTC()
 
 	fields := []any{
 		slog.Int("status", c.Writer.Status()),

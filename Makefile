@@ -24,7 +24,7 @@ KO ?= $(LOCALBIN)/ko
 KO_VERSION ?= main
 TINYGO_VERSION ?= 0.29.0
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
-GOLANGCI_VERSION ?= v1.52.2
+GOLANGCI_VERSION ?= v1.54.2
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))

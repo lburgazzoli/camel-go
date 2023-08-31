@@ -47,3 +47,4 @@ linters:
     - deadcode
     - structcheck
     - maligned
+    - depguard
