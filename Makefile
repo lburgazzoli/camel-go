@@ -107,20 +107,20 @@ build: fmt
 .PHONY: image
 image: ko
 	KO_DOCKER_REPO=$(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY) \
+	KO_CONFIG_PATH=$(PROJECT_PATH)/etc/ko.yaml \
 	$(KO) build \
 		--bare \
 		--local \
 		--tags $(CONTAINER_TAG) \
-		--platform=linux/amd64,linux/arm64 \
 		./cmd/camel
 
 .PHONY: image/publish
 image/publish: ko
 	KO_DOCKER_REPO=$(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY) \
+	KO_CONFIG_PATH=$(PROJECT_PATH)/etc/ko.yaml \
 	$(KO) build \
 		--bare \
 		--tags $(CONTAINER_TAG) \
-		--platform=linux/amd64,linux/arm64 \
 		./cmd/camel
 
 
@@ -154,49 +154,10 @@ run/examples/dapr/pub:
 
 .PHONY: build/wasm
 build/wasm:
-	@docker run \
-		--rm \
-		-v $(PROJECT_PATH):/src:Z \
-		-w /src \
-		tinygo/tinygo:$(TINYGO_VERSION) \
-		tinygo build \
-			-target=wasi \
-			-scheduler=none \
-			-o etc/wasm/fn/simple_process.wasm  \
-			etc/wasm/fn/simple_process.go
-
-	@docker run \
-		--rm \
-		-v $(PROJECT_PATH):/src:Z \
-		-w /src \
-		tinygo/tinygo:$(TINYGO_VERSION) \
-		tinygo build \
-			-target=wasi \
-			-scheduler=none \
-			-o etc/wasm/fn/simple_logger.wasm  \
-			etc/wasm/fn/simple_logger.go
-
-	@docker run \
-		--rm \
-		-v $(PROJECT_PATH):/src:Z \
-		-w /src \
-		tinygo/tinygo:$(TINYGO_VERSION) \
-		tinygo build \
-			-target=wasi \
-			-scheduler=none \
-			-o etc/wasm/fn/to_upper.wasm  \
-			etc/wasm/fn/to_upper.go
-
-	@docker run \
-		--rm \
-		-v $(PROJECT_PATH):/src:Z \
-		-w /src \
-		tinygo/tinygo:$(TINYGO_VERSION) \
-		tinygo build \
-			-target=wasi \
-			-scheduler=none \
-			-o etc/wasm/fn/to_lower.wasm  \
-			etc/wasm/fn/to_lower.go
+	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) $(PROJECT_PATH)/etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
 
 ##@ Build Dependencies
 
