@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
 	"github.com/lburgazzoli/camel-go/pkg/controller/client"
@@ -60,7 +61,7 @@ func (a *DeployAction) Run(ctx context.Context, rc *ReconciliationRequest) error
 	return err
 }
 
-func (a *DeployAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
+func (a *DeployAction) Cleanup(_ context.Context, _ *ReconciliationRequest) error {
 	return nil
 }
 
@@ -84,6 +85,10 @@ func (a *DeployAction) deploy(ctx context.Context, rc *ReconciliationRequest) er
 		},
 	)
 
+	if err != nil {
+		return err
+	}
+
 	//
 	// Deployment
 	//
@@ -102,7 +107,11 @@ func (a *DeployAction) deploy(ctx context.Context, rc *ReconciliationRequest) er
 		},
 	)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 const (
@@ -151,6 +160,7 @@ func toYamlDSL(flows []camelApi.Flow) ([]byte, error) {
 	return yamldata, nil
 }
 
+//nolint:unparam
 func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) (*appsv1ac.DeploymentApplyConfiguration, error) {
 	labels := LabelsForIntegration(rc)
 	lsec := LabelsForIntegrationSelector(rc)
@@ -171,7 +181,7 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 			WithTemplate(corev1ac.PodTemplateSpec().
 				WithLabels(labels).
 				WithSpec(corev1ac.PodSpec().
-					//WithServiceAccountName(rc.Resource.Name).
+					// WithServiceAccountName(rc.Resource.Name).
 					WithVolumes(corev1ac.Volume().
 						WithName("routes").
 						WithConfigMap(

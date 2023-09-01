@@ -2,9 +2,10 @@ package camel
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/util/resources"
 	"strconv"
 	"strings"
+
+	"github.com/lburgazzoli/camel-go/pkg/util/resources"
 
 	"github.com/lburgazzoli/camel-go/pkg/controller/predicates"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"

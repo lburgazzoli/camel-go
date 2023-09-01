@@ -3,7 +3,8 @@ package camel
 import (
 	"context"
 	"fmt"
-	gc "github.com/lburgazzoli/camel-go/pkg/controller/gc"
+
+	"github.com/lburgazzoli/camel-go/pkg/controller/gc"
 	"github.com/lburgazzoli/camel-go/pkg/util/conditions"
 
 	appsv1 "k8s.io/api/apps/v1"

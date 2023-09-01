@@ -2,6 +2,7 @@ package camel
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"

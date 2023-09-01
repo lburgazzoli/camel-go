@@ -4,7 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Flow is an unstructured object representing a Camel Flow in YAML/JSON DSL
 type Flow struct {
 	RawMessage `json:",inline"`
 }
