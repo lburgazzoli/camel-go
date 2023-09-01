@@ -13,5 +13,5 @@ spec:
                   image: "quay.io/lburgazzoli/camel-go-wasm:latest"
                   path: "etc/wasm/fn/simple_process.wasm"
             - to:
-                uri: "log:foo"
+                uri: "log:bar"
     

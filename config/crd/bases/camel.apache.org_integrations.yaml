@@ -51,8 +51,6 @@ spec:
             properties:
               flows:
                 items:
-                  description: Flow is an unstructured object representing a Camel
-                    Flow in YAML/JSON DSL
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 type: array
