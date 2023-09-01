@@ -27,11 +27,33 @@ LINT_DEADLINE := 10m
 ## Tools
 GOIMPORT ?= $(LOCALBIN)/goimports
 GOIMPORT_VERSION ?= latest
+
 KO ?= $(LOCALBIN)/ko
 KO_VERSION ?= main
+
 TINYGO_VERSION ?= 0.29.0
+
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
 GOLANGCI_VERSION ?= v1.54.2
+
+CODEGEN_VERSION ?= v0.27.4
+
+KUSTOMIZE_VERSION ?= v5.0.1
+KUSTOMIZE ?= $(LOCALBIN)/kustomize
+
+CONTROLLER_TOOLS_VERSION ?= v0.12.1
+
+KIND_VERSION ?= v0.20.0
+KIND ?= $(LOCALBIN)/kind
+
+OPERATOR_SDK_VERSION ?= v1.31.0
+OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
+
+OPM_VERSION ?= v1.28.0
+OPM ?= $(LOCALBIN)/opm
+
+YQ ?= $(LOCALBIN)/yq
+
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -144,13 +166,17 @@ run/examples/dapr/pub:
          --resources-path ./etc/examples/dapr/config \
          -- go run cmd/camel/main.go dapr pub --pubsub-name sensors --topic iot source=sensor-1 data=foo
 
+
+.PHONY: run/operator
+run/operator: install
+	go run -ldflags="$(GOLDFLAGS)"cmd/camel/main.go operator --leader-election=false --zap-devel
+
 .PHONY: wasm/build
 wasm/build:
-	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./etc/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
-
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
 
 .PHONY: wasm/publish
 wasm/publish:
@@ -159,6 +185,26 @@ wasm/publish:
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
 		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+
+
+.PHONY: generate
+generate: codegen-tools-install
+	$(PROJECT_PATH)/hack/scripts/gen_res.sh $(PROJECT_PATH)
+	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
+
+
+.PHONY: manifests
+manifests: codegen-tools-install ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(PROJECT_PATH)/hack/scripts/gen_crd.sh $(PROJECT_PATH)
+
+
+.PHONY: install
+install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
+
+.PHONY: uninstall
+uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
 
@@ -185,3 +231,39 @@ $(GOLANGCI): $(LOCALBIN)
 	@test -s $(GOLANGCI) || \
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_VERSION)
 
+
+.PHONY: kustomize
+kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
+$(KUSTOMIZE): $(LOCALBIN)
+	test -s $(LOCALBIN)/kustomize || \
+	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
+
+.PHONY: yq
+yq: $(YQ)
+$(YQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/yq || \
+	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
+
+
+.PHONY: kind
+kind: $(KIND)
+$(KIND): $(LOCALBIN)
+	@test -s $(LOCALBIN)/kind || \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kind@$(KIND_VERSION)
+
+.PHONY: codegen-tools-install
+codegen-tools-install: $(LOCALBIN)
+	@echo "Installing code gen tools"
+	$(PROJECT_PATH)/hack/scripts/install_gen_tools.sh $(PROJECT_PATH) $(CODEGEN_VERSION) $(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: operator-sdk
+operator-sdk: $(OPERATOR_SDK)
+$(OPERATOR_SDK): $(LOCALBIN)
+	@echo "Installing operator-sdk"
+	$(PROJECT_PATH)/hack/scripts/install_operator_sdk.sh $(PROJECT_PATH) $(OPERATOR_SDK_VERSION)
+
+.PHONY: opm
+opm: $(OPM)
+$(OPM): $(LOCALBIN)
+	@echo "Installing opm"
+	$(PROJECT_PATH)/hack/scripts/install_opm.sh $(PROJECT_PATH) $(OPM_VERSION)
