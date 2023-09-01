@@ -2,7 +2,9 @@ package camel
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/util/resources"
 	"strconv"
+	"strings"
 
 	"github.com/lburgazzoli/camel-go/pkg/controller/predicates"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -146,4 +148,30 @@ func WithCurrentGenerationSelector(rc *ReconciliationRequest) (labels.Selector, 
 		Add(*generation)
 
 	return selector, nil
+}
+
+func AnnotationForIntegration(rc *ReconciliationRequest) map[string]string {
+	return map[string]string{
+		IntegrationGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
+		IntegrationNamespace:  rc.Resource.Namespace,
+		IntegrationName:       rc.Resource.Name,
+		IntegrationChecksum:   rc.Checksum,
+	}
+}
+
+func LabelsForIntegration(rc *ReconciliationRequest) map[string]string {
+	return map[string]string{
+		resources.KubernetesLabelAppName:      strings.ToLower(rc.Resource.Kind),
+		resources.KubernetesLabelAppInstance:  rc.Resource.GetName(),
+		resources.KubernetesLabelAppComponent: "runtime",
+		resources.KubernetesLabelAppPartOf:    "camel",
+		resources.KubernetesLabelAppManagedBy: FieldManager,
+	}
+}
+
+func LabelsForIntegrationSelector(rc *ReconciliationRequest) map[string]string {
+	return map[string]string{
+		resources.KubernetesLabelAppName:     strings.ToLower(rc.Resource.Kind),
+		resources.KubernetesLabelAppInstance: rc.Resource.GetName(),
+	}
 }

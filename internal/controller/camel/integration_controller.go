@@ -63,8 +63,8 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, _ Options) (*Rec
 		rec.ClusterType = controller.ClusterTypeOpenShift
 	}
 
-	// rec.actions = append(rec.actions, NewApplyAction())
-	// rec.actions = append(rec.actions, NewConditionsAction())
+	rec.actions = append(rec.actions, NewDeployAction())
+	rec.actions = append(rec.actions, NewConditionsAction())
 
 	err = rec.init(ctx)
 	if err != nil {

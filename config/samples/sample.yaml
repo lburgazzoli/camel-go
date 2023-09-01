@@ -1,0 +1,17 @@
+apiVersion: camel.apache.org/v2alpha1
+kind: Integration
+metadata:
+  name: "sample"
+spec:
+  flows:
+    - route:
+        from:
+          uri: "timer:foo?period=1s"
+          steps:
+            - transform:
+                wasm:
+                  image: "quay.io/lburgazzoli/camel-go-wasm:latest"
+                  path: "etc/wasm/fn/simple_process.wasm"
+            - to:
+                uri: "log:foo"
+    

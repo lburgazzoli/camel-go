@@ -31,7 +31,7 @@ spec:
       jsonPath: .status.conditions[?(@.type=="Ready")].reason
       name: Reason
       type: string
-    name: v1alpha1
+    name: v2alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -48,6 +48,14 @@ spec:
           metadata:
             type: object
           spec:
+            properties:
+              flows:
+                items:
+                  description: Flow is an unstructured object representing a Camel
+                    Flow in YAML/JSON DSL
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                type: array
             type: object
           status:
             properties:

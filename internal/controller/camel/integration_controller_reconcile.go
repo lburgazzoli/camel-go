@@ -18,6 +18,8 @@ package camel
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"sort"
 
 	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
@@ -56,6 +58,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			return ctrl.Result{}, nil
 		}
 	}
+
+	sum := sha256.New()
+	for i := range rr.Resource.Spec.Flows {
+		sum.Write(rr.Resource.Spec.Flows[i].RawMessage)
+	}
+
+	rr.Checksum = base64.RawURLEncoding.EncodeToString(sum.Sum(nil))
 
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
 

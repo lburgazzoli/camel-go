@@ -27,32 +27,23 @@ LINT_DEADLINE := 10m
 ## Tools
 GOIMPORT ?= $(LOCALBIN)/goimports
 GOIMPORT_VERSION ?= latest
-
 KO ?= $(LOCALBIN)/ko
 KO_VERSION ?= main
-
 TINYGO_VERSION ?= 0.29.0
-
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
 GOLANGCI_VERSION ?= v1.54.2
-
 CODEGEN_VERSION ?= v0.27.4
-
 KUSTOMIZE_VERSION ?= v5.0.1
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
-
 CONTROLLER_TOOLS_VERSION ?= v0.12.1
-
 KIND_VERSION ?= v0.20.0
 KIND ?= $(LOCALBIN)/kind
-
 OPERATOR_SDK_VERSION ?= v1.31.0
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
-
 OPM_VERSION ?= v1.28.0
 OPM ?= $(LOCALBIN)/opm
-
 YQ ?= $(LOCALBIN)/yq
+KUBECTL ?= kubectl
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -60,6 +51,11 @@ ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
+endif
+
+
+ifndef ignore-not-found
+  ignore-not-found = false
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -169,7 +165,7 @@ run/examples/dapr/pub:
 
 .PHONY: run/operator
 run/operator: install
-	go run -ldflags="$(GOLDFLAGS)"cmd/camel/main.go operator --leader-election=false --zap-devel
+	go run -ldflags="$(GOLDFLAGS)" cmd/camel/main.go operator --leader-election=false --zap-devel
 
 .PHONY: wasm/build
 wasm/build:
@@ -194,16 +190,16 @@ generate: codegen-tools-install
 
 
 .PHONY: manifests
-manifests: codegen-tools-install ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: codegen-tools-install
 	$(PROJECT_PATH)/hack/scripts/gen_crd.sh $(PROJECT_PATH)
 
 
 .PHONY: install
-install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+install: manifests kustomize
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+uninstall: manifests kustomize
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
@@ -233,7 +229,7 @@ $(GOLANGCI): $(LOCALBIN)
 
 
 .PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
+kustomize: $(KUSTOMIZE)
 $(KUSTOMIZE): $(LOCALBIN)
 	test -s $(LOCALBIN)/kustomize || \
 	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)

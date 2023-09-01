@@ -1,10 +1,16 @@
 package operator
 
 import (
+	"flag"
+
+	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
 	camelCtrl "github.com/lburgazzoli/camel-go/internal/controller/camel"
 	"github.com/lburgazzoli/camel-go/pkg/controller"
+	"github.com/lburgazzoli/camel-go/pkg/controller/logger"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/klog/v2"
 	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -12,6 +18,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
+
+func init() {
+	utilruntime.Must(camelApi.AddToScheme(controller.Scheme))
+}
 
 func NewOperatorCmd() *cobra.Command {
 	controllerOpts := controller.Options{
@@ -58,6 +68,13 @@ func NewOperatorCmd() *cobra.Command {
 	cmd.Flags().StringVar(&controllerOpts.MetricsAddr, "metrics-bind-address", controllerOpts.MetricsAddr, "The address the metric endpoint binds to.")
 	cmd.Flags().StringVar(&controllerOpts.ProbeAddr, "health-probe-bind-address", controllerOpts.ProbeAddr, "The address the probe endpoint binds to.")
 	cmd.Flags().StringVar(&controllerOpts.PprofAddr, "pprof-bind-address", controllerOpts.PprofAddr, "The address the pprof endpoint binds to.")
+
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+
+	klog.InitFlags(fs)
+	logger.Options.BindFlags(fs)
+
+	cmd.Flags().AddGoFlagSet(fs)
 
 	return &cmd
 }
