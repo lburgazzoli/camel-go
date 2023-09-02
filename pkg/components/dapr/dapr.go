@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// TODO: this should be moved to generic dapr component
+	// TODO: this should be moved to generic dapr component.
 
 	DefaultPort     = 8082
 	DefaultProtocol = "http"

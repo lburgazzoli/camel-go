@@ -10,8 +10,8 @@ import (
 type Capability int
 
 const (
-	Capability_DAPR Capability = iota
-	Capability_KNATIVE
+	CapabilityDAPR Capability = iota
+	CapabilityKNATIVE
 )
 
 func NewMetadata() *Metadata {
@@ -34,16 +34,16 @@ func (m *Metadata) Capabilities() []Capability {
 	for i := range m.FromURIs {
 
 		if strings.HasPrefix(m.FromURIs[i], daprPubSub.Scheme+":") {
-			if !slices.Contains(capabilities, Capability_DAPR) {
-				capabilities = append(capabilities, Capability_DAPR)
+			if !slices.Contains(capabilities, CapabilityDAPR) {
+				capabilities = append(capabilities, CapabilityDAPR)
 			}
 		}
 	}
 
 	for i := range m.ToURIs {
 		if strings.HasPrefix(m.ToURIs[i], daprPubSub.Scheme+":") {
-			if !slices.Contains(capabilities, Capability_DAPR) {
-				capabilities = append(capabilities, Capability_DAPR)
+			if !slices.Contains(capabilities, CapabilityKNATIVE) {
+				capabilities = append(capabilities, CapabilityKNATIVE)
 			}
 		}
 	}

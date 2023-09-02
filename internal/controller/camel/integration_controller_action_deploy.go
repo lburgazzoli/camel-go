@@ -161,10 +161,10 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 	envs = append(envs, apply.WithEnv(resources.EnvVarIntegrationChecksum, rc.Checksum))
 
 	ports := make([]*corev1ac.ContainerPortApplyConfiguration, 0)
-	ports = append(ports, apply.WithPort(HttpPortName, HttpPort))
+	ports = append(ports, apply.WithPort(HTTPPortName, HTTPPort))
 	ports = append(ports, apply.WithPort(health.DefaultPortName, health.DefaultPort))
 
-	if slices.Contains(m.Capabilities(), dsl.Capability_DAPR) {
+	if slices.Contains(m.Capabilities(), dsl.CapabilityDAPR) {
 		envs = append(envs, apply.WithEnv(dapr.EnvVarAddress, fmt.Sprintf(":%d", dapr.DefaultPort)))
 		ports = append(ports, apply.WithPort(dapr.DefaultPortName, dapr.DefaultPort))
 

@@ -31,8 +31,8 @@ const (
 	PhaseError          = "Error"
 	PhaseReady          = "Ready"
 
-	HttpPort     int32  = 8080
-	HttpPortName string = "http"
+	HTTPPort     int32  = 8080
+	HTTPPortName string = "http"
 
 	LivenessProbePath  string = "/health/live"
 	ReadinessProbePath string = "/health/ready"
