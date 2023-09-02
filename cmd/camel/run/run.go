@@ -41,8 +41,8 @@ func NewRunCmd() *cobra.Command {
 
 	var o opts
 	o.Health = true
-	o.HealthPrefix = ""
-	o.HealthAddress = ":8081"
+	o.HealthPrefix = health.DefaultPrefix
+	o.HealthAddress = health.DefaultAddress
 
 	cmd := cobra.Command{
 		Use:   "run",

@@ -16,6 +16,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	DefaultPrefix   = ""
+	DefaultAddress  = ":8081"
+	DefaultPort     = 8081
+	DefaultPortName = "health"
+)
+
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
@@ -28,8 +35,8 @@ func New(address string, prefix string, logger *slog.Logger) *Service {
 
 	s.router = gin.New()
 	s.router.Use(s.log)
-	s.router.GET(path.Join(prefix, "/ready"), s.ready)
-	s.router.GET(path.Join(prefix, "/live"), s.live)
+	s.router.GET(path.Join(prefix, "/health", "/ready"), s.ready)
+	s.router.GET(path.Join(prefix, "/health", "/live"), s.live)
 
 	s.srv = &http.Server{
 		ReadTimeout:       1 * time.Second,

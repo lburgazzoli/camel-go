@@ -2,16 +2,19 @@ package camel
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	"github.com/lburgazzoli/camel-go/pkg/components/dapr"
+	"github.com/lburgazzoli/camel-go/pkg/health"
+
+	"slices"
+
 	"github.com/go-logr/logr"
-	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
 	"github.com/lburgazzoli/camel-go/pkg/controller/client"
 	"github.com/lburgazzoli/camel-go/pkg/controller/gc"
+	"github.com/lburgazzoli/camel-go/pkg/util/dsl"
 	"github.com/lburgazzoli/camel-go/pkg/util/resources"
 	"github.com/lburgazzoli/camel-go/pkg/util/resources/apply"
-	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -125,7 +128,7 @@ func (a *DeployAction) configmap(_ context.Context, rc *ReconciliationRequest) (
 	labels := LabelsForIntegration(rc)
 	annotations := AnnotationForIntegration(rc)
 
-	data, err := toYamlDSL(rc.Resource.Spec.Flows)
+	data, err := dsl.ToYamlDSL(rc.Resource.Spec.Flows)
 	if err != nil {
 		return nil, err
 	}
@@ -141,35 +144,34 @@ func (a *DeployAction) configmap(_ context.Context, rc *ReconciliationRequest) (
 	return resource, nil
 }
 
-// ToYamlDSL converts a flow into its Camel YAML DSL equivalent.
-func toYamlDSL(flows []camelApi.Flow) ([]byte, error) {
-	data, err := json.Marshal(&flows)
-	if err != nil {
-		return nil, err
-	}
-	jsondata := make([]map[string]interface{}, 0)
-	err = json.Unmarshal(data, &jsondata)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling json: %w", err)
-	}
-	yamldata, err := yaml.Marshal(&jsondata)
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling to yaml: %w", err)
-	}
-
-	return yamldata, nil
-}
-
-//nolint:unparam
 func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) (*appsv1ac.DeploymentApplyConfiguration, error) {
 	labels := LabelsForIntegration(rc)
 	lsec := LabelsForIntegrationSelector(rc)
 	annotations := AnnotationForIntegration(rc)
+	podannotations := AnnotationForIntegration(rc)
+
+	m, err := dsl.NewInspector().Extract(rc.Resource.Spec.Flows)
+	if err != nil {
+		return nil, err
+	}
 
 	envs := make([]*corev1ac.EnvVarApplyConfiguration, 0)
 	envs = append(envs, apply.WithEnvFromField(resources.EnvVarNamespace, "metadata.namespace"))
 	envs = append(envs, apply.WithEnvFromField(resources.EnvVarPodName, "metadata.name"))
 	envs = append(envs, apply.WithEnv(resources.EnvVarIntegrationChecksum, rc.Checksum))
+
+	ports := make([]*corev1ac.ContainerPortApplyConfiguration, 0)
+	ports = append(ports, apply.WithPort(HttpPortName, HttpPort))
+	ports = append(ports, apply.WithPort(health.DefaultPortName, health.DefaultPort))
+
+	if slices.Contains(m.Capabilities(), dsl.Capability_DAPR) {
+		envs = append(envs, apply.WithEnv(dapr.EnvVarAddress, fmt.Sprintf(":%d", dapr.DefaultPort)))
+		ports = append(ports, apply.WithPort(dapr.DefaultPortName, dapr.DefaultPort))
+
+		podannotations[dapr.AnnotationAppID] = rc.Resource.Namespace + "-" + rc.Resource.Name
+		podannotations[dapr.AnnotationAppPort] = fmt.Sprintf("%d", dapr.DefaultPort)
+		podannotations[dapr.AnnotationAppProtocol] = dapr.DefaultProtocol
+	}
 
 	resource := appsv1ac.Deployment(rc.Resource.Name, rc.Resource.Namespace).
 		WithOwnerReferences(apply.WithOwnerReference(rc.Resource)).
@@ -180,6 +182,7 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 			WithSelector(metav1ac.LabelSelector().WithMatchLabels(lsec)).
 			WithTemplate(corev1ac.PodTemplateSpec().
 				WithLabels(labels).
+				WithAnnotations(podannotations).
 				WithSpec(corev1ac.PodSpec().
 					// WithServiceAccountName(rc.Resource.Name).
 					WithVolumes(corev1ac.Volume().
@@ -197,11 +200,17 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 						WithImage(RuntimeContainerImage).
 						WithImagePullPolicy(corev1.PullAlways).
 						WithName(RuntimeContainerName).
-						WithArgs("run", "--dev", "--route", RuntimeRoutesPath).
-						WithPorts(apply.WithPort(ExposedPortType, ExposedPort)).
-						WithReadinessProbe(apply.WithHTTPProbe(ReadinessProbePath, ProbePort)).
-						WithLivenessProbe(apply.WithHTTPProbe(LivenessProbePath, ProbePort)).
+						WithArgs(
+							"run",
+							"--health-check-enabled", "true",
+							"--health-check-address", health.DefaultAddress,
+							"--dev",
+							"--route", RuntimeRoutesPath,
+						).
 						WithEnv(envs...).
+						WithPorts(ports...).
+						WithReadinessProbe(apply.WithHTTPProbe(ReadinessProbePath, health.DefaultPort)).
+						WithLivenessProbe(apply.WithHTTPProbe(LivenessProbePath, health.DefaultPort)).
 						WithResources(corev1ac.ResourceRequirements().
 							WithRequests(corev1.ResourceList{
 								corev1.ResourceMemory: DefaultMemory,
