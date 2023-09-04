@@ -1,4 +1,4 @@
-////go:build components_dapr_pubsub || components_all
+// //go:build components_dapr_pubsub || components_all
 
 package pubsub
 
@@ -16,8 +16,6 @@ import (
 type Endpoint struct {
 	config Config
 	components.DefaultEndpoint
-
-	s *Service
 }
 
 func (e *Endpoint) Start(context.Context) error {

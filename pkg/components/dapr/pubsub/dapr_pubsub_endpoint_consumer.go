@@ -5,10 +5,11 @@ package pubsub
 import (
 	"context"
 	"fmt"
-	"github.com/lburgazzoli/camel-go/pkg/components/dapr"
 	"log/slog"
 	"strings"
 	"sync/atomic"
+
+	"github.com/lburgazzoli/camel-go/pkg/components/dapr"
 
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
@@ -59,7 +60,7 @@ func (c *Consumer) Start(_ context.Context) error {
 			slog.Any("meta", sub.Metadata),
 		))
 
-		err := c.endpoint.s.AddTopicEventHandler(&sub, c.handler)
+		err := dapr.AddTopicEventHandler(&sub, c.handler)
 		if err != nil {
 			return err
 		}
@@ -71,7 +72,7 @@ func (c *Consumer) Start(_ context.Context) error {
 			slog.String("route", sub.Route),
 		))
 
-		err = c.endpoint.s.Start()
+		err = dapr.Start()
 		if err != nil {
 			return err
 		}
@@ -82,11 +83,7 @@ func (c *Consumer) Start(_ context.Context) error {
 
 func (c *Consumer) Stop(context.Context) error {
 	if c.running.CompareAndSwap(true, false) {
-		if c.endpoint.s == nil {
-			return nil
-		}
-
-		return c.endpoint.s.Stop()
+		return dapr.Stop()
 	}
 
 	return nil

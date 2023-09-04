@@ -1,4 +1,4 @@
-package pubsub
+package dapr
 
 import (
 	"log/slog"
@@ -9,24 +9,32 @@ import (
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
-// TODO: better ref counter
-
-func NewService(address string, l *slog.Logger) *Service {
-	return &Service{
-		cnt: 0,
-		svc: daprd.NewService(address),
-		log: l.With(slog.String("subsystem", "daprd")),
-	}
+var s = daprdSvc{
+	cnt: 0,
+	svc: daprd.NewService(Address()),
+	log: slog.Default().WithGroup("daprd"),
 }
 
-type Service struct {
+func Start() error {
+	return s.Start()
+}
+
+func Stop() error {
+	return s.Stop()
+}
+
+func AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
+	return s.AddTopicEventHandler(sub, fn)
+}
+
+type daprdSvc struct {
 	mu  sync.Mutex
 	cnt uint32
 	svc common.Service
 	log *slog.Logger
 }
 
-func (s *Service) Start() error {
+func (s *daprdSvc) Start() error {
 	if s == nil {
 		return nil
 	}
@@ -34,6 +42,7 @@ func (s *Service) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// TODO: better ref counter
 	if s.cnt == 0 {
 		s.log.Info("staring")
 		if err := s.svc.Start(); err != nil {
@@ -47,7 +56,7 @@ func (s *Service) Start() error {
 	return nil
 }
 
-func (s *Service) Stop() error {
+func (s *daprdSvc) Stop() error {
 	if s == nil {
 		return nil
 	}
@@ -55,6 +64,7 @@ func (s *Service) Stop() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// TODO: better ref counter
 	if s.cnt == 1 {
 		s.log.Info("stopping")
 		if err := s.svc.Stop(); err != nil {
@@ -67,6 +77,6 @@ func (s *Service) Stop() error {
 	return nil
 }
 
-func (s *Service) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
+func (s *daprdSvc) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
 	return s.svc.AddTopicEventHandler(sub, fn)
 }
