@@ -44,6 +44,7 @@ OPM_VERSION ?= v1.28.0
 OPM ?= $(LOCALBIN)/opm
 YQ ?= $(LOCALBIN)/yq
 KUBECTL ?= kubectl
+DAPR_VERSION ?= 1.11.0
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -202,6 +203,40 @@ install: manifests kustomize
 uninstall: manifests kustomize
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
+
+.PHONY: kind/setup
+kind/setup: kind
+	$(KIND) create cluster \
+		--config $(PROJECT_PATH)/etc/kind/kind-cluster-config.yaml \
+		--name "camel-go"
+
+.PHONY: kind/teardown
+kind/teardown: kind
+	$(KIND) delete cluster  --name "camel-go"
+
+
+.PHONY: dapr/setup
+dapr/setup:
+	helm repo add dapr https://dapr.github.io/helm-charts/ --force-update=true
+	helm repo update
+
+	@echo "SetUp Dapr"
+	helm upgrade --install dapr dapr/dapr \
+		--version=$(DAPR_VERSION) \
+		--create-namespace \
+		--namespace dapr-system \
+		--values $(PROJECT_PATH)/etc/examples/dapr/config/dapr.yaml \
+		--wait
+
+.PHONY: dapr/setup/redis
+dapr/setup/redis:
+	@echo "SetUp Redis"
+	helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
+		--namespace dapr-system \
+		--create-namespace \
+		--values $(PROJECT_PATH)/etc/examples/dapr/config/redis.yaml \
+		--wait
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
@@ -263,3 +298,4 @@ opm: $(OPM)
 $(OPM): $(LOCALBIN)
 	@echo "Installing opm"
 	$(PROJECT_PATH)/hack/scripts/install_opm.sh $(PROJECT_PATH) $(OPM_VERSION)
+

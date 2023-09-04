@@ -2,11 +2,14 @@ apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: sensors
+  namespace: dapr-system
 spec:
   type: pubsub.redis
   version: v1
   metadata:
     - name: redisHost
-      value: localhost:6379
+      value: "redis-master.dapr-system.svc.cluster.local:6379"
     - name: redisPassword
-      value: ""
+      secretKeyRef:
+        name: redis
+        key: redis-password
