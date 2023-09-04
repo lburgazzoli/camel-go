@@ -237,6 +237,13 @@ dapr/setup/redis:
 		--values $(PROJECT_PATH)/etc/examples/dapr/config/redis.yaml \
 		--wait
 
+	$(KUBECTL) apply -f $(PROJECT_PATH)/etc/examples/dapr/config/pubsub-redis.yaml
+
+.PHONY: dapr/setup/mqtt
+dapr/setup/mqtt:
+	@echo "SetUp MQTT"
+	$(KUBECTL) apply -f $(PROJECT_PATH)/etc/examples/dapr/config/pubsub-mqtt.yaml
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to

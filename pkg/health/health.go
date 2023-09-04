@@ -176,6 +176,6 @@ func (s *Service) log(c *gin.Context) {
 			s.l.Error(e, fields...)
 		}
 	} else {
-		s.l.Info(urlPath, fields...)
+		s.l.Debug(urlPath, fields...)
 	}
 }

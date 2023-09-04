@@ -4,6 +4,8 @@ package pubsub
 
 import (
 	"context"
+	"fmt"
+	"github.com/lburgazzoli/camel-go/pkg/components/dapr"
 	"log/slog"
 	"strings"
 	"sync/atomic"
@@ -44,6 +46,9 @@ func (c *Consumer) Start(_ context.Context) error {
 			PubsubName: c.pubsubName,
 			Topic:      c.topicName,
 			Route:      "/" + c.endpoint.ID() + "/" + c.ID(),
+			Metadata: map[string]string{
+				dapr.MetaRawPayload: fmt.Sprintf("%v", c.endpoint.config.Raw),
+			},
 		}
 
 		c.Logger().Debug("subscribing", slog.Group(
@@ -51,6 +56,7 @@ func (c *Consumer) Start(_ context.Context) error {
 			slog.String("pubsubName", sub.PubsubName),
 			slog.String("topic", sub.Topic),
 			slog.String("route", sub.Route),
+			slog.Any("meta", sub.Metadata),
 		))
 
 		err := c.endpoint.s.AddTopicEventHandler(&sub, c.handler)

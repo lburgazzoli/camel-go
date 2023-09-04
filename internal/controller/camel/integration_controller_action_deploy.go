@@ -168,6 +168,7 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 		envs = append(envs, apply.WithEnv(dapr.EnvVarAddress, fmt.Sprintf(":%d", dapr.DefaultPort)))
 		ports = append(ports, apply.WithPort(dapr.DefaultPortName, dapr.DefaultPort))
 
+		podannotations[dapr.AnnotationAEnabled] = "true"
 		podannotations[dapr.AnnotationAppID] = rc.Resource.Namespace + "-" + rc.Resource.Name
 		podannotations[dapr.AnnotationAppPort] = fmt.Sprintf("%d", dapr.DefaultPort)
 		podannotations[dapr.AnnotationAppProtocol] = dapr.DefaultProtocol

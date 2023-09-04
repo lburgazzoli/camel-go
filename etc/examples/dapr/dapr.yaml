@@ -1,6 +1,6 @@
 - route:
     from:
-      uri: "dapr-pubsub:sensors/iot"
+      uri: "dapr-pubsub:sensors/iot?raw=true"
       steps:
         - to: "log:from-pubsub"
         - choice:

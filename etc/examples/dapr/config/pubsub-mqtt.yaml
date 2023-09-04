@@ -1,0 +1,19 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: sensors
+  namespace: dapr-system
+spec:
+  type: pubsub.mqtt
+  version: v1
+  metadata:
+    - name: url
+      value: "tcp://test.mosquitto.org:1883"
+    - name: qos
+      value: 1
+    - name: retain
+      value: "false"
+    - name: cleanSession
+      value: "true"
+    - name: backOffMaxRetries
+      value: "0"

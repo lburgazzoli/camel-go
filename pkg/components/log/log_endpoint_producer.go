@@ -41,8 +41,12 @@ func (p *Producer) Receive(ac actor.Context) {
 
 		p.logger.Info(
 			content,
-			slog.String("message.type", msg.Type()),
-			slog.String("message.id", msg.ID()))
+			slog.Group(
+				"message",
+				slog.String("id", msg.ID()),
+				slog.String("type", msg.Type()),
+			),
+		)
 
 		ac.Request(ac.Parent(), msg)
 	}

@@ -14,9 +14,12 @@ const (
 
 	EnvVarAddress = "CAMEL_DAPR_ADDRESS"
 
+	AnnotationAEnabled    = "dapr.io/enabled"
 	AnnotationAppID       = "dapr.io/app-id"
 	AnnotationAppPort     = "dapr.io/app-port"
 	AnnotationAppProtocol = "dapr.io/app-protocol"
+
+	MetaRawPayload = "rawPayload"
 )
 
 func Address() string {
