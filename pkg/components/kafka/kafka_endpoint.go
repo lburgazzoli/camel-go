@@ -1,4 +1,4 @@
-////go:build components_kafka || components_all
+// //go:build components_kafka || components_all
 
 package kafka
 
@@ -54,6 +54,7 @@ func (e *Endpoint) Consumer(pid *actor.PID) (api.Consumer, error) {
 func (e *Endpoint) newClient() (*kgo.Client, error) {
 	opts := make([]kgo.Opt, 0)
 	opts = append(opts, kgo.SeedBrokers(strings.Split(e.config.Brokers, ",")...))
+	opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
 
 	if e.config.Username != "" && e.config.Password != "" {
 		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
@@ -61,7 +62,6 @@ func (e *Endpoint) newClient() (*kgo.Client, error) {
 
 		opts = append(opts, kgo.SASL(authMechanism))
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
-		opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
 	}
 
 	return kgo.NewClient(opts...)

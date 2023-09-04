@@ -4,9 +4,10 @@ package pubsub
 
 import (
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/components"
 	"log/slog"
 	"strings"
+
+	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 	dapr "github.com/dapr/go-sdk/client"

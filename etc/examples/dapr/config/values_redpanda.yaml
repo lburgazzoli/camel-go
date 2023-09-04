@@ -1,0 +1,10 @@
+console:
+  enabled: false
+connectors:
+  enabled: false
+external:
+  enabled: true
+monitoring:
+  enabled: false
+statefulset:
+  replicas: 1
