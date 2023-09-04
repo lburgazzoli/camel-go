@@ -131,6 +131,7 @@ image: ko
 		--bare \
 		--local \
 		--tags $(CONTAINER_TAG) \
+		--sbom none \
 		./cmd/camel
 
 .PHONY: image/publish
@@ -140,6 +141,7 @@ image/publish: ko
 	$(KO) build \
 		--bare \
 		--tags $(CONTAINER_TAG) \
+		--sbom none \
 		./cmd/camel
 
 

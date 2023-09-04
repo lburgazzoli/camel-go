@@ -3,6 +3,7 @@ apiVersion: camel.apache.org/v2alpha1
 kind: Integration
 metadata:
   name: "camel-router"
+  namespace: "dapr-system"
 spec:
   flows:
     - route:

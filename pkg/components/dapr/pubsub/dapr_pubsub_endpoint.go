@@ -7,8 +7,6 @@ import (
 
 	"github.com/asynkron/protoactor-go/actor"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 )
@@ -37,7 +35,7 @@ func (e *Endpoint) Consumer(pid *actor.PID) (api.Consumer, error) {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
-		DefaultVerticle: processors.NewDefaultVerticle(),
+		DefaultProducer: components.NewDefaultProducer(e),
 		endpoint:        e,
 		tc:              e.Context().TypeConverter(),
 	}

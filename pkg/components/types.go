@@ -117,3 +117,32 @@ func (c *DefaultConsumer) Logger() *slog.Logger {
 func (c *DefaultConsumer) Target() *actor.PID {
 	return c.target
 }
+
+//
+// Default Producer
+//
+
+func NewDefaultProducer(endpoint api.Endpoint) DefaultProducer {
+	v := processors.NewDefaultVerticle()
+
+	return DefaultProducer{
+		DefaultVerticle: v,
+		endpoint:        endpoint,
+		logger:          endpoint.Logger().With(slog.String("producer.id", v.ID())),
+	}
+}
+
+type DefaultProducer struct {
+	processors.DefaultVerticle
+
+	logger   *slog.Logger
+	endpoint api.Endpoint
+}
+
+func (p *DefaultProducer) Logger() *slog.Logger {
+	return p.logger
+}
+
+func (p *DefaultProducer) Endpoint() api.Endpoint {
+	return p.endpoint
+}

@@ -1,22 +1,22 @@
-////go:build components_dapr_pubsub || components_all
+// //go:build components_dapr_pubsub || components_all
 
 package pubsub
 
 import (
 	"context"
+	"github.com/lburgazzoli/camel-go/pkg/components"
+	"log/slog"
 	"strings"
 
-	dapr "github.com/dapr/go-sdk/client"
-	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
 	"github.com/asynkron/protoactor-go/actor"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/lburgazzoli/camel-go/pkg/api"
+	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 	"github.com/pkg/errors"
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	endpoint *Endpoint
 	client   dapr.Client
@@ -45,6 +45,14 @@ func (p *Producer) Start(context.Context) error {
 	}
 
 	p.client = cl
+
+	p.Logger().Info("started",
+		slog.Group(
+			"target",
+			slog.String("pubsubName", p.pubsubName),
+			slog.String("topic", p.topicName),
+		),
+	)
 
 	return nil
 }

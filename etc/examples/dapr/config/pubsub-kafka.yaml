@@ -1,0 +1,13 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: internal
+  namespace: dapr-system
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "redpanda-0.redpanda-system.svc.cluster.local:9093"
+    - name: authType
+      value: "none"
