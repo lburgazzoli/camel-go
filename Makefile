@@ -4,7 +4,6 @@ CONTAINER_REGISTRY_REPOSITORY ?= lburgazzoli/camel-go
 CONTAINER_TAG ?= latest
 CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_REPOSITORY):$(CONTAINER_TAG)
 
-
 WASM_CONTAINER_REGISTRY ?= quay.io
 WASM_CONTAINER_REGISTRY_REPOSITORY ?= lburgazzoli/camel-go-wasm
 WASM_CONTAINER_TAG ?= latest
@@ -67,26 +66,6 @@ SHELL = /usr/bin/env bash -o pipefail
 .PHONY: all
 all: build
 
-##@ General
-
-# The help target prints out all targets with their descriptions organized
-# beneath their categories. The categories are represented by '##@' and the
-# target descriptions by '##'. The awk commands is responsible for reading the
-# entire set of makefiles included in this invocation, looking for lines of the
-# file as xyz: ## something, and then pretty-format the target and help. Then,
-# if there's a line with ##@ something, that gets pretty-printed as a category.
-# More info on the usage of ANSI control characters for terminal formatting:
-# https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
-# More info on the awk command:
-# http://linuxcommand.org/lc3_adv_awk.php
-
-.PHONY: help
-help:
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-
-##@ Development
-
-
 .PHONY: clean
 clean:
 	go clean -x
@@ -116,8 +95,6 @@ check/lint: golangci-lint
 		--out-format tab \
 		--skip-dirs etc \
 		--deadline $(LINT_DEADLINE)
-
-##@ Build
 
 .PHONY: build
 build: fmt
@@ -163,7 +140,6 @@ wasm/publish:
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
 		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
 
-
 .PHONY: generate
 generate: codegen-tools-install
 	$(PROJECT_PATH)/hack/scripts/gen_res.sh $(PROJECT_PATH)
@@ -183,7 +159,6 @@ install: manifests kustomize
 uninstall: manifests kustomize
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
-
 .PHONY: kind/setup
 kind/setup: kind
 	$(KIND) create cluster \
@@ -195,10 +170,6 @@ kind/setup: kind
 kind/teardown: kind
 	$(KIND) delete cluster  --name "camel-go"
 
-
-##@ Build Dependencies
-
-## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
 	@mkdir -p $(LOCALBIN)
