@@ -1,8 +1,0 @@
-- route:
-    from:
-      uri: "mqtt:camel/iot"
-      parameters:
-        broker: "tcp://test.mosquitto.org:1883"
-      steps:
-        - to:
-            uri: "log:from-mqtt"
