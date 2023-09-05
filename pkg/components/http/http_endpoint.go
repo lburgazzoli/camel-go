@@ -9,7 +9,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 	"github.com/lburgazzoli/camel-go/pkg/core/errors"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
 type Endpoint struct {
@@ -27,7 +26,7 @@ func (e *Endpoint) Stop(context.Context) error {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
-		DefaultVerticle: processors.NewDefaultVerticle(),
+		DefaultProducer: components.NewDefaultProducer(e),
 		endpoint:        e,
 		tc:              e.Context().TypeConverter(),
 	}

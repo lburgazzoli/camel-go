@@ -4,8 +4,6 @@ package log
 import (
 	"context"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
-
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 )
@@ -25,7 +23,7 @@ func (e *Endpoint) Stop(context.Context) error {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
-		DefaultVerticle: processors.NewDefaultVerticle(),
+		DefaultProducer: components.NewDefaultProducer(e),
 		endpoint:        e,
 		logger:          e.Logger().WithGroup(e.config.Remaining),
 	}

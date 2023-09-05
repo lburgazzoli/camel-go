@@ -5,14 +5,14 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	endpoint *Endpoint
 	logger   *slog.Logger

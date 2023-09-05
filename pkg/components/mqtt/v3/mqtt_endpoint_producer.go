@@ -5,10 +5,11 @@ package v3
 import (
 	"context"
 
+	"github.com/lburgazzoli/camel-go/pkg/components"
+
 	"github.com/lburgazzoli/camel-go/pkg/cloudevents"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/pkg/errors"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -16,7 +17,7 @@ import (
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	endpoint *Endpoint
 	client   mqtt.Client

@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/lburgazzoli/camel-go/pkg/components"
+
 	"github.com/hashicorp/go-cleanhttp"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/pkg/errors"
 
 	"github.com/asynkron/protoactor-go/actor"
@@ -18,7 +19,7 @@ import (
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	endpoint *Endpoint
 	tc       api.TypeConverter

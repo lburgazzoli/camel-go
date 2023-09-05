@@ -7,16 +7,17 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	"github.com/lburgazzoli/camel-go/pkg/components"
+
 	"github.com/eclipse/paho.golang/paho"
 	"github.com/pkg/errors"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	running  atomic.Bool
 	endpoint *Endpoint
