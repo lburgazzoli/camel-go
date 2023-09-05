@@ -205,7 +205,7 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 							"run",
 							"--health-check-enabled", "true",
 							"--health-check-address", health.DefaultAddress,
-							"--dev",
+							// "--dev",
 							"--route", RuntimeRoutesPath,
 						).
 						WithEnv(envs...).

@@ -76,7 +76,6 @@ func (p *Producer) Receive(ac actor.Context) {
 	case api.Message:
 		p.publish(context.Background(), msg)
 
-		// TODO: handle
 		if msg.Error() != nil {
 			panic(msg.Error())
 		}
@@ -86,6 +85,11 @@ func (p *Producer) Receive(ac actor.Context) {
 }
 
 func (p *Producer) publish(ctx context.Context, msg api.Message) {
+	if p.client == nil {
+		msg.SetError(errors.New("client is not yet ready"))
+		return
+	}
+
 	data := make([]byte, 0)
 
 	if _, err := p.tc.Convert(msg.Content(), &data); err != nil {

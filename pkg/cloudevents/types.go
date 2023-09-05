@@ -2,6 +2,10 @@ package cloudevents
 
 import "encoding/base64"
 
+const (
+	Spec1_0 = "1.0"
+)
+
 type CloudEventJSON struct {
 	SpecVersion       string `json:"specversion"`
 	ID                string `json:"id"`

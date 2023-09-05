@@ -8,6 +8,6 @@ spec:
   version: v1
   metadata:
     - name: brokers
-      value: "redpanda-0.redpanda-system.svc.cluster.local:9093"
+      value: "redpanda-0.redpanda.redpanda-system.svc.cluster.local:9093"
     - name: authType
       value: "none"

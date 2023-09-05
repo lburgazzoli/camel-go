@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/asynkron/protoactor-go/actor"
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 
@@ -34,7 +33,7 @@ func (e *Endpoint) Stop(context.Context) error {
 
 func (e *Endpoint) Producer() (api.Producer, error) {
 	c := Producer{
-		DefaultVerticle: processors.NewDefaultVerticle(),
+		DefaultProducer: components.NewDefaultProducer(e),
 		endpoint:        e,
 		tc:              e.Context().TypeConverter(),
 	}

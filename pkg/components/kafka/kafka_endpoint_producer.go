@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/processors"
+	"github.com/lburgazzoli/camel-go/pkg/cloudevents"
+
+	"github.com/lburgazzoli/camel-go/pkg/components"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lburgazzoli/camel-go/pkg/api"
@@ -16,7 +18,7 @@ import (
 )
 
 type Producer struct {
-	processors.DefaultVerticle
+	components.DefaultProducer
 
 	endpoint *Endpoint
 	client   *kgo.Client
@@ -69,14 +71,14 @@ func (p *Producer) Receive(ac actor.Context) {
 func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	record := &kgo.Record{}
 	record.Topic = p.endpoint.config.Remaining
-	record.Headers = make([]kgo.RecordHeader, 5)
-
-	record.Headers = append(record.Headers, kgo.RecordHeader{
-		Key:   "ce_specversion",
-		Value: []byte("1.0"),
-	})
+	record.Headers = make([]kgo.RecordHeader, 0)
 
 	// copy relevant attributes as ce headers
+
+	if err := p.setHeader(record, "ce_specversion", []byte(cloudevents.Spec1_0)); err != nil {
+		msg.SetError(err)
+		return
+	}
 	if err := p.setHeader(record, "id", msg.ID()); err != nil {
 		msg.SetError(err)
 		return
@@ -133,6 +135,10 @@ func (p *Producer) setHeader(r *kgo.Record, k string, v any) error {
 	h, err := p.header(k, v)
 	if err != nil {
 		return err
+	}
+
+	if len(h.Value) == 0 {
+		return nil
 	}
 
 	r.Headers = append(r.Headers, h)

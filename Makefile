@@ -144,28 +144,6 @@ image/publish: ko
 		--sbom none \
 		./cmd/camel
 
-
-
-.PHONY: run/examples/dapr/flow
-run/examples/dapr/flow:
-	dapr run \
-		 --app-id flow \
-         --log-level debug \
-         --app-protocol http \
-	  	 --app-port 8080 \
-		 --dapr-http-port 3500 \
-         --resources-path ./etc/examples/dapr/config \
-         -- go run cmd/camel/main.go run --dev --route ./etc/examples/dapr/dapr.yaml
-
-.PHONY: run/examples/dapr/pub
-run/examples/dapr/pub:
-	dapr run \
-		 --app-id pub \
-         --log-level info \
-         --resources-path ./etc/examples/dapr/config \
-         -- go run cmd/camel/main.go dapr pub --pubsub-name sensors --topic iot source=sensor-1 data=foo
-
-
 .PHONY: run/operator
 run/operator: install
 	go run -ldflags="$(GOLDFLAGS)" cmd/camel/main.go operator --leader-election=false --zap-devel
@@ -210,41 +188,13 @@ uninstall: manifests kustomize
 kind/setup: kind
 	$(KIND) create cluster \
 		--config $(PROJECT_PATH)/etc/kind/kind-cluster-config.yaml \
+		--image=kindest/node:v1.28.0 \
 		--name "camel-go"
 
 .PHONY: kind/teardown
 kind/teardown: kind
 	$(KIND) delete cluster  --name "camel-go"
 
-
-.PHONY: dapr/setup
-dapr/setup:
-	helm repo add dapr https://dapr.github.io/helm-charts/ --force-update=true
-	helm repo update
-
-	@echo "SetUp Dapr"
-	helm upgrade --install dapr dapr/dapr \
-		--version=$(DAPR_VERSION) \
-		--create-namespace \
-		--namespace dapr-system \
-		--values $(PROJECT_PATH)/etc/examples/dapr/config/dapr.yaml \
-		--wait
-
-.PHONY: dapr/setup/redis
-dapr/setup/redis:
-	@echo "SetUp Redis"
-	helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \
-		--namespace dapr-system \
-		--create-namespace \
-		--values $(PROJECT_PATH)/etc/examples/dapr/config/redis.yaml \
-		--wait
-
-	$(KUBECTL) apply -f $(PROJECT_PATH)/etc/examples/dapr/config/pubsub-redis.yaml
-
-.PHONY: dapr/setup/mqtt
-dapr/setup/mqtt:
-	@echo "SetUp MQTT"
-	$(KUBECTL) apply -f $(PROJECT_PATH)/etc/examples/dapr/config/pubsub-mqtt.yaml
 
 ##@ Build Dependencies
 

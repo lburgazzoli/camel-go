@@ -5,9 +5,6 @@ import (
 	"os"
 
 	"github.com/lburgazzoli/camel-go/cmd/camel/operator"
-
-	"github.com/lburgazzoli/camel-go/cmd/camel/dapr"
-
 	"github.com/lburgazzoli/camel-go/cmd/camel/run"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +18,6 @@ func main() {
 	}
 
 	rootCmd.AddCommand(run.NewRunCmd())
-	rootCmd.AddCommand(dapr.NewDaprCmd())
 	rootCmd.AddCommand(operator.NewOperatorCmd())
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)

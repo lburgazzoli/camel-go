@@ -1,0 +1,5 @@
+resources:
+- pubsub-kafka.yaml
+- pubsub-mqtt.yaml
+- integration.yaml
+

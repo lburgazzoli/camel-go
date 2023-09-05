@@ -12,7 +12,7 @@ import (
 var s = daprdSvc{
 	cnt: 0,
 	svc: daprd.NewService(Address()),
-	log: slog.Default().WithGroup("daprd"),
+	log: slog.Default().With(slog.String("subsystem", "daprd")),
 }
 
 func Start() error {

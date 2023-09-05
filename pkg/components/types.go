@@ -24,7 +24,8 @@ func NewDefaultComponent(ctx api.Context, scheme string) DefaultComponent {
 		ctx:    ctx,
 		scheme: scheme,
 		id:     id,
-		logger: ctx.Logger().With(slog.String("component.scheme", scheme), slog.String("component.id", id)),
+		logger: ctx.Logger().
+			With(slog.String("component.scheme", scheme), slog.String("component.id", id)),
 	}
 
 	return dc
@@ -63,7 +64,8 @@ func NewDefaultEndpoint(component api.Component) DefaultEndpoint {
 	return DefaultEndpoint{
 		component: component,
 		id:        id,
-		logger:    component.Logger().With(slog.String("endpoint.id", id)),
+		logger: component.Logger().
+			With(slog.String("endpoint.id", id)),
 	}
 }
 
@@ -99,15 +101,18 @@ func NewDefaultConsumer(endpoint api.Endpoint, target *actor.PID) DefaultConsume
 	return DefaultConsumer{
 		DefaultVerticle: v,
 		target:          target,
-		logger:          endpoint.Logger().With(slog.String("consumer.id", v.ID())),
+		endpoint:        endpoint,
+		logger: endpoint.Logger().
+			With(slog.String("consumer.id", v.ID())),
 	}
 }
 
 type DefaultConsumer struct {
 	processors.DefaultVerticle
 
-	logger *slog.Logger
-	target *actor.PID
+	logger   *slog.Logger
+	endpoint api.Endpoint
+	target   *actor.PID
 }
 
 func (c *DefaultConsumer) Logger() *slog.Logger {
@@ -116,6 +121,10 @@ func (c *DefaultConsumer) Logger() *slog.Logger {
 
 func (c *DefaultConsumer) Target() *actor.PID {
 	return c.target
+}
+
+func (c *DefaultConsumer) Endpoint() api.Endpoint {
+	return c.endpoint
 }
 
 //
@@ -128,7 +137,8 @@ func NewDefaultProducer(endpoint api.Endpoint) DefaultProducer {
 	return DefaultProducer{
 		DefaultVerticle: v,
 		endpoint:        endpoint,
-		logger:          endpoint.Logger().With(slog.String("producer.id", v.ID())),
+		logger: endpoint.Logger().
+			With(slog.String("producer.id", v.ID())),
 	}
 }
 
