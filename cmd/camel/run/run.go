@@ -1,10 +1,11 @@
 package run
 
 import (
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/lburgazzoli/camel-go/pkg/logger"
 
 	"github.com/lburgazzoli/camel-go/pkg/health"
 
@@ -30,16 +31,19 @@ import (
 )
 
 func NewRunCmd() *cobra.Command {
+
 	type opts struct {
+		Logger logger.Options
+
 		Routes        []string
 		Configs       []string
-		Development   bool
 		Health        bool
 		HealthAddress string
 		HealthPrefix  string
 	}
 
 	var o opts
+	o.Logger.Development = false
 	o.Health = true
 	o.HealthPrefix = health.DefaultPrefix
 	o.HealthAddress = health.DefaultAddress
@@ -47,31 +51,25 @@ func NewRunCmd() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "run",
 		Short: "run",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			logger.Init(o.Logger)
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var logger *slog.Logger
-
-			if o.Development {
-				logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
-			} else {
-				logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
-			}
-
-			slog.SetDefault(logger)
-
 			done := make(chan os.Signal, 1)
 			signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
 			var h *health.Service
 
 			if o.Health {
-				h = health.New(o.HealthAddress, o.HealthPrefix, logger)
+				h = health.New(o.HealthAddress, o.HealthPrefix, logger.L)
 
 				if err := h.Start(cmd.Context()); err != nil {
 					return err
 				}
 			}
 
-			camelContext := core.NewContext(logger)
+			camelContext := core.NewContext(logger.L)
 
 			for i := range o.Configs {
 				if err := camelContext.Properties().AddSource(o.Configs[i]); err != nil {
@@ -118,7 +116,7 @@ func NewRunCmd() *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&o.Routes, "route", nil, "routes")
 	cmd.Flags().StringSliceVar(&o.Configs, "config", nil, "configs")
-	cmd.Flags().BoolVar(&o.Development, "dev", false, "development")
+	cmd.Flags().BoolVar(&o.Logger.Development, "dev", o.Logger.Development, "development")
 
 	cmd.Flags().BoolVar(&o.Health, "health-check-enabled", o.Health, "health-check-enabled")
 	cmd.Flags().StringVar(&o.HealthPrefix, "health-check-prefix", o.HealthPrefix, "health-check-prefix")

@@ -1,4 +1,4 @@
-////go:build components_mqtt_v3 || components_all
+// //go:build components_mqtt_v3 || components_all
 
 package v3
 
@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+
+	"github.com/lburgazzoli/camel-go/pkg/logger"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -19,18 +21,15 @@ func init() {
 }
 
 type mqttLogger struct {
-	m      sync.Mutex
+	once   sync.Once
 	level  slog.Level
 	logger *slog.Logger
 }
 
 func (l *mqttLogger) Println(v ...interface{}) {
-	l.m.Lock()
-	defer l.m.Unlock()
-
-	if l.logger == nil {
-		l.logger = slog.Default().WithGroup(Scheme)
-	}
+	l.once.Do(func() {
+		l.logger = logger.WithGroup(Scheme)
+	})
 
 	switch l.level {
 	case slog.LevelDebug:
@@ -44,12 +43,9 @@ func (l *mqttLogger) Println(v ...interface{}) {
 	}
 }
 func (l *mqttLogger) Printf(format string, v ...interface{}) {
-	l.m.Lock()
-	defer l.m.Unlock()
-
-	if l.logger == nil {
-		l.logger = slog.Default().WithGroup(Scheme)
-	}
+	l.once.Do(func() {
+		l.logger = logger.WithGroup(Scheme)
+	})
 
 	switch l.level {
 	case slog.LevelDebug:
