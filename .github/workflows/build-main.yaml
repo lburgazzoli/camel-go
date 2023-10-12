@@ -1,0 +1,44 @@
+name: Build Main
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+  WASM_CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check-out
+        uses: actions/checkout@v4
+      - name: setup-go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          check-latest: true
+          cache: true
+          cache-dependency-path: go.sum
+      - name: "Login to Container registry"
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      #- name: 'Build WASM'
+      #  run: make wasm/build
+      #- name: 'Push WASM'
+      #  run: make wasm/publish
+      - name: check
+        run: make check
+      - name: test
+        run: make test
+      - name: 'Push Image'
+        run: make image/publish

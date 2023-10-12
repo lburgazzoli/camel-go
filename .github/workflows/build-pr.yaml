@@ -1,10 +1,7 @@
-name: validate
+name: Build PR
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
     branches:
       - main
 
@@ -13,7 +10,7 @@ env:
   WASM_CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -29,19 +26,7 @@ jobs:
           check-latest: true
           cache: true
           cache-dependency-path: go.sum
-      - name: "Login to Container registry"
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.CONTAINER_REGISTRY }}
-          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
-          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-      #- name: 'Build WASM'
-      #  run: make wasm/build
-      #- name: 'Push WASM'
-      #  run: make wasm/publish
       - name: check
         run: make check
       - name: test
         run: make test
-      - name: 'Push Image'
-        run: make image/publish
