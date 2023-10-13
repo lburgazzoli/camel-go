@@ -43,7 +43,7 @@ type SlogLogConsumer struct {
 func (g *SlogLogConsumer) Accept(l testcontainers.Log) {
 	slog.Default().WithGroup("container").Info(
 		string(l.Content),
-		slog.String("type", l.LogType),
+		slog.String("stream", l.LogType),
 		slog.String("name", g.Name),
 	)
 }

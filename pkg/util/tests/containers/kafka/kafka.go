@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/rs/xid"
 
@@ -78,8 +79,8 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 			Name:       "redpandadata-" + xid.New().String(),
 			Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
 			Env:        map[string]string{},
-			WaitingFor: wait.ForLog("Started Kafka API server"),
-			Cmd:        []string{"redpanda", "start", "--mode dev-container"},
+			WaitingFor: wait.ForLog("Successfully started Redpanda!").WithPollInterval(100 * time.Millisecond),
+			Cmd:        []string{"redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G"},
 			ExposedPorts: []string{
 				fmt.Sprintf("%d:%d", DefaultPort, DefaultPort),
 			},
