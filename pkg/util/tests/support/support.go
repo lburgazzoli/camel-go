@@ -3,11 +3,12 @@ package support
 import (
 	"bytes"
 	"context"
-	"github.com/lburgazzoli/camel-go/pkg/logger"
 	"strings"
 	"sync"
 	"testing"
 	"text/template"
+
+	"github.com/lburgazzoli/camel-go/pkg/logger"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core"

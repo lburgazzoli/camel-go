@@ -73,7 +73,7 @@ func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
-			SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
+			Name:       "redpandadata",
 			Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
 			Env:        map[string]string{},
 			WaitingFor: wait.ForLog("Started Kafka API server"),
@@ -100,7 +100,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 		Container: container,
 	}
 
-	c.FollowOutput(&containers.SysOutLogConsumer{})
+	c.FollowOutput(containers.NewSlogLogConsumer(&req.ContainerRequest))
 
 	if err := container.StartLogProducer(ctx); err != nil {
 		return nil, err

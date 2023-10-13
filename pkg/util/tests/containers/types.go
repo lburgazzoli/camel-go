@@ -2,7 +2,7 @@ package containers
 
 import (
 	"fmt"
-	"os"
+	"log/slog"
 
 	"github.com/imdario/mergo"
 	"github.com/testcontainers/testcontainers-go"
@@ -25,9 +25,25 @@ func OverrideContainerRequest(r testcontainers.ContainerRequest) func(req testco
 	}
 }
 
-type SysOutLogConsumer struct {
+func NewSlogLogConsumer(r *testcontainers.ContainerRequest) testcontainers.LogConsumer {
+	name := r.Name
+	if name == "" {
+		name = r.Image
+	}
+
+	return &SlogLogConsumer{
+		Name: name,
+	}
 }
 
-func (g *SysOutLogConsumer) Accept(l testcontainers.Log) {
-	_, _ = fmt.Fprintf(os.Stdout, string(l.Content))
+type SlogLogConsumer struct {
+	Name string
+}
+
+func (g *SlogLogConsumer) Accept(l testcontainers.Log) {
+	slog.Default().WithGroup("container").Info(
+		string(l.Content),
+		slog.String("type", l.LogType),
+		slog.String("name", g.Name),
+	)
 }

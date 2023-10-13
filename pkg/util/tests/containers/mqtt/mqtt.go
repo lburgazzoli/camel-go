@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
@@ -116,9 +115,9 @@ func (c *Container) Client(ctx context.Context) (paho.Client, error) {
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
-			SkipReaper: os.Getenv("TESTCONTAINERS_RYUK_DISABLED") == "true",
-			Image:      fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
-			Env:        map[string]string{},
+			Name:  "eclipse-mosquitto",
+			Image: fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
+			Env:   map[string]string{},
 			ExposedPorts: []string{
 				fmt.Sprintf("%d", DefaultPort),
 			},
@@ -152,7 +151,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 		Container: container,
 	}
 
-	c.FollowOutput(&containers.SysOutLogConsumer{})
+	c.FollowOutput(containers.NewSlogLogConsumer(&req.ContainerRequest))
 
 	if err := container.StartLogProducer(ctx); err != nil {
 		return nil, err

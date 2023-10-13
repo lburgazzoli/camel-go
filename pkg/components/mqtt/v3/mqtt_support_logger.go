@@ -13,8 +13,6 @@ import (
 )
 
 func init() {
-	// TODO: do some investigation if there is a way to set per client
-	//       logging instead of a global one
 	mqtt.DEBUG = &mqttLogger{level: slog.LevelDebug}
 	mqtt.WARN = &mqttLogger{level: slog.LevelWarn}
 	mqtt.ERROR = &mqttLogger{level: slog.LevelError}
@@ -28,7 +26,7 @@ type mqttLogger struct {
 
 func (l *mqttLogger) Println(v ...interface{}) {
 	l.once.Do(func() {
-		l.logger = logger.WithGroup(Scheme)
+		l.logger = logger.With(slog.String("subsystem", Scheme))
 	})
 
 	switch l.level {
@@ -44,7 +42,7 @@ func (l *mqttLogger) Println(v ...interface{}) {
 }
 func (l *mqttLogger) Printf(format string, v ...interface{}) {
 	l.once.Do(func() {
-		l.logger = logger.WithGroup(Scheme)
+		l.logger = logger.With(slog.String("subsystem", Scheme))
 	})
 
 	switch l.level {
