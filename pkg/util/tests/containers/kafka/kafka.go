@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"github.com/rs/xid"
 	"os"
 	"strconv"
 
@@ -73,7 +74,7 @@ func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Name:       "redpandadata",
+			Name:       "redpandadata-" + xid.New().String(),
 			Image:      fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
 			Env:        map[string]string{},
 			WaitingFor: wait.ForLog("Started Kafka API server"),

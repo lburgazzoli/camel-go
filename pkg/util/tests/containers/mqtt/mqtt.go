@@ -3,6 +3,7 @@ package mqtt
 import (
 	"context"
 	"fmt"
+	"github.com/rs/xid"
 	"net"
 	"time"
 
@@ -115,7 +116,7 @@ func (c *Container) Client(ctx context.Context) (paho.Client, error) {
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Name:  "eclipse-mosquitto",
+			Name:  "eclipse-mosquitto" + xid.New().String(),
 			Image: fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
 			Env:   map[string]string{},
 			ExposedPorts: []string{
