@@ -3,9 +3,9 @@ package support
 import (
 	"bytes"
 	"context"
-	"log/slog"
-	"os"
+	"github.com/lburgazzoli/camel-go/pkg/logger"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 
@@ -14,14 +14,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var once sync.Once
+
 func Run(t *testing.T, name string, fn func(*testing.T, context.Context)) {
 	t.Helper()
 
-	l := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	slog.SetDefault(l)
+	once.Do(func() {
+		logger.Init(logger.Options{
+			Development: true,
+		})
+	})
 
 	t.Run(name, func(t *testing.T) {
-		camelContext := core.NewContext(l)
+		camelContext := core.NewContext(logger.L)
 		ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
 
 		assert.NotNil(t, camelContext)

@@ -2,6 +2,7 @@ package containers
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/imdario/mergo"
 	"github.com/testcontainers/testcontainers-go"
@@ -27,6 +28,6 @@ func OverrideContainerRequest(r testcontainers.ContainerRequest) func(req testco
 type SysOutLogConsumer struct {
 }
 
-func (g *SysOutLogConsumer) Accept(_ testcontainers.Log) {
-	// _, _ = fmt.Fprintf(os.Stdout, string(l.Content))
+func (g *SysOutLogConsumer) Accept(l testcontainers.Log) {
+	_, _ = fmt.Fprintf(os.Stdout, string(l.Content))
 }
