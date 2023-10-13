@@ -22,7 +22,7 @@ import (
 
 const (
 	DefaultPort    = 9092
-	DefaultVersion = "v22.3.13"
+	DefaultVersion = "v23.2.12"
 )
 
 type RequestFn func(*Request) *Request
