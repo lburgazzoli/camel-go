@@ -3,9 +3,10 @@ package mqtt
 import (
 	"context"
 	"fmt"
-	"github.com/rs/xid"
 	"net"
 	"time"
+
+	"github.com/rs/xid"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
 
