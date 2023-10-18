@@ -66,8 +66,9 @@ func (c *Client) Subscribe(ctx context.Context, topic string) error {
 	c.logger.Info("subscribing", slog.String("topic", topic))
 
 	_, err := c.client.Subscribe(ctx, &paho.Subscribe{
-		Subscriptions: map[string]paho.SubscribeOptions{
-			topic: {
+		Subscriptions: []paho.SubscribeOptions{
+			{
+				Topic:   topic,
 				QoS:     c.cfg.QoS,
 				NoLocal: true,
 			},
