@@ -1,11 +1,9 @@
 package v3
 
 import (
-	"bytes"
 	"context"
 	"path/filepath"
 	"testing"
-	"text/template"
 	"time"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
@@ -74,17 +72,14 @@ func TestSimpleMQTT(t *testing.T) {
 			return nil
 		})
 
-		tmpl, err := template.New("route").Parse(simpleMQTT)
-		require.NoError(t, err)
-
 		broker, err := container.Broker(ctx)
 		require.NoError(t, err)
 
-		buffer := bytes.Buffer{}
-		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
-		require.NoError(t, err)
+		err = support.LoadRoutes(ctx, simpleMQTT, map[string]string{
+			"broker": broker,
+		})
 
-		require.NoError(t, c.LoadRoutes(ctx, &buffer))
+		require.NoError(t, err)
 
 		token := cl.Publish("camel/iot", 0, true, content)
 		token.Wait()

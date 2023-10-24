@@ -3,10 +3,8 @@
 package kafka
 
 import (
-	"bytes"
 	"context"
 	"testing"
-	"text/template"
 
 	"github.com/stretchr/testify/require"
 
@@ -89,17 +87,13 @@ func TestSimpleKafka(t *testing.T) {
 			return nil
 		})
 
-		tmpl, err := template.New("route").Parse(simpleKafka)
-		require.NoError(t, err)
-
 		broker, err := container.Broker(ctx)
 		require.NoError(t, err)
 
-		buffer := bytes.Buffer{}
-		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
-		require.NoError(t, err)
+		err = support.LoadRoutes(ctx, simpleKafka, map[string]string{
+			"broker": broker,
+		})
 
-		err = c.LoadRoutes(ctx, &buffer)
 		require.NoError(t, err)
 
 		RegisterTestingT(t)
@@ -164,19 +158,13 @@ func TestSimpleKafkaWASM(t *testing.T) {
 
 		defer cl.Close()
 
-		c := camel.ExtractContext(ctx)
-
-		tmpl, err := template.New("route").Parse(simpleKafkaWASM)
-		require.NoError(t, err)
-
 		broker, err := container.Broker(ctx)
 		require.NoError(t, err)
 
-		buffer := bytes.Buffer{}
-		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
-		require.NoError(t, err)
+		err = support.LoadRoutes(ctx, simpleKafkaWASM, map[string]string{
+			"broker": broker,
+		})
 
-		err = c.LoadRoutes(ctx, &buffer)
 		require.NoError(t, err)
 
 		RegisterTestingT(t)
