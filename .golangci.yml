@@ -3,6 +3,10 @@ linters-settings:
     line-length: 170
   goconst:
     ignore-tests: true
+  revive:
+    rules:
+      - name: dot-imports
+        disabled: true
 linters:
   enable-all: true
   disable:
@@ -48,3 +52,4 @@ linters:
     - structcheck
     - maligned
     - depguard
+    - inamedparam

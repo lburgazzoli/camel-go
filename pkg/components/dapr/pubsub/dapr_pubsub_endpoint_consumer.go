@@ -4,8 +4,8 @@ package pubsub
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -48,7 +48,7 @@ func (c *Consumer) Start(_ context.Context) error {
 			Topic:      c.topicName,
 			Route:      "/" + c.endpoint.ID() + "/" + c.ID(),
 			Metadata: map[string]string{
-				dapr.MetaRawPayload: fmt.Sprintf("%v", c.endpoint.config.Raw),
+				dapr.MetaRawPayload: strconv.FormatBool(c.endpoint.config.Raw),
 			},
 		}
 

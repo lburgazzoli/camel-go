@@ -63,7 +63,7 @@ func TestSimpleMQTT(t *testing.T) {
 			}
 		}()
 
-		assert.Nil(t, container.Start(ctx))
+		require.NoError(t, container.Start(ctx))
 
 		cl, err := container.Client(ctx)
 		require.NoError(t, err)

@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/docker/go-connections/nat"
-	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
-	"github.com/testcontainers/testcontainers-go/wait"
-	"github.com/twmb/franz-go/pkg/kadm"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"text/template"
 	"time"
+
+	"github.com/docker/go-connections/nat"
+	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
+	"github.com/testcontainers/testcontainers-go/wait"
+	"github.com/twmb/franz-go/pkg/kadm"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/pkg/errors"
@@ -142,10 +143,10 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	pathEntrypoint := path.Join(tmpDir, ContainerEntrypointFile)
 	pathBootstrap := path.Join(tmpDir, RedPandaBootstrapConfigFile)
 
-	if err := os.WriteFile(pathEntrypoint, []byte(contentEntrypoint), 0o700); err != nil {
+	if err := os.WriteFile(pathEntrypoint, []byte(contentEntrypoint), 0o600); err != nil {
 		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
 	}
-	if err := os.WriteFile(pathBootstrap, []byte(contentBootstrap), 0o700); err != nil {
+	if err := os.WriteFile(pathBootstrap, []byte(contentBootstrap), 0o600); err != nil {
 		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
 	}
 

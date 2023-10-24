@@ -20,7 +20,7 @@ func TestWASM(t *testing.T) {
 		t.Helper()
 
 		r, err := NewRuntime(ctx)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		c := camel.ExtractContext(ctx)
 

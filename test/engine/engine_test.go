@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/stretchr/testify/require"
+
 	"testing"
 	"time"
 
@@ -66,7 +68,7 @@ func TestSimpleYAML(t *testing.T) {
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		select {
 		case msg := <-wg:
@@ -112,7 +114,7 @@ func TestSimpleWASM(t *testing.T) {
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		select {
 		case msg := <-wg:
@@ -159,7 +161,7 @@ func TestSimpleInlineWASM(t *testing.T) {
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineWASM))
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		select {
 		case msg := <-wg:
@@ -206,7 +208,7 @@ func TestSimpleInlineImageWASM(t *testing.T) {
 		})
 
 		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineImageWASM))
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		select {
 		case msg := <-wg:
@@ -253,7 +255,7 @@ func TestSimpleError(t *testing.T) {
 	})
 
 	err := c.LoadRoutes(ctx, strings.NewReader(simpleError))
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	select {
 	case msg := <-wg:

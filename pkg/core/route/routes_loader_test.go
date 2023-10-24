@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +19,7 @@ func TestLoader(t *testing.T) {
 
 	routes, err := Load(data)
 
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Len(t, routes, 1)
 	assert.NotEmpty(t, routes[0].ID)
 }

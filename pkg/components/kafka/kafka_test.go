@@ -5,9 +5,10 @@ package kafka
 import (
 	"bytes"
 	"context"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"text/template"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -15,8 +16,6 @@ import (
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
-	"github.com/stretchr/testify/assert"
-
 	. "github.com/onsi/gomega"
 
 	// test support.
@@ -64,14 +63,14 @@ func TestSimpleKafka(t *testing.T) {
 			}
 		}()
 
-		assert.Nil(t, container.Start(ctx))
+		require.NoError(t, container.Start(ctx))
 
 		ac, err := container.Admin(ctx)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		assert.Nil(t, err)
-		assert.Nil(t, tp.Err)
+		require.NoError(t, err)
+		require.NoError(t, tp.Err)
 
 		cl, err := container.Client(
 			ctx,
@@ -79,7 +78,7 @@ func TestSimpleKafka(t *testing.T) {
 			kgo.ConsumerGroup(uuid.New()),
 		)
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		defer cl.Close()
 
@@ -101,7 +100,7 @@ func TestSimpleKafka(t *testing.T) {
 		require.NoError(t, err)
 
 		err = c.LoadRoutes(ctx, &buffer)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		RegisterTestingT(t)
 
@@ -146,14 +145,14 @@ func TestSimpleKafkaWASM(t *testing.T) {
 			}
 		}()
 
-		assert.Nil(t, container.Start(ctx))
+		require.NoError(t, container.Start(ctx))
 
 		ac, err := container.Admin(ctx)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		assert.Nil(t, err)
-		assert.Nil(t, tp.Err)
+		require.NoError(t, err)
+		require.NoError(t, tp.Err)
 
 		cl, err := container.Client(
 			ctx,
@@ -161,7 +160,7 @@ func TestSimpleKafkaWASM(t *testing.T) {
 			kgo.ConsumerGroup(uuid.New()),
 		)
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		defer cl.Close()
 
@@ -178,7 +177,7 @@ func TestSimpleKafkaWASM(t *testing.T) {
 		require.NoError(t, err)
 
 		err = c.LoadRoutes(ctx, &buffer)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		RegisterTestingT(t)
 

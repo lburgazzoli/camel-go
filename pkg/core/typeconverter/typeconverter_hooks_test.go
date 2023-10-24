@@ -3,6 +3,8 @@ package typeconverter
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 
 	"github.com/stretchr/testify/assert"
@@ -18,10 +20,10 @@ func TestRawJsonConversion(t *testing.T) {
 		in = `{ "foo": "bar" }`
 
 		tc, err := NewDefaultTypeConverter()
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		ok, err := tc.Convert(in, &out)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.True(t, ok)
 
 		assert.Equal(t, "bar", out["foo"])
@@ -35,10 +37,10 @@ func TestRawJsonConversion(t *testing.T) {
 		in = []byte(`{ "foo": "bar" }`)
 
 		tc, err := NewDefaultTypeConverter()
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		ok, err := tc.Convert(in, &out)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.True(t, ok)
 
 		assert.Equal(t, "bar", out["foo"])

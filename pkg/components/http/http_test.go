@@ -80,7 +80,7 @@ func TestSimpleHTTPGet(t *testing.T) {
 			},
 		)
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		select {
 		case msg := <-wg:
@@ -90,7 +90,7 @@ func TestSimpleHTTPGet(t *testing.T) {
 
 			ct, ok := msg.Header("Content-Type")
 			require.True(t, ok)
-			require.Equal(t, ct, "application/json")
+			require.Equal(t, "application/json", ct)
 
 			sc, ok := msg.Attribute(AttributeStatusCode)
 			require.True(t, ok)

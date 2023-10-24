@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/rs/xid"
@@ -69,7 +70,7 @@ func (c *Container) Address(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	port, err := c.MappedPort(ctx, nat.Port(fmt.Sprintf("%d", DefaultPort)))
+	port, err := c.MappedPort(ctx, nat.Port(strconv.Itoa(DefaultPort)))
 	if err != nil {
 		return "", err
 	}
@@ -121,7 +122,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 			Image: fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
 			Env:   map[string]string{},
 			ExposedPorts: []string{
-				fmt.Sprintf("%d", DefaultPort),
+				strconv.Itoa(DefaultPort),
 			},
 			WaitingFor: wait.ForAll(
 				wait.ForExposedPort(),

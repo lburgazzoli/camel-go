@@ -47,38 +47,38 @@ func TestChoice(t *testing.T) {
 
 		chv, err := choice.Reify(ctx)
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, chv)
 
 		h := support.NewRootVerticle(chv)
 
 		chp, err := c.Spawn(h)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, chp)
 
 		{
 			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "bar" }`)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			err = c.SendTo(chp, msg)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			res, err := h.Get(1 * time.Minute)
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, "branch: bar", res.Content())
 		}
 
 		{
 			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "baz" }`)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			err = c.SendTo(chp, msg)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			res, err := h.Get(1 * time.Minute)
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, "branch: baz", res.Content())
 		}
 	})
@@ -118,51 +118,51 @@ func TestChoice(t *testing.T) {
 
 		chv, err := choice.Reify(ctx)
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, chv)
 
 		h := support.NewRootVerticle(chv)
 
 		chp, err := c.Spawn(h)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, chp)
 
 		{
 			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "bar" }`)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			err = c.SendTo(chp, msg)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			res, err := h.Get(1 * time.Minute)
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, "branch: bar", res.Content())
 		}
 
 		{
 			msg := c.NewMessage()
 			msg.SetContent(`{ "foo": "baz" }`)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			err = c.SendTo(chp, msg)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			res, err := h.Get(1 * time.Minute)
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, "branch: baz", res.Content())
 		}
 
 		{
 			msg := c.NewMessage()
 			msg.SetContent(`{ "bar": "baz" }`)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			err = c.SendTo(chp, msg)
-			require.Nil(t, err)
+			require.NoError(t, err)
 
 			res, err := h.Get(1 * time.Minute)
-			require.Nil(t, err)
+			require.NoError(t, err)
 			require.Equal(t, "branch: otherwise", res.Content())
 		}
 	})

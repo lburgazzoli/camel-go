@@ -30,17 +30,17 @@ func TestProcessor(t *testing.T) {
 		p.Ref = "p"
 
 		pv, err := p.Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pv)
 
 		pvp, err := c.Spawn(pv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pvp)
 
 		msg := c.NewMessage()
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.Equal(t, content, res.Content())
 	})
 }

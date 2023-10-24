@@ -35,17 +35,17 @@ func TestSetHeader(t *testing.T) {
 			}))
 
 		pv, err := p.Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pv)
 
 		pvp, err := c.Spawn(pv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pvp)
 
 		msg := c.NewMessage()
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		h, ok := res.Header(name)
 		require.True(t, ok)
@@ -67,18 +67,18 @@ func TestSetHeader(t *testing.T) {
 		)
 
 		pv, err := p.Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pv)
 
 		pvp, err := c.Spawn(pv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pvp)
 
 		msg := c.NewMessage()
 		msg.SetContent(`{ "foo": "bar"}`)
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		h, ok := res.Header(name)
 		require.True(t, ok)

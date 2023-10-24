@@ -26,11 +26,11 @@ func TestTransformWASM(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, wgv)
 
 		wgp, err := c.Spawn(wgv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, wgp)
 
 		l := language.Language{
@@ -38,11 +38,11 @@ func TestTransformWASM(t *testing.T) {
 		}
 
 		pv, err := New(WithLanguage(l)).Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pv)
 
 		pvp, err := c.Spawn(pv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pvp)
 
 		msg := c.NewMessage()
@@ -51,7 +51,7 @@ func TestTransformWASM(t *testing.T) {
 		msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		body, ok := res.Content().([]byte)
 		assert.True(t, ok)
@@ -66,11 +66,11 @@ func TestTransformWASM(t *testing.T) {
 		c := camel.ExtractContext(ctx)
 
 		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, wgv)
 
 		wgp, err := c.Spawn(wgv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, wgp)
 
 		l := language.Language{
@@ -78,11 +78,11 @@ func TestTransformWASM(t *testing.T) {
 		}
 
 		pv, err := New(WithLanguage(l)).Reify(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pv)
 
 		pvp, err := c.Spawn(pv)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		require.NotNil(t, pvp)
 
 		msg := c.NewMessage()
@@ -91,12 +91,12 @@ func TestTransformWASM(t *testing.T) {
 		msg.SetAttribute("foo", "bar")
 
 		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		body, ok := res.Content().([]byte)
 		assert.True(t, ok)
 		assert.Equal(t, "hello from wasm", string(body))
 
-		require.Nil(t, c.SendTo(pvp, msg))
+		require.NoError(t, c.SendTo(pvp, msg))
 	})
 }

@@ -3,6 +3,7 @@ package camel
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/lburgazzoli/camel-go/pkg/components/dapr"
 	"github.com/lburgazzoli/camel-go/pkg/health"
@@ -170,7 +171,7 @@ func (a *DeployAction) deployment(_ context.Context, rc *ReconciliationRequest) 
 
 		podannotations[dapr.AnnotationAEnabled] = "true"
 		podannotations[dapr.AnnotationAppID] = rc.Resource.Namespace + "-" + rc.Resource.Name
-		podannotations[dapr.AnnotationAppPort] = fmt.Sprintf("%d", dapr.DefaultPort)
+		podannotations[dapr.AnnotationAppPort] = strconv.Itoa(dapr.DefaultPort)
 		podannotations[dapr.AnnotationAppProtocol] = dapr.DefaultProtocol
 	}
 
