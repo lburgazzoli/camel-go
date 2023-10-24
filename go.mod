@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.25.0
 	github.com/tetratelabs/wazero v1.5.0
-	github.com/twmb/franz-go v1.15.0
+	github.com/twmb/franz-go v1.15.1
 	github.com/twmb/franz-go/pkg/kadm v1.9.2
 	github.com/wI2L/jsondiff v0.4.0
 	go.opentelemetry.io/otel/trace v1.19.0
@@ -144,7 +144,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.6.1 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.7.0 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
