@@ -1,11 +1,13 @@
-////go:build components_kafka || components_all
+// //go:build components_kafka || components_all
 
 package kafka
 
 import (
+	"bytes"
 	"context"
-	"strings"
+	"github.com/stretchr/testify/require"
 	"testing"
+	"text/template"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -42,7 +44,7 @@ const simpleKafka = `
         - to:
             uri: "kafka:foo"
             parameters:
-              brokers: "localhost:9092"
+              brokers: "{{.broker}}"
 `
 
 func TestSimpleKafka(t *testing.T) {
@@ -64,6 +66,13 @@ func TestSimpleKafka(t *testing.T) {
 
 		assert.Nil(t, container.Start(ctx))
 
+		ac, err := container.Admin(ctx)
+		assert.Nil(t, err)
+
+		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
+		assert.Nil(t, err)
+		assert.Nil(t, tp.Err)
+
 		cl, err := container.Client(
 			ctx,
 			kgo.ConsumeTopics("foo"),
@@ -74,13 +83,6 @@ func TestSimpleKafka(t *testing.T) {
 
 		defer cl.Close()
 
-		ac, err := container.Admin(ctx)
-		assert.Nil(t, err)
-
-		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		assert.Nil(t, err)
-		assert.Nil(t, tp.Err)
-
 		c := camel.ExtractContext(ctx)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
@@ -88,7 +90,17 @@ func TestSimpleKafka(t *testing.T) {
 			return nil
 		})
 
-		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
+		tmpl, err := template.New("route").Parse(simpleKafka)
+		require.NoError(t, err)
+
+		broker, err := container.Broker(ctx)
+		require.NoError(t, err)
+
+		buffer := bytes.Buffer{}
+		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
+		require.NoError(t, err)
+
+		err = c.LoadRoutes(ctx, &buffer)
 		assert.Nil(t, err)
 
 		RegisterTestingT(t)
@@ -116,7 +128,7 @@ const simpleKafkaWASM = `
         - to:
             uri: "kafka:foo"
             parameters:
-              brokers: "localhost:9092"
+              brokers: "{{.broker}}"
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {
@@ -136,6 +148,13 @@ func TestSimpleKafkaWASM(t *testing.T) {
 
 		assert.Nil(t, container.Start(ctx))
 
+		ac, err := container.Admin(ctx)
+		assert.Nil(t, err)
+
+		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
+		assert.Nil(t, err)
+		assert.Nil(t, tp.Err)
+
 		cl, err := container.Client(
 			ctx,
 			kgo.ConsumeTopics("foo"),
@@ -146,16 +165,19 @@ func TestSimpleKafkaWASM(t *testing.T) {
 
 		defer cl.Close()
 
-		ac, err := container.Admin(ctx)
-		assert.Nil(t, err)
-
-		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		assert.Nil(t, err)
-		assert.Nil(t, tp.Err)
-
 		c := camel.ExtractContext(ctx)
 
-		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
+		tmpl, err := template.New("route").Parse(simpleKafkaWASM)
+		require.NoError(t, err)
+
+		broker, err := container.Broker(ctx)
+		require.NoError(t, err)
+
+		buffer := bytes.Buffer{}
+		err = tmpl.Execute(&buffer, map[string]string{"broker": broker})
+		require.NoError(t, err)
+
+		err = c.LoadRoutes(ctx, &buffer)
 		assert.Nil(t, err)
 
 		RegisterTestingT(t)
