@@ -32,14 +32,15 @@ func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
 	}
 
-	props := c.Context().Properties().View(PropertiesPrefix).Parameters()
-	for k, v := range config {
-		props[k] = v
+	view, err := c.Context().Properties().View(PropertiesPrefix).Merge(config)
+	if err != nil {
+		return nil, err
 	}
 
-	props = c.Context().Properties().ExpandAll(props)
+	params := view.Parameters()
+	params = c.Context().Properties().ExpandAll(params)
 
-	if _, err := c.Context().TypeConverter().Convert(&props, &e.config); err != nil {
+	if _, err := c.Context().TypeConverter().Convert(&params, &e.config); err != nil {
 		return nil, err
 	}
 

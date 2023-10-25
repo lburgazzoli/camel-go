@@ -24,6 +24,10 @@ func TestProperties(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "1", v)
 
+	v, ok = p1.Expand("${key1}-${nested.key2}")
+	require.True(t, ok)
+	require.Equal(t, "1-2", v)
+
 	v, ok = p1.Expand("${nested.key2}")
 	require.True(t, ok)
 	require.Equal(t, "2", v)

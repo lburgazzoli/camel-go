@@ -1,4 +1,4 @@
-////go:build components_mqtt_v3 || components_all
+// //go:build components_mqtt_v3 || components_all
 
 package v3
 
@@ -34,12 +34,15 @@ func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 		DefaultEndpoint: components.NewDefaultEndpoint(c),
 	}
 
-	props := c.Context().Properties().View(PropertiesPrefix).Parameters()
-	for k, v := range config {
-		props[k] = v
+	view, err := c.Context().Properties().View(PropertiesPrefix).Merge(config)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, err := c.Context().TypeConverter().Convert(&props, &e.config); err != nil {
+	params := view.Parameters()
+	params = c.Context().Properties().ExpandAll(params)
+
+	if _, err := c.Context().TypeConverter().Convert(&params, &e.config); err != nil {
 		return nil, err
 	}
 

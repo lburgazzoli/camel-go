@@ -73,8 +73,11 @@ type Registry interface {
 
 type PropertiesResolver interface {
 	Parameters() Parameters
+
 	Expand(string) (string, bool)
 	ExpandAll(map[string]any) map[string]any
+
+	Merge(map[string]any) (PropertiesResolver, error)
 }
 
 type Properties interface {

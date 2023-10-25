@@ -5,7 +5,6 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/knadh/koanf/providers/confmap"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/pkg/errors"
 
-	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/v2"
 	"github.com/lburgazzoli/camel-go/pkg/api"
 )
@@ -24,22 +22,13 @@ const delimiter = "."
 const envPrefix = "CAMEL_"
 
 func NewDefaultProperties() (api.Properties, error) {
-	p := defaultProperties{
-		konf: koanf.New(delimiter),
-	}
-
-	envProvider := env.Provider(envPrefix, delimiter, func(s string) string {
-		s = strings.TrimPrefix(s, envPrefix)
-		s = strings.ReplaceAll(s, "_", delimiter)
-		s = strings.ToLower(s)
-
-		return s
-	})
-
-	err := p.konf.Load(envProvider, nil)
-
+	k, err := newKoanf()
 	if err != nil {
 		return nil, err
+	}
+
+	p := defaultProperties{
+		konf: k,
 	}
 
 	return &p, nil
@@ -135,4 +124,15 @@ func (r *defaultProperties) ExpandAll(in map[string]any) map[string]any {
 	}
 
 	return answer
+}
+
+func (r *defaultProperties) Merge(in map[string]any) (api.PropertiesResolver, error) {
+	konf := r.konf.Copy()
+	for k, v := range in {
+		if err := konf.Set(k, v); err != nil {
+			return nil, err
+		}
+	}
+
+	return &defaultProperties{konf: konf}, nil
 }
