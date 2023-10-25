@@ -72,8 +72,9 @@ type Registry interface {
 }
 
 type PropertiesResolver interface {
-	String(string) (string, bool)
 	Parameters() Parameters
+	Expand(string) (string, bool)
+	ExpandAll(map[string]any) map[string]any
 }
 
 type Properties interface {
@@ -83,8 +84,6 @@ type Properties interface {
 	AddSource(string) error
 
 	View(string) PropertiesResolver
-	Expand(string) string
-	ExpandAll(map[string]any) map[string]any
 }
 
 //nolint:interfacebloat

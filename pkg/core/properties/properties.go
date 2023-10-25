@@ -22,8 +22,6 @@ import (
 
 const delimiter = "."
 const envPrefix = "CAMEL_"
-const placeholderBegin = "{{"
-const placeholderEnd = "}}"
 
 func NewDefaultProperties() (api.Properties, error) {
 	p := defaultProperties{
@@ -96,25 +94,6 @@ func (r *defaultProperties) AddSource(path string) error {
 	return nil
 }
 
-func (r *defaultProperties) String(data string) (string, bool) {
-	// TODO: must handle multiple placeholders, recursion, etc.
-
-	key := data
-
-	if strings.HasPrefix(data, placeholderBegin) && strings.HasSuffix(data, placeholderEnd) {
-		key = strings.TrimPrefix(key, placeholderBegin)
-		key = strings.TrimSuffix(key, placeholderEnd)
-	}
-
-	if v := r.konf.Get(key); v != nil {
-		if i, ok := v.(string); ok {
-			return i, true
-		}
-	}
-
-	return data, false
-}
-
 func (r *defaultProperties) Parameters() api.Parameters {
 	return r.konf.All()
 }
@@ -125,24 +104,33 @@ func (r *defaultProperties) View(path string) api.PropertiesResolver {
 	}
 }
 
-func (r *defaultProperties) Expand(in string) string {
-	return os.Expand(in, func(s string) string {
-		r, ok := r.String(s)
-		if !ok {
+func (r *defaultProperties) Expand(in string) (string, bool) {
+	answer := os.Expand(in, func(s string) string {
+		v := r.konf.Get(s)
+		if v == nil {
 			return ""
 		}
 
-		return r
+		if i, ok := v.(string); ok {
+			return i
+		}
+
+		return ""
 	})
+
+	if answer == "" {
+		answer = in
+	}
+
+	return answer, answer != in
 }
 
 func (r *defaultProperties) ExpandAll(in map[string]any) map[string]any {
 	answer := maps.Clone(in)
 
 	for k := range answer {
-		switch v := answer[k].(type) {
-		case string:
-			answer[k] = r.Expand(v)
+		if v, ok := answer[k].(string); ok {
+			answer[k], _ = r.Expand(v)
 		}
 	}
 

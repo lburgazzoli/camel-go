@@ -20,31 +20,31 @@ func TestProperties(t *testing.T) {
 		}),
 	)
 
-	v, ok := p1.String("key1")
+	v, ok := p1.Expand("${key1}")
 	require.True(t, ok)
 	require.Equal(t, "1", v)
 
-	v, ok = p1.String("nested.key2")
+	v, ok = p1.Expand("${nested.key2}")
 	require.True(t, ok)
 	require.Equal(t, "2", v)
 
 	p2 := p1.View("nested")
 
-	v, ok = p2.String("key2")
+	v, ok = p2.Expand("${key2}")
 	require.True(t, ok)
 	require.Equal(t, "2", v)
 
-	v, ok = p2.String("key1")
+	v, ok = p2.Expand("${key1}")
 	require.False(t, ok)
-	require.Equal(t, "key1", v)
+	require.Equal(t, "${key1}", v)
 
 	p3 := p1.View("deep.nested")
 
-	v, ok = p3.String("key3")
+	v, ok = p3.Expand("${key3}")
 	require.True(t, ok)
 	require.Equal(t, "3", v)
 
-	v, ok = p3.String("nested.key2")
+	v, ok = p3.Expand("${nested.key2}")
 	require.False(t, ok)
-	require.Equal(t, "nested.key2", v)
+	require.Equal(t, "${nested.key2}", v)
 }
