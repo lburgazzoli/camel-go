@@ -83,6 +83,8 @@ type Properties interface {
 	AddSource(string) error
 
 	View(string) PropertiesResolver
+	Expand(string) string
+	ExpandAll(map[string]any) map[string]any
 }
 
 //nolint:interfacebloat

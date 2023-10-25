@@ -4,6 +4,7 @@ package kafka
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,7 @@ const simpleKafka = `
         - to:
             uri: "kafka:foo"
             parameters:
-              brokers: "{{.broker}}"
+              brokers: "${kafka.broker}"
 `
 
 func TestSimpleKafka(t *testing.T) {
@@ -80,20 +81,20 @@ func TestSimpleKafka(t *testing.T) {
 
 		defer cl.Close()
 
+		props, err := container.Properties(ctx)
+		require.NoError(t, err)
+
 		c := camel.ExtractContext(ctx)
+
+		err = c.Properties().Add(props)
+		require.NoError(t, err)
 
 		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 			message.SetContent(content)
 			return nil
 		})
 
-		broker, err := container.Broker(ctx)
-		require.NoError(t, err)
-
-		err = support.LoadRoutes(ctx, simpleKafka, map[string]string{
-			"broker": broker,
-		})
-
+		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
 		require.NoError(t, err)
 
 		RegisterTestingT(t)
@@ -121,7 +122,7 @@ const simpleKafkaWASM = `
         - to:
             uri: "kafka:foo"
             parameters:
-              brokers: "{{.broker}}"
+              brokers: "${kafka.broker}"
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {
@@ -158,13 +159,15 @@ func TestSimpleKafkaWASM(t *testing.T) {
 
 		defer cl.Close()
 
-		broker, err := container.Broker(ctx)
+		props, err := container.Properties(ctx)
 		require.NoError(t, err)
 
-		err = support.LoadRoutes(ctx, simpleKafkaWASM, map[string]string{
-			"broker": broker,
-		})
+		c := camel.ExtractContext(ctx)
 
+		err = c.Properties().Add(props)
+		require.NoError(t, err)
+
+		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
 		require.NoError(t, err)
 
 		RegisterTestingT(t)

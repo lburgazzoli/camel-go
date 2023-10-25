@@ -131,6 +131,31 @@ func (c *Container) Broker(ctx context.Context) (string, error) {
 	return c.PortEndpoint(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)), "")
 }
 
+func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
+	host, err := c.Host(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get container host: %w", err)
+	}
+
+	port, err := c.MappedPort(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get mapped Kafka port: %w", err)
+	}
+
+	broker, err := c.Broker(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	props := map[string]any{
+		"kafka.broker": broker,
+		"kafka.host":   host,
+		"kafka.port":   port.Int(),
+	}
+
+	return props, nil
+
+}
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	tmpDir, err := os.MkdirTemp("", "redpanda")
 	if err != nil {

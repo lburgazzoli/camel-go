@@ -1,4 +1,4 @@
-////go:build components_kafka || components_all
+// //go:build components_kafka || components_all
 
 package kafka
 
@@ -38,6 +38,8 @@ func (c *Component) Endpoint(config api.Parameters) (api.Endpoint, error) {
 	for k, v := range config {
 		props[k] = v
 	}
+
+	props = c.Context().Properties().ExpandAll(props)
 
 	if _, err := c.Context().TypeConverter().Convert(&props, &e.config); err != nil {
 		return nil, err

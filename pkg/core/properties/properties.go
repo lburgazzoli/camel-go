@@ -2,6 +2,7 @@ package properties
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -122,4 +123,28 @@ func (r *defaultProperties) View(path string) api.PropertiesResolver {
 	return &defaultProperties{
 		konf: r.konf.Cut(path),
 	}
+}
+
+func (r *defaultProperties) Expand(in string) string {
+	return os.Expand(in, func(s string) string {
+		r, ok := r.String(s)
+		if !ok {
+			return ""
+		}
+
+		return r
+	})
+}
+
+func (r *defaultProperties) ExpandAll(in map[string]any) map[string]any {
+	answer := maps.Clone(in)
+
+	for k := range answer {
+		switch v := answer[k].(type) {
+		case string:
+			answer[k] = r.Expand(v)
+		}
+	}
+
+	return answer
 }
