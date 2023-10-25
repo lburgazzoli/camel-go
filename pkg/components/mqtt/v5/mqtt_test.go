@@ -40,59 +40,57 @@ const simpleMQTT = `
 `
 
 func TestSimpleMQTT(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
 
-		content := uuid.New()
-		wg := make(chan camel.Message)
+	content := uuid.New()
+	wg := make(chan camel.Message)
 
-		conf, err := filepath.Abs("../../../../etc/support/mqtt/mosquitto.conf")
-		require.NoError(t, err)
-		require.FileExists(t, conf)
+	conf, err := filepath.Abs("../../../../etc/support/mqtt/mosquitto.conf")
+	require.NoError(t, err)
+	require.FileExists(t, conf)
 
-		container, err := mqtt.NewContainer(ctx, mqtt.WithConfig(conf))
-		if err != nil {
-			t.Error(err)
+	container, err := mqtt.NewContainer(g.Ctx(), mqtt.WithConfig(conf))
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		if err := container.Stop(g.Ctx()); err != nil {
+			t.Fatal(err.Error())
 		}
+	}()
 
-		defer func() {
-			if err := container.Stop(ctx); err != nil {
-				t.Fatal(err.Error())
-			}
-		}()
+	require.NoError(t, container.Start(g.Ctx()))
 
-		require.NoError(t, container.Start(ctx))
+	cl, err := container.Client(g.Ctx())
+	require.NoError(t, err)
 
-		cl, err := container.Client(ctx)
-		require.NoError(t, err)
-
-		c := camel.ExtractContext(ctx)
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		broker, err := container.Broker(ctx)
-		require.NoError(t, err)
-
-		err = support.LoadRoutes(ctx, simpleMQTT, map[string]string{
-			"broker": broker,
-		})
-
-		require.NoError(t, err)
-
-		token := cl.Publish("camel/iot", 0, true, content)
-		token.Wait()
-		require.NoError(t, token.Error())
-
-		select {
-		case msg := <-wg:
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, content, string(c))
-
-		case <-time.After(10 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+	c := camel.ExtractContext(g.Ctx())
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
 	})
+
+	broker, err := container.Broker(g.Ctx())
+	require.NoError(t, err)
+
+	err = support.LoadRoutes(g.Ctx(), simpleMQTT, map[string]string{
+		"broker": broker,
+	})
+
+	require.NoError(t, err)
+
+	token := cl.Publish("camel/iot", 0, true, content)
+	token.Wait()
+	require.NoError(t, token.Error())
+
+	select {
+	case msg := <-wg:
+		c, ok := msg.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, content, string(c))
+
+	case <-time.After(10 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }

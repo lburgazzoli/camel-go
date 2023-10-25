@@ -3,7 +3,6 @@
 package transform
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -17,86 +16,83 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
-func TestTransformWASM(t *testing.T) {
-	support.Run(t, "wasm_local", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+func TestTransformWASMLocal(t *testing.T) {
 
-		wg := make(chan camel.Message)
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		c := camel.ExtractContext(ctx)
+	wg := make(chan camel.Message)
 
-		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, wgv)
+	wgv, err := support.NewChannelVerticle(wg).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, wgv)
 
-		wgp, err := c.Spawn(wgv)
-		require.NoError(t, err)
-		require.NotNil(t, wgp)
+	wgp, err := c.Spawn(wgv)
+	require.NoError(t, err)
+	require.NotNil(t, wgp)
 
-		l := language.Language{
-			Wasm: wasm.New(wasm.WithRef("../../../../etc/wasm/fn/simple_process.wasm")),
-		}
+	l := language.Language{
+		Wasm: wasm.New(wasm.WithRef("../../../../etc/wasm/fn/simple_process.wasm")),
+	}
 
-		pv, err := New(WithLanguage(l)).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, pv)
+	pv, err := New(WithLanguage(l)).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, pv)
 
-		pvp, err := c.Spawn(pv)
-		require.NoError(t, err)
-		require.NotNil(t, pvp)
+	pvp, err := c.Spawn(pv)
+	require.NoError(t, err)
+	require.NotNil(t, pvp)
 
-		msg := c.NewMessage()
+	msg := c.NewMessage()
 
-		msg.SetContent(uuid.New())
-		msg.SetAttribute("foo", "bar")
+	msg.SetContent(uuid.New())
+	msg.SetAttribute("foo", "bar")
 
-		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.NoError(t, err)
+	res, err := c.RequestTo(pvp, msg, 1*time.Second)
+	require.NoError(t, err)
 
-		body, ok := res.Content().([]byte)
-		assert.True(t, ok)
-		assert.Equal(t, "hello from wasm", string(body))
-	})
+	body, ok := res.Content().([]byte)
+	assert.True(t, ok)
+	assert.Equal(t, "hello from wasm", string(body))
+}
 
-	support.Run(t, "wasm_registry", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+func TestTransformWASMRegistry(t *testing.T) {
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		wg := make(chan camel.Message)
+	wg := make(chan camel.Message)
 
-		c := camel.ExtractContext(ctx)
+	wgv, err := support.NewChannelVerticle(wg).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, wgv)
 
-		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, wgv)
+	wgp, err := c.Spawn(wgv)
+	require.NoError(t, err)
+	require.NotNil(t, wgp)
 
-		wgp, err := c.Spawn(wgv)
-		require.NoError(t, err)
-		require.NotNil(t, wgp)
+	l := language.Language{
+		Wasm: wasm.New(wasm.WithRef("quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/simple_process.wasm")),
+	}
 
-		l := language.Language{
-			Wasm: wasm.New(wasm.WithRef("quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/simple_process.wasm")),
-		}
+	pv, err := New(WithLanguage(l)).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, pv)
 
-		pv, err := New(WithLanguage(l)).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, pv)
+	pvp, err := c.Spawn(pv)
+	require.NoError(t, err)
+	require.NotNil(t, pvp)
 
-		pvp, err := c.Spawn(pv)
-		require.NoError(t, err)
-		require.NotNil(t, pvp)
+	msg := c.NewMessage()
 
-		msg := c.NewMessage()
+	msg.SetContent(uuid.New())
+	msg.SetAttribute("foo", "bar")
 
-		msg.SetContent(uuid.New())
-		msg.SetAttribute("foo", "bar")
+	res, err := c.RequestTo(pvp, msg, 1*time.Second)
+	require.NoError(t, err)
 
-		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.NoError(t, err)
+	body, ok := res.Content().([]byte)
+	assert.True(t, ok)
+	assert.Equal(t, "hello from wasm", string(body))
 
-		body, ok := res.Content().([]byte)
-		assert.True(t, ok)
-		assert.Equal(t, "hello from wasm", string(body))
-
-		require.NoError(t, c.SendTo(pvp, msg))
-	})
+	require.NoError(t, c.SendTo(pvp, msg))
 }

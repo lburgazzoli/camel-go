@@ -3,7 +3,6 @@
 package setheader
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -17,71 +16,67 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 )
 
-func TestSetHeader(t *testing.T) {
-	support.Run(t, "constant", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+func TestSetHeaderConstant(t *testing.T) {
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		name := uuid.New()
-		content := uuid.New()
+	name := uuid.New()
+	content := uuid.New()
 
-		c := camel.ExtractContext(ctx)
+	p := New(
+		WithName(name),
+		WithLanguage(language.Language{
+			Constant: &constant.Constant{
+				Value: content,
+			},
+		}))
 
-		p := New(
-			WithName(name),
-			WithLanguage(language.Language{
-				Constant: &constant.Constant{
-					Value: content,
-				},
-			}))
+	pv, err := p.Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, pv)
 
-		pv, err := p.Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, pv)
+	pvp, err := c.Spawn(pv)
+	require.NoError(t, err)
+	require.NotNil(t, pvp)
 
-		pvp, err := c.Spawn(pv)
-		require.NoError(t, err)
-		require.NotNil(t, pvp)
+	msg := c.NewMessage()
 
-		msg := c.NewMessage()
+	res, err := c.RequestTo(pvp, msg, 1*time.Second)
+	require.NoError(t, err)
 
-		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.NoError(t, err)
+	h, ok := res.Header(name)
+	require.True(t, ok)
+	require.Equal(t, content, h)
+}
 
-		h, ok := res.Header(name)
-		require.True(t, ok)
-		require.Equal(t, content, h)
-	})
+func TestSetHeaderJQ(t *testing.T) {
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-	support.Run(t, "jq", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	name := uuid.New()
 
-		name := uuid.New()
+	p := New(
+		WithName(name),
+		WithLanguage(*language.New(
+			language.WithJqExpression(".foo")),
+		),
+	)
 
-		c := camel.ExtractContext(ctx)
+	pv, err := p.Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, pv)
 
-		p := New(
-			WithName(name),
-			WithLanguage(*language.New(
-				language.WithJqExpression(".foo")),
-			),
-		)
+	pvp, err := c.Spawn(pv)
+	require.NoError(t, err)
+	require.NotNil(t, pvp)
 
-		pv, err := p.Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, pv)
+	msg := c.NewMessage()
+	msg.SetContent(`{ "foo": "bar"}`)
 
-		pvp, err := c.Spawn(pv)
-		require.NoError(t, err)
-		require.NotNil(t, pvp)
+	res, err := c.RequestTo(pvp, msg, 1*time.Second)
+	require.NoError(t, err)
 
-		msg := c.NewMessage()
-		msg.SetContent(`{ "foo": "bar"}`)
-
-		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.NoError(t, err)
-
-		h, ok := res.Header(name)
-		require.True(t, ok)
-		require.Equal(t, "bar", h)
-	})
+	h, ok := res.Header(name)
+	require.True(t, ok)
+	require.Equal(t, "bar", h)
 }

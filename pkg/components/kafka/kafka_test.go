@@ -46,67 +46,65 @@ const simpleKafka = `
 `
 
 func TestSimpleKafka(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
 
-		content := uuid.New()
+	content := uuid.New()
 
-		container, err := kafka.NewContainer(ctx)
-		if err != nil {
-			t.Error(err)
+	container, err := kafka.NewContainer(g.Ctx())
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		if err := container.Stop(g.Ctx()); err != nil {
+			t.Fatal(err.Error())
 		}
+	}()
 
-		defer func() {
-			if err := container.Stop(ctx); err != nil {
-				t.Fatal(err.Error())
-			}
-		}()
+	require.NoError(t, container.Start(g.Ctx()))
 
-		require.NoError(t, container.Start(ctx))
+	ac, err := container.Admin(g.Ctx())
+	require.NoError(t, err)
 
-		ac, err := container.Admin(ctx)
-		require.NoError(t, err)
+	tp, err := ac.CreateTopic(g.Ctx(), 3, 1, nil, "foo")
+	require.NoError(t, err)
+	require.NoError(t, tp.Err)
 
-		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		require.NoError(t, err)
-		require.NoError(t, tp.Err)
+	cl, err := container.Client(
+		g.Ctx(),
+		kgo.ConsumeTopics("foo"),
+		kgo.ConsumerGroup(uuid.New()),
+	)
 
-		cl, err := container.Client(
-			ctx,
-			kgo.ConsumeTopics("foo"),
-			kgo.ConsumerGroup(uuid.New()),
-		)
+	require.NoError(t, err)
 
-		require.NoError(t, err)
+	defer cl.Close()
 
-		defer cl.Close()
+	props, err := container.Properties(g.Ctx())
+	require.NoError(t, err)
 
-		props, err := container.Properties(ctx)
-		require.NoError(t, err)
+	c := camel.ExtractContext(g.Ctx())
 
-		c := camel.ExtractContext(ctx)
+	err = c.Properties().Add(props)
+	require.NoError(t, err)
 
-		err = c.Properties().Add(props)
-		require.NoError(t, err)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetContent(content)
-			return nil
-		})
-
-		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafka))
-		require.NoError(t, err)
-
-		RegisterTestingT(t)
-
-		Eventually(func(g Gomega) {
-			f := cl.PollFetches(ctx)
-
-			Expect(f.Errors()).To(BeEmpty())
-			Expect(f.NumRecords()).To(Equal(1))
-			Expect(string(f.Records()[0].Value)).To(Equal(content))
-		}).Should(Succeed())
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetContent(content)
+		return nil
 	})
+
+	err = c.LoadRoutes(g.Ctx(), strings.NewReader(simpleKafka))
+	require.NoError(t, err)
+
+	RegisterTestingT(t)
+
+	Eventually(func(_ Gomega) {
+		f := cl.PollFetches(g.Ctx())
+
+		Expect(f.Errors()).To(BeEmpty())
+		Expect(f.NumRecords()).To(Equal(1))
+		Expect(string(f.Records()[0].Value)).To(Equal(content))
+	}).Should(Succeed())
 }
 
 const simpleKafkaWASM = `
@@ -126,58 +124,56 @@ const simpleKafkaWASM = `
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
 
-		container, err := kafka.NewContainer(ctx)
-		if err != nil {
-			t.Error(err)
+	container, err := kafka.NewContainer(g.Ctx())
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer func() {
+		if err := container.Stop(g.Ctx()); err != nil {
+			t.Fatal(err.Error())
 		}
+	}()
 
-		defer func() {
-			if err := container.Stop(ctx); err != nil {
-				t.Fatal(err.Error())
-			}
-		}()
+	require.NoError(t, container.Start(g.Ctx()))
 
-		require.NoError(t, container.Start(ctx))
+	ac, err := container.Admin(g.Ctx())
+	require.NoError(t, err)
 
-		ac, err := container.Admin(ctx)
-		require.NoError(t, err)
+	tp, err := ac.CreateTopic(g.Ctx(), 3, 1, nil, "foo")
+	require.NoError(t, err)
+	require.NoError(t, tp.Err)
 
-		tp, err := ac.CreateTopic(ctx, 3, 1, nil, "foo")
-		require.NoError(t, err)
-		require.NoError(t, tp.Err)
+	cl, err := container.Client(
+		g.Ctx(),
+		kgo.ConsumeTopics("foo"),
+		kgo.ConsumerGroup(uuid.New()),
+	)
 
-		cl, err := container.Client(
-			ctx,
-			kgo.ConsumeTopics("foo"),
-			kgo.ConsumerGroup(uuid.New()),
-		)
+	require.NoError(t, err)
 
-		require.NoError(t, err)
+	defer cl.Close()
 
-		defer cl.Close()
+	props, err := container.Properties(g.Ctx())
+	require.NoError(t, err)
 
-		props, err := container.Properties(ctx)
-		require.NoError(t, err)
+	c := camel.ExtractContext(g.Ctx())
 
-		c := camel.ExtractContext(ctx)
+	err = c.Properties().Add(props)
+	require.NoError(t, err)
 
-		err = c.Properties().Add(props)
-		require.NoError(t, err)
+	err = c.LoadRoutes(g.Ctx(), strings.NewReader(simpleKafkaWASM))
+	require.NoError(t, err)
 
-		err = c.LoadRoutes(ctx, strings.NewReader(simpleKafkaWASM))
-		require.NoError(t, err)
+	RegisterTestingT(t)
 
-		RegisterTestingT(t)
+	Eventually(func(_ Gomega) {
+		f := cl.PollFetches(g.Ctx())
 
-		Eventually(func(g Gomega) {
-			f := cl.PollFetches(ctx)
-
-			Expect(f.Errors()).To(BeEmpty())
-			Expect(f.NumRecords()).To(Equal(1))
-			Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
-		}).Should(Succeed())
-	})
+		Expect(f.Errors()).To(BeEmpty())
+		Expect(f.NumRecords()).To(Equal(1))
+		Expect(string(f.Records()[0].Value)).To(Equal("hello from wasm"))
+	}).Should(Succeed())
 }

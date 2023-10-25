@@ -4,8 +4,6 @@ package engine
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/stretchr/testify/require"
@@ -13,10 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
-	"github.com/pkg/errors"
-
 	// helper to include everything.
 	_ "github.com/lburgazzoli/camel-go/pkg/components/dapr/pubsub"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/http"
@@ -33,8 +28,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	camelc "github.com/lburgazzoli/camel-go/pkg/core/context"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,36 +43,33 @@ const simpleYAML = `
 `
 
 func TestSimpleYAML(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		content := uuid.New()
-		wg := make(chan camel.Message)
+	content := uuid.New()
+	wg := make(chan camel.Message)
 
-		c := camel.ExtractContext(ctx)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetContent(content)
-			return nil
-		})
-		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleYAML))
-		require.NoError(t, err)
-
-		select {
-		case msg := <-wg:
-			a, ok := msg.Attribute(timer.AttributeTimerFiredCount)
-			assert.True(t, ok)
-			assert.Equal(t, "1", a)
-			assert.Equal(t, content, msg.Content())
-		case <-time.After(60 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetContent(content)
+		return nil
 	})
+	c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
+	})
+
+	err := c.LoadRoutes(g.Ctx(), strings.NewReader(simpleYAML))
+	require.NoError(t, err)
+
+	select {
+	case msg := <-wg:
+		a, ok := msg.Attribute(timer.AttributeTimerFiredCount)
+		assert.True(t, ok)
+		assert.Equal(t, "1", a)
+		assert.Equal(t, content, msg.Content())
+	case <-time.After(60 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }
 
 const simpleWASM = `
@@ -97,37 +87,34 @@ const simpleWASM = `
 `
 
 func TestSimpleWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		wg := make(chan camel.Message)
+	wg := make(chan camel.Message)
 
-		c := camel.ExtractContext(ctx)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetSubject("consumer-1")
-			return nil
-		})
-		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleWASM))
-		require.NoError(t, err)
-
-		select {
-		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.Subject())
-
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, "hello from wasm", string(c))
-
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetSubject("consumer-1")
+		return nil
 	})
+	c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
+	})
+
+	err := c.LoadRoutes(g.Ctx(), strings.NewReader(simpleWASM))
+	require.NoError(t, err)
+
+	select {
+	case msg := <-wg:
+		assert.Equal(t, "consumer-1", msg.Subject())
+
+		c, ok := msg.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, "hello from wasm", string(c))
+
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }
 
 const simpleInlineWASM = `
@@ -144,37 +131,33 @@ const simpleInlineWASM = `
 `
 
 func TestSimpleInlineWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
+	wg := make(chan camel.Message)
 
-		wg := make(chan camel.Message)
-
-		c := camel.ExtractContext(ctx)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetSubject("consumer-1")
-			return nil
-		})
-		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineWASM))
-		require.NoError(t, err)
-
-		select {
-		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.Subject())
-
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, "hello from wasm", string(c))
-
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetSubject("consumer-1")
+		return nil
 	})
+	c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
+	})
+
+	err := c.LoadRoutes(g.Ctx(), strings.NewReader(simpleInlineWASM))
+	require.NoError(t, err)
+
+	select {
+	case msg := <-wg:
+		assert.Equal(t, "consumer-1", msg.Subject())
+
+		c, ok := msg.Content().([]byte)
+		assert.True(t, ok)
+		assert.Equal(t, "hello from wasm", string(c))
+
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }
 
 const simpleInlineImageWASM = `
@@ -191,77 +174,31 @@ const simpleInlineImageWASM = `
 `
 
 func TestSimpleInlineImageWASM(t *testing.T) {
-	support.Run(t, "run", func(t *testing.T, ctx context.Context) {
-		t.Helper()
-
-		wg := make(chan camel.Message)
-
-		c := camel.ExtractContext(ctx)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetSubject("consumer-1")
-			return nil
-		})
-		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		err := c.LoadRoutes(ctx, strings.NewReader(simpleInlineImageWASM))
-		require.NoError(t, err)
-
-		select {
-		case msg := <-wg:
-			assert.Equal(t, "consumer-1", msg.Subject())
-
-			c, ok := msg.Content().([]byte)
-			assert.True(t, ok)
-			assert.Equal(t, "hello from wasm", string(c))
-
-		case <-time.After(5 * time.Second):
-			assert.Fail(t, "timeout")
-		}
-	})
-}
-
-const simpleError = `
-- route:
-    from:
-      uri: "timer:foo"
-      steps:
-        - process:
-            ref: "panic"
-`
-
-func TestSimpleError(t *testing.T) {
-	t.Skip("TODO")
-
-	l := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
-	camelContext := core.NewContext(l, camelc.WithLogErrorHandler())
-	ctx := context.WithValue(context.Background(), camel.ContextKeyCamelContext, camelContext)
-
-	assert.NotNil(t, camelContext)
-
-	defer func() {
-		_ = camelContext.Close(ctx)
-	}()
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
 	wg := make(chan camel.Message)
 
-	c := camel.ExtractContext(ctx)
-	c.Registry().Set("panic", func(_ context.Context, message camel.Message) error {
-		return errors.New("foo")
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetSubject("consumer-1")
+		return nil
+	})
+	c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
 	})
 
-	err := c.LoadRoutes(ctx, strings.NewReader(simpleError))
+	err := c.LoadRoutes(g.Ctx(), strings.NewReader(simpleInlineImageWASM))
 	require.NoError(t, err)
 
 	select {
 	case msg := <-wg:
-		a, ok := msg.Attribute(timer.AttributeTimerFiredCount)
+		assert.Equal(t, "consumer-1", msg.Subject())
+
+		c, ok := msg.Content().([]byte)
 		assert.True(t, ok)
-		assert.Equal(t, "1", a)
+		assert.Equal(t, "hello from wasm", string(c))
+
 	case <-time.After(5 * time.Second):
 		assert.Fail(t, "timeout")
 	}

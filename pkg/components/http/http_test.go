@@ -39,74 +39,72 @@ const simpleHTTPGet = `
 `
 
 func TestSimpleHTTPGet(t *testing.T) {
-	support.Run(t, "http_get", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			answer := map[string]any{
-				"uuid": xid.New().String(),
-			}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		answer := map[string]any{
+			"uuid": xid.New().String(),
+		}
 
-			data, err := json.Marshal(answer)
-			require.NoError(t, err)
-
-			w.Header().Set("Content-Type", "application/json")
-			_, err = io.WriteString(w, string(data))
-			require.NoError(t, err)
-		}))
-
-		defer func() {
-			ts.Close()
-		}()
-
-		wg := make(chan camel.Message)
-
-		c := camel.ExtractContext(ctx)
-
-		c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
-			message.SetHeader("Accept", "application/json")
-			return nil
-		})
-		c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
-			wg <- message
-			return nil
-		})
-
-		err := support.LoadRoutes(
-			ctx,
-			simpleHTTPGet,
-			map[string]string{
-				"URL": ts.URL,
-			},
-		)
-
+		data, err := json.Marshal(answer)
 		require.NoError(t, err)
 
-		select {
-		case msg := <-wg:
-			c, ok := msg.Content().([]byte)
-			require.True(t, ok)
-			require.NotEmpty(t, c)
+		w.Header().Set("Content-Type", "application/json")
+		_, err = io.WriteString(w, string(data))
+		require.NoError(t, err)
+	}))
 
-			ct, ok := msg.Header("Content-Type")
-			require.True(t, ok)
-			require.Equal(t, "application/json", ct)
+	defer func() {
+		ts.Close()
+	}()
 
-			sc, ok := msg.Attribute(AttributeStatusCode)
-			require.True(t, ok)
-			require.Equal(t, 200, sc)
+	wg := make(chan camel.Message)
 
-			data, err := message.ContentAsBytes(msg)
-			require.NoError(t, err)
-			require.NotEmpty(t, data)
+	c := camel.ExtractContext(g.Ctx())
 
-			m := make(map[string]any)
-			err = json.Unmarshal(data, &m)
-			require.NoError(t, err)
-			require.NotEmpty(t, m["uuid"])
-
-		case <-time.After(60 * time.Second):
-			assert.Fail(t, "timeout")
-		}
+	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
+		message.SetHeader("Accept", "application/json")
+		return nil
 	})
+	c.Registry().Set("consumer-2", func(_ context.Context, message camel.Message) error {
+		wg <- message
+		return nil
+	})
+
+	err := support.LoadRoutes(
+		g.Ctx(),
+		simpleHTTPGet,
+		map[string]string{
+			"URL": ts.URL,
+		},
+	)
+
+	require.NoError(t, err)
+
+	select {
+	case msg := <-wg:
+		c, ok := msg.Content().([]byte)
+		require.True(t, ok)
+		require.NotEmpty(t, c)
+
+		ct, ok := msg.Header("Content-Type")
+		require.True(t, ok)
+		require.Equal(t, "application/json", ct)
+
+		sc, ok := msg.Attribute(AttributeStatusCode)
+		require.True(t, ok)
+		require.Equal(t, 200, sc)
+
+		data, err := message.ContentAsBytes(msg)
+		require.NoError(t, err)
+		require.NotEmpty(t, data)
+
+		m := make(map[string]any)
+		err = json.Unmarshal(data, &m)
+		require.NoError(t, err)
+		require.NotEmpty(t, m["uuid"])
+
+	case <-time.After(60 * time.Second):
+		assert.Fail(t, "timeout")
+	}
 }

@@ -3,7 +3,6 @@
 package transform
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -17,44 +16,41 @@ import (
 )
 
 func TestTransformJQ(t *testing.T) {
-	support.Run(t, "jq", func(t *testing.T, ctx context.Context) {
-		t.Helper()
+	g := support.With(t)
+	c := camel.ExtractContext(g.Ctx())
 
-		wg := make(chan camel.Message)
+	wg := make(chan camel.Message)
 
-		c := camel.ExtractContext(ctx)
+	wgv, err := support.NewChannelVerticle(wg).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, wgv)
 
-		wgv, err := support.NewChannelVerticle(wg).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, wgv)
+	wgp, err := c.Spawn(wgv)
+	require.NoError(t, err)
+	require.NotNil(t, wgp)
 
-		wgp, err := c.Spawn(wgv)
-		require.NoError(t, err)
-		require.NotNil(t, wgp)
+	l := language.Language{
+		Jq: &jq.Jq{
+			Definition: jq.Definition{Expression: `.message`},
+		},
+	}
 
-		l := language.Language{
-			Jq: &jq.Jq{
-				Definition: jq.Definition{Expression: `.message`},
-			},
-		}
+	pv, err := New(WithLanguage(l)).Reify(g.Ctx())
+	require.NoError(t, err)
+	require.NotNil(t, pv)
 
-		pv, err := New(WithLanguage(l)).Reify(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, pv)
+	pvp, err := c.Spawn(pv)
+	require.NoError(t, err)
+	require.NotNil(t, pvp)
 
-		pvp, err := c.Spawn(pv)
-		require.NoError(t, err)
-		require.NotNil(t, pvp)
+	msg := c.NewMessage()
+	msg.SetContent(`{ "message": "hello jq" }`)
+	msg.SetAttribute("foo", "bar")
 
-		msg := c.NewMessage()
-		msg.SetContent(`{ "message": "hello jq" }`)
-		msg.SetAttribute("foo", "bar")
+	res, err := c.RequestTo(pvp, msg, 1*time.Second)
+	require.NoError(t, err)
 
-		res, err := c.RequestTo(pvp, msg, 1*time.Second)
-		require.NoError(t, err)
-
-		body, ok := res.Content().(string)
-		assert.True(t, ok)
-		assert.Equal(t, "hello jq", body)
-	})
+	body, ok := res.Content().(string)
+	assert.True(t, ok)
+	assert.Equal(t, "hello jq", body)
 }
