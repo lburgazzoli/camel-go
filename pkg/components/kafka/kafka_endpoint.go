@@ -50,7 +50,7 @@ func (e *Endpoint) Consumer(pid *actor.PID) (api.Consumer, error) {
 	return &c, nil
 }
 
-func (e *Endpoint) newClient() (*kgo.Client, error) {
+func (e *Endpoint) newClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
 	opts := make([]kgo.Opt, 0)
 	opts = append(opts, kgo.SeedBrokers(strings.Split(e.config.Brokers, ",")...))
 	opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
@@ -62,6 +62,8 @@ func (e *Endpoint) newClient() (*kgo.Client, error) {
 		opts = append(opts, kgo.SASL(authMechanism))
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}
+
+	opts = append(opts, additionalOpts...)
 
 	return kgo.NewClient(opts...)
 }

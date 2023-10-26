@@ -4,6 +4,9 @@ import "encoding/base64"
 
 const (
 	Spec1_0 = "1.0"
+
+	ExtensionPartitionKey = "partitionkey"
+	ExtensionSequence     = "sequence"
 )
 
 type CloudEventJSON struct {
