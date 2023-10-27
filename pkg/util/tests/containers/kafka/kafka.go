@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/lburgazzoli/camel-go/pkg/logger"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -276,6 +278,8 @@ func generateRedPandaConfiguration(ctx context.Context, container testcontainers
 	if err := tpl.Execute(&buffer, params); err != nil {
 		return nil, fmt.Errorf("failed to render redpanda node config template: %w", err)
 	}
+
+	logger.L.Info("redpanda", slog.String("redpanda.yaml", buffer.String()))
 
 	return buffer.Bytes(), nil
 }
