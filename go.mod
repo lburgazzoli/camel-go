@@ -11,7 +11,7 @@ require (
 	github.com/eclipse/paho.golang v0.12.0
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.3.0
 	github.com/google/go-containerregistry v0.16.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/imdario/mergo v0.3.16
