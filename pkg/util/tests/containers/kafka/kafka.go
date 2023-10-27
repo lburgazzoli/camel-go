@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/lburgazzoli/camel-go/pkg/logger"
 	"log/slog"
 	"os"
 	"path"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"text/template"
 	"time"
+
+	"github.com/lburgazzoli/camel-go/pkg/logger"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
