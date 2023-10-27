@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -116,6 +117,10 @@ func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, e
 	kopts = append(kopts, opts...)
 	kopts = append(kopts, kgo.SeedBrokers(host+":"+port.Port()))
 	kopts = append(kopts, kgo.WithLogger(kgo.BasicLogger(os.Stdout, kgo.LogLevelInfo, func() string { return id })))
+	kopts = append(kopts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
+		dialer := &net.Dialer{Timeout: 10 * time.Second}
+		return dialer.DialContext(ctx, "tcp4", host)
+	}))
 
 	return kgo.NewClient(kopts...)
 }
