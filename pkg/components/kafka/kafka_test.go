@@ -43,6 +43,7 @@ const simpleKafka = `
             uri: "kafka:foo"
             parameters:
               brokers: "${kafka.broker}"
+              forceIPV4: true
 `
 
 func TestSimpleKafka(t *testing.T) {
@@ -121,6 +122,7 @@ const simpleKafkaWASM = `
             uri: "kafka:foo"
             parameters:
               brokers: "${kafka.broker}"
+              forceIPV4: true
 `
 
 func TestSimpleKafkaWASM(t *testing.T) {

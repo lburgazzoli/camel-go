@@ -55,12 +55,30 @@ func (e *Endpoint) newClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
 	opts = append(opts, kgo.SeedBrokers(strings.Split(e.config.Brokers, ",")...))
 	opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
 
+	dialer := &net.Dialer{Timeout: 10 * time.Second}
+
 	if e.config.Username != "" && e.config.Password != "" {
-		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
+		tlsDialer := &tls.Dialer{NetDialer: dialer}
 		authMechanism := plain.Auth{User: e.config.Username, Pass: e.config.Password}.AsMechanism()
 
 		opts = append(opts, kgo.SASL(authMechanism))
-		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
+		opts = append(opts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
+			n := network
+			if e.config.ForceIPV4 {
+				n = "tcp4"
+			}
+
+			return tlsDialer.DialContext(ctx, n, host)
+		}))
+	} else {
+		opts = append(opts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
+			n := network
+			if e.config.ForceIPV4 {
+				n = "tcp4"
+			}
+
+			return dialer.DialContext(ctx, n, host)
+		}))
 	}
 
 	opts = append(opts, additionalOpts...)
