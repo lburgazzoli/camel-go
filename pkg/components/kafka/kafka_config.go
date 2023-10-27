@@ -8,5 +8,5 @@ type Config struct {
 	ConsumerGroup string `mapstructure:"consumerGroup"`
 	Username      string `mapstructure:"username"`
 	Password      string `mapstructure:"password"`
-	ForceIPV4     bool   `mapstructure:"forceIPV4"`
+	ForceIPv4     bool   `mapstructure:"forceIPv4"`
 }

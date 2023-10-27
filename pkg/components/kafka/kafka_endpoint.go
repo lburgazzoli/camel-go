@@ -64,7 +64,7 @@ func (e *Endpoint) newClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
 		opts = append(opts, kgo.SASL(authMechanism))
 		opts = append(opts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
 			n := network
-			if e.config.ForceIPV4 {
+			if e.config.ForceIPv4 {
 				n = "tcp4"
 			}
 
@@ -73,7 +73,7 @@ func (e *Endpoint) newClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
 	} else {
 		opts = append(opts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
 			n := network
-			if e.config.ForceIPV4 {
+			if e.config.ForceIPv4 {
 				n = "tcp4"
 			}
 
