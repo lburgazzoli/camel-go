@@ -2,6 +2,7 @@ package context
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -15,8 +16,6 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
 
 	"github.com/lburgazzoli/camel-go/pkg/core/properties"
-
-	"github.com/pkg/errors"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
@@ -112,12 +111,25 @@ func (c *defaultContext) Start(context.Context) error {
 	return nil
 }
 
-func (c *defaultContext) Stop(context.Context) error {
+func (c *defaultContext) Stop(_ context.Context) error {
+	for _, v := range c.verticles {
+		c.system.Root.Stop(v.P)
+	}
+
 	return nil
 }
 
-func (c *defaultContext) Close(context.Context) error {
-	return nil
+func (c *defaultContext) Close(ctx context.Context) error {
+
+	var allErrors error
+
+	if err := c.Stop(ctx); err != nil {
+		allErrors = errors.Join(err)
+	}
+
+	c.system.Shutdown()
+
+	return allErrors
 }
 
 func (c *defaultContext) LoadRoutes(ctx context.Context, in io.Reader) error {
@@ -136,7 +148,7 @@ func (c *defaultContext) LoadRoutes(ctx context.Context, in io.Reader) error {
 
 		_, err = c.Spawn(v)
 		if err != nil {
-			panic(errors.Wrapf(err, "unable to spawn route verticle with id %s", v.ID()))
+			panic(fmt.Errorf("unable to spawn route verticle with id %s, %w", v.ID(), err))
 		}
 	}
 
@@ -153,7 +165,7 @@ func (c *defaultContext) Spawn(v camel.Verticle) (*actor.PID, error) {
 
 	pid, err := c.system.Root.SpawnNamed(p, v.ID())
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to spawn verticle with id %s", v.ID())
+		return nil, fmt.Errorf("unable to spawn verticle with id %s, %w", v.ID(), err)
 	}
 
 	c.verticles[v.ID()] = vh{
