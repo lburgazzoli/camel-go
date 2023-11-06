@@ -6,7 +6,7 @@ require (
 	github.com/asynkron/protoactor-go v0.0.0-20230812113646-3987052e6743
 	github.com/cbroglie/mustache v1.4.0
 	github.com/cucumber/godog v0.13.0
-	github.com/dapr/go-sdk v1.9.0
+	github.com/dapr/go-sdk v1.9.1
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.golang v0.12.0
 	github.com/eclipse/paho.mqtt.golang v1.4.3

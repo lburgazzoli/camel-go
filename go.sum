@@ -51,8 +51,8 @@ github.com/cucumber/messages/go/v21 v21.0.1/go.mod h1:zheH/2HS9JLVFukdrsPWoPdmUt
 github.com/cucumber/messages/go/v22 v22.0.0/go.mod h1:aZipXTKc0JnjCsXrJnuZpWhtay93k7Rn3Dee7iyPJjs=
 github.com/dapr/dapr v1.12.0-rc.4 h1:LOPbekXZ+21HTqlk6Kg4Bf/lFiqq9cRq/IrgZgvK4mM=
 github.com/dapr/dapr v1.12.0-rc.4/go.mod h1:JZGZh8T0rz75DZBX3zGESi1p9IWWM0ZAGAzaGMHp+5o=
-github.com/dapr/go-sdk v1.9.0 h1:36pUgSwgh/SIYniRT6t1DAu3tv4DcYUmdIvktI6QpoM=
-github.com/dapr/go-sdk v1.9.0/go.mod h1:bK9bNEsC6hY3RMKh69r0nBjLqb6njeWTEGVMOgP9g20=
+github.com/dapr/go-sdk v1.9.1 h1:f5gV8HtGz6iBJSsh6eI+/Ews4sGC3W9gX0/oD9ANVqM=
+github.com/dapr/go-sdk v1.9.1/go.mod h1:bK9bNEsC6hY3RMKh69r0nBjLqb6njeWTEGVMOgP9g20=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
