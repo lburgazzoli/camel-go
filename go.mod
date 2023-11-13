@@ -36,7 +36,7 @@ require (
 	github.com/tetratelabs/wazero v1.5.0
 	github.com/twmb/franz-go v1.15.2
 	github.com/twmb/franz-go/pkg/kadm v1.10.0
-	github.com/wI2L/jsondiff v0.4.0
+	github.com/wI2L/jsondiff v0.5.0
 	go.opentelemetry.io/otel/trace v1.20.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/time v0.4.0
@@ -142,6 +142,10 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.9 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/tidwall/gjson v1.17.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
