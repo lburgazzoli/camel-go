@@ -3,7 +3,7 @@ module github.com/lburgazzoli/camel-go
 go 1.21
 
 require (
-	github.com/asynkron/protoactor-go v0.0.0-20230812113646-3987052e6743
+	github.com/asynkron/protoactor-go v0.0.0-20231121193249-050314e02dd8
 	github.com/cbroglie/mustache v1.4.0
 	github.com/cucumber/godog v0.13.0
 	github.com/dapr/go-sdk v1.9.1
@@ -54,7 +54,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.11.1 // indirect
-	github.com/Workiva/go-datastructures v1.0.53 // indirect
+	github.com/Workiva/go-datastructures v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -111,6 +111,7 @@ require (
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
+	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

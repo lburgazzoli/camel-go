@@ -9,23 +9,18 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/message"
-
 	"github.com/lburgazzoli/camel-go/pkg/core/errors/log"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
-
+	"github.com/lburgazzoli/camel-go/pkg/core/message"
 	"github.com/lburgazzoli/camel-go/pkg/core/properties"
+	"github.com/lburgazzoli/camel-go/pkg/core/registry"
+	"github.com/lburgazzoli/camel-go/pkg/core/route"
+	"github.com/lburgazzoli/camel-go/pkg/core/typeconverter"
+	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	camelerrors "github.com/lburgazzoli/camel-go/pkg/core/errors"
 
-	"github.com/lburgazzoli/camel-go/pkg/core/route"
-
-	"github.com/lburgazzoli/camel-go/pkg/core/registry"
-
 	"github.com/asynkron/protoactor-go/actor"
-	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 )
 
 func NewDefaultContext(logger *slog.Logger, opts ...Option) camel.Context {
@@ -50,8 +45,10 @@ func NewDefaultContext(logger *slog.Logger, opts ...Option) camel.Context {
 	id := uuid.New()
 
 	ctx := defaultContext{
-		id:            id,
-		system:        actor.NewActorSystem(),
+		id: id,
+		system: actor.NewActorSystem(actor.WithLoggerFactory(func(system *actor.ActorSystem) *slog.Logger {
+			return logger.With(slog.String("system.id", system.ID))
+		})),
 		registry:      r,
 		properties:    p,
 		typeConverter: tc,
