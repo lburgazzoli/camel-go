@@ -28,8 +28,12 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=camel, Version=v2alpha1
+	case v2alpha1.SchemeGroupVersion.WithKind("Flow"):
+		return &camelv2alpha1.FlowApplyConfiguration{}
 	case v2alpha1.SchemeGroupVersion.WithKind("Integration"):
 		return &camelv2alpha1.IntegrationApplyConfiguration{}
+	case v2alpha1.SchemeGroupVersion.WithKind("IntegrationSpec"):
+		return &camelv2alpha1.IntegrationSpecApplyConfiguration{}
 	case v2alpha1.SchemeGroupVersion.WithKind("IntegrationStatus"):
 		return &camelv2alpha1.IntegrationStatusApplyConfiguration{}
 

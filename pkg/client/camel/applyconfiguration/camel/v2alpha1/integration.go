@@ -18,7 +18,6 @@ limitations under the License.
 package v2alpha1
 
 import (
-	v2alpha1 "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -29,7 +28,7 @@ import (
 type IntegrationApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *v2alpha1.IntegrationSpec            `json:"spec,omitempty"`
+	Spec                             *IntegrationSpecApplyConfiguration   `json:"spec,omitempty"`
 	Status                           *IntegrationStatusApplyConfiguration `json:"status,omitempty"`
 }
 
@@ -205,8 +204,8 @@ func (b *IntegrationApplyConfiguration) ensureObjectMetaApplyConfigurationExists
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *IntegrationApplyConfiguration) WithSpec(value v2alpha1.IntegrationSpec) *IntegrationApplyConfiguration {
-	b.Spec = &value
+func (b *IntegrationApplyConfiguration) WithSpec(value *IntegrationSpecApplyConfiguration) *IntegrationApplyConfiguration {
+	b.Spec = value
 	return b
 }
 
