@@ -35,7 +35,7 @@ jobs:
           tinygo-version: '0.30.0'
       - name: 'Build WASM'
         run: |
-          make wasm/build
+          make wasm/build/ci
       - name: 'Push WASM'
         run: |
           make wasm/publish
