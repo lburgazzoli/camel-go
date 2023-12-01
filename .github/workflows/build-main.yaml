@@ -31,6 +31,7 @@ jobs:
           cache-dependency-path: go.sum
       - name: 'Build WASM'
         run: |
+          mkdir $HOME/.cache
           make wasm/build
       - name: 'Push WASM'
         run: |
