@@ -132,6 +132,13 @@ wasm/build:
 	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
 	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
 
+.PHONY: wasm/build/ci
+wasm/build/ci:
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
+	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
+
 .PHONY: wasm/publish
 wasm/publish:
 	 oras push --verbose $(WASM_CONTAINER_IMAGE) \

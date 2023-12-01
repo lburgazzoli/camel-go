@@ -28,10 +28,13 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
           cache: true
-          cache-dependency-path: go.sum
+          cache-dependency-path: go.sum      
+      - name: "Set Up Tinygo" 
+        uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: '0.30.0'
       - name: 'Build WASM'
         run: |
-          mkdir $HOME/.cache
           make wasm/build
       - name: 'Push WASM'
         run: |

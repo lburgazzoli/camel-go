@@ -25,7 +25,13 @@ jobs:
           check-latest: true
           cache: true
           cache-dependency-path: go.sum
+      
+      - uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: '0.30.0'
       - name: check
-        run: make check
+        run: |
+          make check
       - name: test
-        run: make test
+        run: |
+          make test
