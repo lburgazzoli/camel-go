@@ -9,6 +9,7 @@ import (
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/core/language"
 	"github.com/lburgazzoli/camel-go/pkg/core/language/wasm"
+	"github.com/lburgazzoli/camel-go/pkg/util/registry"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -71,7 +72,7 @@ func TestTransformWASMRegistry(t *testing.T) {
 	require.NotNil(t, wgp)
 
 	l := language.Language{
-		Wasm: wasm.New(wasm.WithRef("quay.io/lburgazzoli/camel-go-wasm:latest?etc/wasm/fn/simple_process.wasm")),
+		Wasm: wasm.New(wasm.WithRef(registry.WasmContainerImage() + "?etc/wasm/fn/simple_process.wasm")),
 	}
 
 	pv, err := New(WithLanguage(l)).Reify(g.Ctx())

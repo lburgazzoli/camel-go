@@ -11,7 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/util/registry"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
+
 	// helper to include everything.
 	_ "github.com/lburgazzoli/camel-go/pkg/components/dapr/pubsub"
 	_ "github.com/lburgazzoli/camel-go/pkg/components/http"
@@ -168,7 +170,7 @@ const simpleInlineImageWASM = `
         - process:
             ref: "consumer-1"
         - transform:
-            wasm: "quay.io/lburgazzoli/camel-go-wasm?etc/wasm/fn/simple_process.wasm"
+            wasm: "{{.ContainerImage}}?etc/wasm/fn/simple_process.wasm"
         - process:
             ref: "consumer-2"
 `
@@ -188,7 +190,10 @@ func TestSimpleInlineImageWASM(t *testing.T) {
 		return nil
 	})
 
-	err := c.LoadRoutes(g.Ctx(), strings.NewReader(simpleInlineImageWASM))
+	err := support.LoadRoutes(g.Ctx(), simpleInlineImageWASM, map[string]any{
+		"ContainerImage": registry.WasmContainerImage(),
+	})
+
 	require.NoError(t, err)
 
 	select {
