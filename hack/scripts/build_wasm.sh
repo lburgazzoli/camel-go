@@ -10,6 +10,7 @@ OUT="$3"
 
 docker run \
 		--rm \
+		--user "$(id -u):$(id -g)" \
 		-v "${PROJECT_ROOT}":/src:Z \
 		-w /src \
 		tinygo/tinygo:"${TINYGO_VERSION}" \
