@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}  
       - name: "Set Up Tinygo" 
-        uses: acifani/setup-tinygo@v2
+        uses: acifani/setup-tinygo@b2ba42b249c7d3efdfe94166ec0f48b3191404f7 # v2.0.0
         with:
           tinygo-version: '0.30.0'
       - name: 'Build WASM'
