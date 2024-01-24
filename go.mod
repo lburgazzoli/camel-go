@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.27.0
 	github.com/tetratelabs/wazero v1.6.0
-	github.com/twmb/franz-go v1.15.4
+	github.com/twmb/franz-go v1.16.0
 	github.com/twmb/franz-go/pkg/kadm v1.10.0
 	github.com/wI2L/jsondiff v0.5.0
 	go.opentelemetry.io/otel/trace v1.22.0
@@ -106,7 +106,7 @@ require (
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
