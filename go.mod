@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.27.0
 	github.com/tetratelabs/wazero v1.6.0
-	github.com/twmb/franz-go v1.16.0
+	github.com/twmb/franz-go v1.16.1
 	github.com/twmb/franz-go/pkg/kadm v1.11.0
 	github.com/wI2L/jsondiff v0.5.0
 	go.opentelemetry.io/otel/trace v1.22.0
