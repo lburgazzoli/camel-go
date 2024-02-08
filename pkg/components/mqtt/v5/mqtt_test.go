@@ -70,7 +70,10 @@ func TestSimpleMQTT(t *testing.T) {
 	require.NoError(t, err)
 
 	c := camel.ExtractContext(g.Ctx())
-	c.Properties().Add(map[string]any{"mqtt.broker": broker})
+
+	err = c.Properties().Add(map[string]any{"mqtt.broker": broker})
+	require.NoError(t, err)
+
 	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 		wg <- message
 		return nil
