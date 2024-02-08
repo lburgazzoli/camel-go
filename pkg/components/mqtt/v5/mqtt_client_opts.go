@@ -8,6 +8,6 @@ type OptionFn func(*paho.ClientConfig)
 
 func WithSingleHandlerRouter(handler func(*paho.Publish)) OptionFn {
 	return func(config *paho.ClientConfig) {
-		config.Router = paho.NewSingleHandlerRouter(handler)
+		config.Router = paho.NewStandardRouterWithDefault(handler)
 	}
 }

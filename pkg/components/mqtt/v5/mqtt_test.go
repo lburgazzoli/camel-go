@@ -3,6 +3,7 @@ package v5
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ const simpleMQTT = `
     from:
       uri: "mqtt:camel/iot"
       parameters:
-        broker: "{{.broker}}"
+        broker: "${mqtt.broker}"
       steps:
         - to:
             uri: "log:info"
@@ -65,19 +66,17 @@ func TestSimpleMQTT(t *testing.T) {
 	cl, err := container.Client(g.Ctx())
 	require.NoError(t, err)
 
+	broker, err := container.Broker(g.Ctx())
+	require.NoError(t, err)
+
 	c := camel.ExtractContext(g.Ctx())
+	c.Properties().Add(map[string]any{"mqtt.broker": broker})
 	c.Registry().Set("consumer-1", func(_ context.Context, message camel.Message) error {
 		wg <- message
 		return nil
 	})
 
-	broker, err := container.Broker(g.Ctx())
-	require.NoError(t, err)
-
-	err = support.LoadRoutes(g.Ctx(), simpleMQTT, map[string]string{
-		"broker": broker,
-	})
-
+	err = c.LoadRoutes(g.Ctx(), strings.NewReader(simpleMQTT))
 	require.NoError(t, err)
 
 	token := cl.Publish("camel/iot", 0, true, content)
