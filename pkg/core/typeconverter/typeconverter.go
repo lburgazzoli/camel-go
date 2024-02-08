@@ -3,8 +3,8 @@ package typeconverter
 import (
 	"reflect"
 
+	"github.com/go-viper/mapstructure/v2"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/mitchellh/mapstructure"
 )
 
 type Fn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)

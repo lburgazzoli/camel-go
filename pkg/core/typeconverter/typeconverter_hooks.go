@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/go-viper/mapstructure/v2"
 	camel "github.com/lburgazzoli/camel-go/pkg/api"
-	"github.com/mitchellh/mapstructure"
 )
 
 func StringToRawJSON() mapstructure.DecodeHookFunc {

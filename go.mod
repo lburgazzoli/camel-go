@@ -12,6 +12,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-logr/logr v1.4.1
+	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/google/go-containerregistry v0.19.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/imdario/mergo v0.3.16
@@ -24,7 +25,6 @@ require (
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/ldez/mimetype v0.2.0
-	github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4
 	github.com/onsi/gomega v1.31.1
 	github.com/pkg/errors v0.9.1
 	github.com/procyon-projects/chrono v1.1.2
@@ -89,7 +89,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
-	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

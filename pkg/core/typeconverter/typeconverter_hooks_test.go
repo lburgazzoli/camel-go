@@ -3,11 +3,10 @@ package typeconverter
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/lburgazzoli/camel-go/pkg/api"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRawJsonConversion(t *testing.T) {
