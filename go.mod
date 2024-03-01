@@ -31,7 +31,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.28.0
 	github.com/tetratelabs/wazero v1.6.0
 	github.com/twmb/franz-go v1.16.1
