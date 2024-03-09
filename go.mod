@@ -36,7 +36,7 @@ require (
 	github.com/tetratelabs/wazero v1.6.0
 	github.com/twmb/franz-go v1.16.1
 	github.com/twmb/franz-go/pkg/kadm v1.11.0
-	github.com/wI2L/jsondiff v0.5.0
+	github.com/wI2L/jsondiff v0.5.1
 	go.opentelemetry.io/otel/trace v1.24.0
 	go.uber.org/multierr v1.11.0
 	golang.org/x/time v0.5.0
