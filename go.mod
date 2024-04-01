@@ -16,7 +16,7 @@ require (
 	github.com/google/go-containerregistry v0.19.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/imdario/mergo v0.3.16
-	github.com/itchyny/gojq v0.12.14
+	github.com/itchyny/gojq v0.12.15
 	github.com/knadh/koanf/parsers/json v0.1.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
 	github.com/knadh/koanf/parsers/yaml v0.1.0
@@ -171,7 +171,7 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.16.1 // indirect
