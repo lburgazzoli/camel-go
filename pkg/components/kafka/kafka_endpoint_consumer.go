@@ -29,7 +29,7 @@ func (c *Consumer) Endpoint() camel.Endpoint {
 	return c.endpoint
 }
 
-func (c *Consumer) Start(_ context.Context) error {
+func (c *Consumer) Start(ctx context.Context) error {
 	if c.running.CompareAndSwap(false, true) {
 		cl, err := c.endpoint.newClient(
 			kgo.BlockRebalanceOnPoll(),
@@ -46,7 +46,7 @@ func (c *Consumer) Start(_ context.Context) error {
 				return
 			}
 
-			c.poll(context.Background())
+			c.poll(ctx)
 		}()
 	}
 

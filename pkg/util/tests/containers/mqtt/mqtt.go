@@ -119,7 +119,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Name:  "eclipse-mosquitto" + xid.New().String(),
-			Image: fmt.Sprintf("docker.io/eclipse-mosquitto:%s", DefaultVersion),
+			Image: "docker.io/eclipse-mosquitto:" + DefaultVersion,
 			Env:   map[string]string{},
 			ExposedPorts: []string{
 				strconv.Itoa(DefaultPort),

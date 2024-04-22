@@ -21,7 +21,7 @@ CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
 
 LINT_GOGC := 10
-LINT_DEADLINE := 10m
+LINT_TIMEOUT := 10m
 
 ## Tools
 GOIMPORT ?= $(LOCALBIN)/goimports
@@ -30,20 +30,20 @@ KO ?= $(LOCALBIN)/ko
 KO_VERSION ?= main
 TINYGO_VERSION ?= 0.31.2
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
-GOLANGCI_VERSION ?= v1.55.2
+GOLANGCI_VERSION ?= v1.57.2
 CODEGEN_VERSION ?= v0.28.4
-KUSTOMIZE_VERSION ?= v5.0.1
+KUSTOMIZE_VERSION ?= v5.4.1
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_TOOLS_VERSION ?= v0.13.0
-KIND_VERSION ?= v0.20.0
+KIND_VERSION ?= v0.22.0
 KIND ?= $(LOCALBIN)/kind
-OPERATOR_SDK_VERSION ?= v1.32.0
+OPERATOR_SDK_VERSION ?= v1.34.1
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
-OPM_VERSION ?= v1.33.0
+OPM_VERSION ?= v1.34.1
 OPM ?= $(LOCALBIN)/opm
 YQ ?= $(LOCALBIN)/yq
 KUBECTL ?= kubectl
-DAPR_VERSION ?= 1.12.0
+DAPR_VERSION ?= 1.13.2
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -93,8 +93,8 @@ check/lint: golangci-lint
 	@$(GOLANGCI) run \
 		--config .golangci.yml \
 		--out-format tab \
-		--skip-dirs etc \
-		--deadline $(LINT_DEADLINE)
+		--exclude-dirs etc \
+		--timeout $(LINT_TIMEOUT)
 
 .PHONY: build
 build: fmt
