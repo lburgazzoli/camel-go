@@ -10,9 +10,9 @@ OUT="$3"
 
 docker run \
 		--rm \
-		--user "$(id -u):$(id -g)" \
-		-v "${PROJECT_ROOT}":/src:Z \
-		-w /src \
+		--volume "${PROJECT_ROOT}":/src:Z \
+		--workdir /src \
+		--user tinygo \
 		tinygo/tinygo:"${TINYGO_VERSION}" \
 		tinygo build \
 			-target=wasi \

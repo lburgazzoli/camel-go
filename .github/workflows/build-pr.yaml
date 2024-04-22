@@ -35,7 +35,7 @@ jobs:
           export UUID=$(uuidgen | tr "[:upper:]" "[:lower:]")
           export WASM_CONTAINER_IMAGE="ttl.sh/${UUID}-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}:1h"
 
-          make wasm/build/ci
+          make wasm/build
           make wasm/publish
 
       - name: check
