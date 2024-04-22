@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	v2alpha1 "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
-	"github.com/lburgazzoli/camel-go/pkg/client/camel/clientset/versioned/scheme"
+	"github.com/lburgazzoli/camel-go/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

@@ -22,9 +22,9 @@ import (
 	time "time"
 
 	camelv2alpha1 "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
-	versioned "github.com/lburgazzoli/camel-go/pkg/client/camel/clientset/versioned"
-	internalinterfaces "github.com/lburgazzoli/camel-go/pkg/client/camel/informers/externalversions/internalinterfaces"
-	v2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/camel/listers/camel/v2alpha1"
+	versioned "github.com/lburgazzoli/camel-go/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/lburgazzoli/camel-go/pkg/client/informers/externalversions/internalinterfaces"
+	v2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/listers/camel/v2alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

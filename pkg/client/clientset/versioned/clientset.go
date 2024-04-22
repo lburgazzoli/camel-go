@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"net/http"
 
-	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/camel/clientset/versioned/typed/camel/v2alpha1"
+	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/clientset/versioned/typed/camel/v2alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

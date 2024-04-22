@@ -24,8 +24,8 @@ import (
 	"time"
 
 	v2alpha1 "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
-	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/camel/applyconfiguration/camel/v2alpha1"
-	scheme "github.com/lburgazzoli/camel-go/pkg/client/camel/clientset/versioned/scheme"
+	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/applyconfiguration/camel/v2alpha1"
+	scheme "github.com/lburgazzoli/camel-go/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

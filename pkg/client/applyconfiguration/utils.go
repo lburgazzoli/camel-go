@@ -19,7 +19,7 @@ package applyconfiguration
 
 import (
 	v2alpha1 "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
-	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/camel/applyconfiguration/camel/v2alpha1"
+	camelv2alpha1 "github.com/lburgazzoli/camel-go/pkg/client/applyconfiguration/camel/v2alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
