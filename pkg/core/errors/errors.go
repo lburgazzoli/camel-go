@@ -86,7 +86,7 @@ func InvalidParameter(parameter string, message string) error {
 	}
 
 	if message == "" {
-		answer.message = fmt.Sprintf("invalid parameter %s", parameter)
+		answer.message = "invalid parameter " + parameter
 	} else {
 		answer.message = fmt.Sprintf("%s: invalid parameter %s", answer, parameter)
 	}

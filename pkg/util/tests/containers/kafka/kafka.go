@@ -186,7 +186,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	req := &Request{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Name:  "redpandadata-" + uuid.New(),
-			Image: fmt.Sprintf("docker.io/redpandadata/redpanda:%s", DefaultVersion),
+			Image: "docker.io/redpandadata/redpanda:" + DefaultVersion,
 			User:  "root:root",
 			Env:   map[string]string{},
 			Entrypoint: []string{

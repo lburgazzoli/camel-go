@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/asynkron/protoactor-go/actor"
 )
 
@@ -24,7 +26,7 @@ func Wrap(_ context.Context, camelContext Context) context.Context {
 func ExtractContext(ctx context.Context) Context {
 	value := ctx.Value(ContextKeyCamelContext)
 	if value == nil {
-		panic(fmt.Errorf("unable to get CamelContext from context"))
+		panic(errors.New("unable to get CamelContext from context"))
 	}
 
 	answer, ok := value.(Context)
@@ -38,7 +40,7 @@ func ExtractContext(ctx context.Context) Context {
 func ExtractActorContext(ctx context.Context) actor.Context {
 	value := ctx.Value(ContextKeyActorContext)
 	if value == nil {
-		panic(fmt.Errorf("unable to get actor Context from context"))
+		panic(errors.New("unable to get actor Context from context"))
 	}
 
 	answer, ok := value.(actor.Context)

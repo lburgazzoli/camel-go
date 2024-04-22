@@ -51,7 +51,7 @@ func (v *DefaultVerticle) Dispatch(ac actor.Context, msg camel.Message) bool {
 		return false
 	}
 
-	for i := 0; i < len(pids); i++ {
+	for i := range len(pids) {
 		pid := pids[i]
 
 		if pid.Equal(ac.Sender()) && i != len(pids)-1 {
