@@ -1,6 +1,6 @@
 module github.com/lburgazzoli/camel-go
 
-go 1.21
+go 1.22
 
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20231121193249-050314e02dd8

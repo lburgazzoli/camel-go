@@ -38,7 +38,7 @@ jobs:
       - name: "Set Up Tinygo" 
         uses: acifani/setup-tinygo@b2ba42b249c7d3efdfe94166ec0f48b3191404f7 # v2.0.0
         with:
-          tinygo-version: '0.30.0'
+          tinygo-version: '0.31.2'
       - name: 'Build WASM'
         run: |
           make wasm/build/ci
