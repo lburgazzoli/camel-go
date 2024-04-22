@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 if [ $# -ne 3 ]; then
     echo "project root, in and out are expected"
