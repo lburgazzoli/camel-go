@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20231121193249-050314e02dd8
 	github.com/cbroglie/mustache v1.4.0
-	github.com/cucumber/godog v0.14.0
+	github.com/cucumber/godog v0.14.1
 	github.com/dapr/go-sdk v1.10.1
 	github.com/docker/go-connections v0.5.0
 	github.com/eclipse/paho.golang v0.21.0
