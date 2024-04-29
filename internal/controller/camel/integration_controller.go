@@ -74,15 +74,15 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, _ Options) (*Rec
 	return &rec, nil
 }
 
-//+kubebuilder:rbac:groups=camel.apache.org,resources=integrations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=camel.apache.org,resources=integrations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=camel.apache.org,resources=integrations/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=events,verbs=*
-//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=*
-//+kubebuilder:rbac:groups="",resources=services,verbs=*
-//+kubebuilder:rbac:groups="",resources=configmaps,verbs=*
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
+// +kubebuilder:rbac:groups=camel.apache.org,resources=integrations,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=camel.apache.org,resources=integrations/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=camel.apache.org,resources=integrations/finalizers,verbs=update
+// +kubebuilder:rbac:groups="",resources=events,verbs=*
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=*
+// +kubebuilder:rbac:groups="",resources=services,verbs=*
+// +kubebuilder:rbac:groups="",resources=configmaps,verbs=*
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
 
 type Reconciler struct {
 	*client.Client
@@ -100,9 +100,8 @@ func (r *Reconciler) init(ctx context.Context) error {
 	c := ctrlRt.NewControllerManagedBy(r.manager)
 
 	c = c.For(&camlApi.Integration{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.GenerationChangedPredicate{},
-		)))
+		predicate.GenerationChangedPredicate{},
+	))
 
 	for i := range r.actions {
 		b, err := r.actions[i].Configure(ctx, r.Client, c)
@@ -125,9 +124,11 @@ func (r *Reconciler) init(ctx context.Context) error {
 
 func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicates ...predicate.Predicate) error {
 	return r.controller.Watch(
-		source.Kind(r.manager.GetCache(), obj),
-		eh,
-		predicates...)
+		source.Kind(
+			r.manager.GetCache(),
+			obj,
+			eh,
+			predicates...))
 }
 
 func (r *Reconciler) EnqueueRequestForOwner(owner ctrlCli.Object, opts ...handler.OwnerOption) handler.EventHandler {
