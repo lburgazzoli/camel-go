@@ -48,8 +48,8 @@ github.com/cucumber/godog v0.14.1/go.mod h1:FX3rzIDybWABU4kuIXLZ/qtqEe1Ac5RdXmqv
 github.com/cucumber/messages/go/v21 v21.0.1 h1:wzA0LxwjlWQYZd32VTlAVDTkW6inOFmSM+RuOwHZiMI=
 github.com/cucumber/messages/go/v21 v21.0.1/go.mod h1:zheH/2HS9JLVFukdrsPWoPdmUtmYQAQPLk7w5vWsk5s=
 github.com/cucumber/messages/go/v22 v22.0.0/go.mod h1:aZipXTKc0JnjCsXrJnuZpWhtay93k7Rn3Dee7iyPJjs=
-github.com/dapr/dapr v1.13.0 h1:yExu47iCyqBSghAGVjgVjica4NfFd0dVlPXQTpQWR98=
-github.com/dapr/dapr v1.13.0/go.mod h1:VFjFGrLb84k5pjmWNn9reI5D28OQifdUbBdymXxbZDc=
+github.com/dapr/dapr v1.13.3 h1:LJec44e5eRCugthRCvP8VRUi4B0MHW72lBEWCaVhXaM=
+github.com/dapr/dapr v1.13.3/go.mod h1:0Yb0r3YViI4/D5yXV5nSYjRlEOarlXBeO089lW08VXE=
 github.com/dapr/go-sdk v1.10.1 h1:g6mM2RXyGkrzsqWFfCy8rw+UAt1edQEgRaQXT+XP4PE=
 github.com/dapr/go-sdk v1.10.1/go.mod h1:lPjyF/xubh35fbdNdKkxBbFxFNCmta4zmvsk0JxuUG0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
