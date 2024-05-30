@@ -1,4 +1,3 @@
-
 CONTAINER_REGISTRY ?= quay.io
 CONTAINER_REGISTRY_REPOSITORY ?= lburgazzoli/camel-go
 CONTAINER_TAG ?= latest
