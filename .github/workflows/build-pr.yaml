@@ -24,20 +24,18 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
           cache: true
-          cache-dependency-path: go.sum      
-      - name: "Set Up Tinygo" 
-        uses: acifani/setup-tinygo@b2ba42b249c7d3efdfe94166ec0f48b3191404f7 # v2.0.0
+          cache-dependency-path: go.sum
+      - name: "Set Up Rust"
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          tinygo-version: '0.31.2'
-          
+          target: 'wasm32-unknown-unknown'
       - name: wasm
         run: |
           export UUID=$(uuidgen | tr "[:upper:]" "[:lower:]")
           export WASM_CONTAINER_IMAGE="ttl.sh/${UUID}-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}:1h"
 
-          make wasm/build/ci
+          make wasm/build
           make wasm/publish
-
       - name: check
         run: |
           make check

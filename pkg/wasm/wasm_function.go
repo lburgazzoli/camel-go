@@ -2,56 +2,62 @@ package wasm
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
 
-	"github.com/tetratelabs/wazero/api"
+	camel "github.com/lburgazzoli/camel-go/pkg/api"
+	wzapi "github.com/tetratelabs/wazero/api"
 )
 
 type Function struct {
 	module *Module
-	fn     api.Function
+	fn     wzapi.Function
 }
 
-func (p *Function) invoke(ctx context.Context, in any, out any) error {
-	data, err := json.Marshal(in)
+func (p *Function) invoke(ctx context.Context, msg camel.Message) error {
+
+	ctx = context.WithValue(ctx, contextKeyModule, p.module)
+	ctx = context.WithValue(ctx, contextKeyMessage, msg)
+
+	ret, err := p.fn.Call(ctx)
 	if err != nil {
 		return err
 	}
 
-	// clean up the buffer
-	p.module.stdin.Reset()
-	p.module.stdout.Reset()
+	if ret[0] != 0 {
+		resPtr := uint32(ret[0] >> 32)
+		resLen := uint32(ret[0])
 
-	defer func() {
-		// clean up the buffer when the method
-		p.module.stdin.Reset()
-		p.module.stdout.Reset()
-	}()
+		switch uint8(resLen >> 28) {
+		case 0xF:
+			// error
+			size := resLen & 0x0FFFFFFF
 
-	ws, err := p.module.stdin.Write(data)
-	if err != nil {
-		return err
+			errText, ok := p.module.Memory().Read(resPtr, size)
+			if !ok {
+				err = fmt.Errorf(
+					"memory.Read(%d, %d) out of range of memory size %d",
+					resPtr,
+					size,
+					p.module.Memory().Size(),
+				)
+			} else {
+				err = errors.New(string(errText))
+			}
+
+			msg.SetError(err)
+		case 0x1:
+			// true
+			// TODO: maybe better to have some better result rather than using the error
+			//       as a signal for predicate true/false
+			return ErrPredicateMatches
+		case 0x2:
+			// false
+			// TODO: maybe better to have some better result rather than using the error
+			//       as a signal for predicate true/false
+			return ErrPredicateDoesNotMatch
+		}
 	}
 
-	ptrSize, err := p.fn.Call(ctx, uint64(ws))
-	if err != nil {
-		return err
-	}
-
-	resFlag := uint32(ptrSize[0] >> 32)
-	resSize := uint32(ptrSize[0])
-
-	bytes := make([]byte, resSize)
-	_, err = p.module.stdout.Read(bytes)
-	if err != nil {
-		return err
-	}
-
-	switch resFlag {
-	case 1:
-		return errors.New(string(bytes))
-	default:
-		return json.Unmarshal(bytes, &out)
-	}
+	return nil
 }

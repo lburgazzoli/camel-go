@@ -70,6 +70,9 @@ clean:
 	go clean -x
 	go clean -x -testcache
 	rm -f $(LOCAL_BIN_PATH)/camel
+	rm -r $(PROJECT_PATH)/etc/wasm/fn/simple_logger/target
+	rm -r $(PROJECT_PATH)/etc/wasm/fn/to_lower/target
+	rm -r $(PROJECT_PATH)/etc/wasm/fn/to_upper/target
 
 .PHONY: fmt
 fmt: goimport
@@ -124,27 +127,28 @@ image/publish: ko
 run/operator: install
 	go run -ldflags="$(GOLDFLAGS)" cmd/camel/main.go operator --leader-election=false --zap-devel
 
-.PHONY: wasm/build
-wasm/build:
-	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
-	TINYGO_VERSION=$(TINYGO_VERSION) ./hack/scripts/build_wasm.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
-
-.PHONY: wasm/build/ci
-wasm/build/ci:
-	./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/simple_process.go etc/wasm/fn/simple_process.wasm
-	./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/simple_logger.go etc/wasm/fn/simple_logger.wasm
-	./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/to_upper.go etc/wasm/fn/to_upper.wasm
-	./hack/scripts/build_wasm_ci.sh $(PROJECT_PATH) etc/wasm/fn/to_lower.go etc/wasm/fn/to_lower.wasm
-
 .PHONY: wasm/publish
 wasm/publish:
 	 oras push --verbose $(WASM_CONTAINER_IMAGE) \
- 		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/simple_logger.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
+ 		etc/wasm/fn/simple_process.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
  		etc/wasm/fn/to_upper.wasm:application/vnd.module.wasm.content.layer.v1+wasm \
 		etc/wasm/fn/to_lower.wasm:application/vnd.module.wasm.content.layer.v1+wasm
+
+.PHONY: wasm/build
+wasm/build:
+	# rustup target add wasm32-unknown-unknown
+	cargo build --target wasm32-unknown-unknown --release --manifest-path=$(PROJECT_PATH)/etc/wasm/fn/to_upper/Cargo.toml
+	cp $(PROJECT_PATH)/etc/wasm/fn/to_upper/target/wasm32-unknown-unknown/release/to_upper.wasm $(PROJECT_PATH)/etc/wasm/fn/
+
+	cargo build --target wasm32-unknown-unknown --release --manifest-path=$(PROJECT_PATH)/etc/wasm/fn/to_lower/Cargo.toml
+	cp $(PROJECT_PATH)/etc/wasm/fn/to_lower/target/wasm32-unknown-unknown/release/to_lower.wasm $(PROJECT_PATH)/etc/wasm/fn/
+
+	cargo build --target wasm32-unknown-unknown --release --manifest-path=$(PROJECT_PATH)/etc/wasm/fn/simple_logger/Cargo.toml
+	cp $(PROJECT_PATH)/etc/wasm/fn/simple_logger/target/wasm32-unknown-unknown/release/simple_logger.wasm $(PROJECT_PATH)/etc/wasm/fn/
+
+	cargo build --target wasm32-unknown-unknown --release --manifest-path=$(PROJECT_PATH)/etc/wasm/fn/simple_process/Cargo.toml
+	cp $(PROJECT_PATH)/etc/wasm/fn/simple_process/target/wasm32-unknown-unknown/release/simple_process.wasm $(PROJECT_PATH)/etc/wasm/fn/
 
 .PHONY: generate
 generate: codegen-tools-install

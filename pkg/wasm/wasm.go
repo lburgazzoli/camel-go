@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 
+	"github.com/lburgazzoli/camel-go/pkg/api"
+	wzapi "github.com/tetratelabs/wazero/api"
 	wasi "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"go.uber.org/multierr"
 
@@ -20,25 +22,52 @@ func NewRuntime(ctx context.Context) (*Runtime, error) {
 		return nil, err
 	}
 
-	return &Runtime{
-			wz:    runtime,
-			cache: cache},
-		nil
+	r := Runtime{
+		wz:    runtime,
+		cache: cache,
+	}
+
+	builder := r.wz.NewHostModuleBuilder("env")
+
+	for _, fn := range BuiltInFunctions() {
+
+		_ = builder.NewFunctionBuilder().
+			WithGoModuleFunction(
+				wzapi.GoModuleFunc(func(ctx context.Context, m wzapi.Module, stack []uint64) {
+					//nolint:forcetypeassert
+					mod := ctx.Value(contextKeyModule).(*Module)
+
+					//nolint:forcetypeassert
+					msg := ctx.Value(contextKeyMessage).(api.Message)
+
+					if err := fn.Fn(ctx, mod, msg, stack); err != nil {
+						panic(err)
+					}
+				}),
+				fn.Params,
+				fn.Results,
+			).
+			Export(fn.Name)
+	}
+
+	_, err := builder.Instantiate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &r, nil
+}
+
+type HostFunction struct {
+	Name    string
+	Fn      func(ctx context.Context, mod *Module, msg api.Message, stack []uint64) error
+	Params  []wzapi.ValueType
+	Results []wzapi.ValueType
 }
 
 type Runtime struct {
 	wz    wazero.Runtime
 	cache wazero.CompilationCache
-}
-
-func (r *Runtime) Export(ctx context.Context, name string, fn interface{}) error {
-	_, err := r.wz.NewHostModuleBuilder("camel").
-		NewFunctionBuilder().
-		WithFunc(fn).
-		Export(name).
-		Instantiate(ctx)
-
-	return err
 }
 
 func (r *Runtime) Close(ctx context.Context) error {

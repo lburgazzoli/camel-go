@@ -17,6 +17,7 @@ import (
 
 func New(opts ...OptionFn) *Wasm {
 	answer := &Wasm{}
+	answer.Name = "process"
 
 	for _, o := range opts {
 		o(answer)
@@ -26,6 +27,7 @@ func New(opts ...OptionFn) *Wasm {
 }
 
 type Definition struct {
+	Name  string `yaml:"name"`
 	Path  string `yaml:"path"`
 	Image string `yaml:"image,omitempty"`
 }
@@ -39,7 +41,15 @@ func (l *Wasm) UnmarshalYAML(value *yaml.Node) error {
 	case yaml.ScalarNode:
 		return l.UnmarshalText([]byte(value.Value))
 	case yaml.MappingNode:
-		return value.Decode(&l.Definition)
+		if err := value.Decode(&l.Definition); err != nil {
+			return err
+		}
+
+		if l.Name == "" {
+			l.Name = "process"
+		}
+
+		return nil
 	default:
 		return fmt.Errorf("unsupported node kind: %v (line: %d, column: %d)", value.Kind, value.Line, value.Column)
 	}
@@ -51,12 +61,35 @@ func (l *Wasm) UnmarshalText(text []byte) error {
 
 	switch len(parts) {
 	case 1:
-		l.Path = parts[0]
+		mn := strings.Split(parts[0], "#")
+		switch len(mn) {
+		case 1:
+			l.Path = mn[0]
+		case 2:
+			l.Path = mn[0]
+			l.Name = mn[1]
+		default:
+			return camelerrors.InvalidParameterf("wasm", "unsupported wasm reference '%s'", in)
+		}
 	case 2:
 		l.Image = parts[0]
-		l.Path = parts[1]
+
+		mn := strings.Split(parts[1], "#")
+		switch len(mn) {
+		case 1:
+			l.Path = mn[0]
+		case 2:
+			l.Path = mn[0]
+			l.Name = mn[1]
+		default:
+			return camelerrors.InvalidParameterf("wasm", "unsupported wasm reference '%s'", in)
+		}
 	default:
 		return camelerrors.InvalidParameterf("wasm", "unsupported wasm reference '%s'", in)
+	}
+
+	if l.Name == "" {
+		l.Name = "process"
 	}
 
 	return nil
@@ -99,7 +132,7 @@ func (l *Wasm) Processor(ctx context.Context, _ camel.Context) (camel.Processor,
 		return nil, err
 	}
 
-	proc, err := module.Processor(ctx)
+	proc, err := module.Processor(ctx, l.Definition.Name)
 	if err != nil {
 		return nil, err
 	}

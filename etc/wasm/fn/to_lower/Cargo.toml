@@ -1,0 +1,16 @@
+[package]
+name    = "to_lower"
+version = "0.1.0"
+authors = ["lburgazzoli@gmail.com"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+camel-wasm-sdk = { path = "../../sdk", version = "=0.1.0" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1

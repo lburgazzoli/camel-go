@@ -35,13 +35,13 @@ jobs:
           registry: ${{ secrets.CONTAINER_REGISTRY }}
           username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}  
-      - name: "Set Up Tinygo" 
-        uses: acifani/setup-tinygo@b2ba42b249c7d3efdfe94166ec0f48b3191404f7 # v2.0.0
+      - name: "Set Up Rust"
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          tinygo-version: '0.31.2'
+          target: 'wasm32-unknown-unknown'
       - name: 'Build WASM'
         run: |
-          make wasm/build/ci
+          make wasm/build
       - name: 'Push WASM'
         run: |
           make wasm/publish
