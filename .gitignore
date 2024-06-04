@@ -136,3 +136,4 @@ config/**/*.gen.json
 *-installer*
 
 etc/wasm/fn/*.wasm
+target/

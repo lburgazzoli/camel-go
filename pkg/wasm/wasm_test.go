@@ -9,9 +9,8 @@ import (
 
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/support"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWASM(t *testing.T) {
@@ -23,7 +22,7 @@ func TestWASM(t *testing.T) {
 
 	defer func() { _ = r.Close(g.Ctx()) }()
 
-	path, err := filepath.Abs("../../etc/wasm/fn/simple_process.wasm")
+	path, err := filepath.Abs("../../etc/wasm/fn/to_upper.wasm")
 	require.NoError(t, err)
 	require.FileExists(t, path)
 
@@ -35,15 +34,16 @@ func TestWASM(t *testing.T) {
 
 	defer func() { _ = m.Close(g.Ctx()) }()
 
-	p, err := m.Processor(g.Ctx())
+	p, err := m.Processor(g.Ctx(), "process")
 	require.NoError(t, err)
 
 	in := c.NewMessage()
+	in.SetContent("foo")
 
 	err = p.Process(g.Ctx(), in)
 	require.NoError(t, err)
 
 	data, ok := in.Content().([]byte)
 	assert.True(t, ok)
-	assert.Equal(t, "hello from wasm", string(data))
+	assert.Equal(t, "FOO", string(data))
 }
