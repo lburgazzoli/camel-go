@@ -14,7 +14,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-logr/logr v1.4.2
-	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
+	github.com/go-viper/mapstructure/v2 v2.0.0
 	github.com/google/go-containerregistry v0.19.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/imdario/mergo v0.3.16
