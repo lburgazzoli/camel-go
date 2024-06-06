@@ -8,6 +8,10 @@ import (
 	"github.com/cucumber/godog/colors"
 )
 
+const (
+	DefaultConcurrency = 10
+)
+
 func NewTestSuite() *TestSuite {
 	return &TestSuite{}
 }
@@ -18,7 +22,7 @@ func DefaultOptions() godog.Options {
 		Format:      "progress",
 		Paths:       []string{"features"},
 		Randomize:   time.Now().UTC().UnixNano(), // randomize TestScenario execution order
-		Concurrency: 10,
+		Concurrency: DefaultConcurrency,
 	}
 
 	return opts

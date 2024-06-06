@@ -19,30 +19,29 @@ WASM_CONTAINER_IMAGE_REPO ?= quay.io/lburgazzoli/camel-go-wasm:latest
 CGO_ENABLED := 0
 BUILD_TAGS := -tags components_all -tags steps_all
 
-LINT_GOGC := 10
-LINT_TIMEOUT := 10m
+LINT_GOGC ?= 10
+LINT_TIMEOUT ?= 10m
 
 ## Tools
 GOIMPORT ?= $(LOCALBIN)/goimports
 GOIMPORT_VERSION ?= latest
 KO ?= $(LOCALBIN)/ko
 KO_VERSION ?= main
-TINYGO_VERSION ?= 0.31.2
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
-GOLANGCI_VERSION ?= v1.57.2
-CODEGEN_VERSION ?= v0.30.0
+GOLANGCI_VERSION ?= v1.59.0
+CODEGEN_VERSION ?= v0.30.1
 KUSTOMIZE_VERSION ?= v5.4.1
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_TOOLS_VERSION ?= v0.15.0
 KIND_VERSION ?= v0.22.0
 KIND ?= $(LOCALBIN)/kind
-OPERATOR_SDK_VERSION ?= v1.34.1
+OPERATOR_SDK_VERSION ?= v1.34.2
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM_VERSION ?= v1.34.1
 OPM ?= $(LOCALBIN)/opm
 YQ ?= $(LOCALBIN)/yq
 KUBECTL ?= kubectl
-DAPR_VERSION ?= 1.13.2
+DAPR_VERSION ?= 1.13.3
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)

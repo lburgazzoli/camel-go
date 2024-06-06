@@ -31,7 +31,6 @@ import (
 )
 
 func NewRunCmd() *cobra.Command {
-
 	type opts struct {
 		Logger logger.Options
 

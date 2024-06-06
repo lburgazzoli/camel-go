@@ -28,8 +28,8 @@ type Language struct {
 	Constant *constant.Constant `yaml:"constant,omitempty"`
 }
 
+//nolint:dupl
 func (l *Language) Processor(ctx context.Context, camelContext camel.Context) (camel.Processor, error) {
-
 	switch {
 	case l.Wasm != nil:
 		p, err := l.Wasm.Processor(ctx, camelContext)
@@ -67,8 +67,8 @@ func (l *Language) Processor(ctx context.Context, camelContext camel.Context) (c
 	}
 }
 
+//nolint:dupl
 func (l *Language) Predicate(ctx context.Context, camelContext camel.Context) (camel.Predicate, error) {
-
 	switch {
 	case l.Wasm != nil:
 		p, err := l.Wasm.Predicate(ctx, camelContext)
@@ -106,8 +106,8 @@ func (l *Language) Predicate(ctx context.Context, camelContext camel.Context) (c
 	}
 }
 
+//nolint:dupl
 func (l *Language) Transformer(ctx context.Context, camelContext camel.Context) (camel.Transformer, error) {
-
 	switch {
 	case l.Wasm != nil:
 		p, err := l.Wasm.Transformer(ctx, camelContext)

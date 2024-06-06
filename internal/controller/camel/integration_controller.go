@@ -49,16 +49,17 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, _ Options) (*Rec
 
 	rec := Reconciler{}
 	rec.l = ctrlRt.Log.WithName("controller")
-	rec.Client = c
-	rec.Scheme = manager.GetScheme()
-	rec.ClusterType = controller.ClusterTypeVanilla
+	rec.client = c
 	rec.manager = manager
 	rec.recorder = manager.GetEventRecorderFor(FieldManager)
+	rec.Scheme = manager.GetScheme()
+	rec.ClusterType = controller.ClusterTypeVanilla
 
 	isOpenshift, err := c.IsOpenShift()
 	if err != nil {
 		return nil, err
 	}
+
 	if isOpenshift {
 		rec.ClusterType = controller.ClusterTypeOpenShift
 	}
@@ -85,8 +86,6 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, _ Options) (*Rec
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
 
 type Reconciler struct {
-	*client.Client
-
 	Scheme      *runtime.Scheme
 	ClusterType controller.ClusterType
 	actions     []Action
@@ -94,6 +93,7 @@ type Reconciler struct {
 	manager     ctrlRt.Manager
 	controller  ctrl.Controller
 	recorder    record.EventRecorder
+	client      *client.Client
 }
 
 func (r *Reconciler) init(ctx context.Context) error {
@@ -104,7 +104,7 @@ func (r *Reconciler) init(ctx context.Context) error {
 	))
 
 	for i := range r.actions {
-		b, err := r.actions[i].Configure(ctx, r.Client, c)
+		b, err := r.actions[i].Configure(ctx, r.Client(), c)
 		if err != nil {
 			return err
 		}
@@ -120,6 +120,10 @@ func (r *Reconciler) init(ctx context.Context) error {
 	r.controller = ct
 
 	return nil
+}
+
+func (r *Reconciler) Client() *client.Client {
+	return r.client
 }
 
 func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicates ...predicate.Predicate) error {

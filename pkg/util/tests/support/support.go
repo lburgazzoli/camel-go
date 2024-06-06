@@ -20,7 +20,6 @@ import (
 var once sync.Once
 
 func LoadRoutes(ctx context.Context, route string, params any) error {
-
 	c := camel.ExtractContext(ctx)
 
 	tmpl, err := template.New("route").Parse(route)
@@ -80,6 +79,7 @@ func With(t *testing.T) Test {
 	if deadline, ok := t.Deadline(); ok {
 		withDeadline, cancel := context.WithDeadline(ctx, deadline)
 		t.Cleanup(cancel)
+
 		ctx = withDeadline
 	}
 

@@ -3,6 +3,8 @@
 package kafka
 
 import (
+	"time"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 )
@@ -15,6 +17,9 @@ const (
 	AttributeOffset    = "camel.apache.org/kafka.offset"
 	AttributeTopic     = "camel.apache.org/kafka.topic"
 	AttributeKey       = "camel.apache.org/kafka.key"
+
+	DefaultPollSize      = 100
+	DefaultDialerTimeout = 10 * time.Second
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

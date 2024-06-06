@@ -12,7 +12,6 @@ type Fn func(reflect.Type, reflect.Type, interface{}) (interface{}, error)
 var TypeConverters = make([]Fn, 0)
 
 func NewDefaultTypeConverter() (camel.TypeConverter, error) {
-
 	hooks := make([]mapstructure.DecodeHookFunc, 0, len(TypeConverters))
 	for i := range TypeConverters {
 		hooks[i] = TypeConverters[i]

@@ -17,7 +17,6 @@ jq: .bar
 `
 
 func TestJq(t *testing.T) {
-
 	t.Run("full", func(t *testing.T) {
 		l := Language{}
 

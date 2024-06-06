@@ -47,11 +47,11 @@ func TestSimpleHTTPGet(t *testing.T) {
 		}
 
 		data, err := json.Marshal(answer)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = io.WriteString(w, string(data))
-		require.NoError(t, err)
+		assert.NoError(t, err)
 	}))
 
 	defer func() {

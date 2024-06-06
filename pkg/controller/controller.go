@@ -25,6 +25,11 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
+const (
+	DefaultPprofReadTimeout  = 10 * time.Second
+	DefaultPprofWriteTimeout = 10 * time.Second
+)
+
 var (
 	Scheme = runtime.NewScheme()
 	Log    = ctrl.Log.WithName("controller")
@@ -66,6 +71,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		return errors.Wrap(err, "unable to set up health check")
 	}
+
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return errors.Wrap(err, "unable to set up readiness check")
 	}
@@ -80,8 +86,8 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 		server := &http.Server{
 			Addr:         options.PprofAddr,
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			ReadTimeout:  DefaultPprofReadTimeout,
+			WriteTimeout: DefaultPprofWriteTimeout,
 			Handler:      mux,
 		}
 

@@ -56,6 +56,7 @@ func (r *defaultProperties) AddSource(path string) error {
 	if err != nil && os.IsNotExist(err) {
 		return nil
 	}
+
 	if err != nil {
 		return err
 	}

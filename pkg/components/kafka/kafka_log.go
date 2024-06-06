@@ -36,7 +36,6 @@ func (l *klog) Log(level kgo.LogLevel, msg string, keyvals ...any) {
 		l.delegate.Info(msg, keyvals...)
 	case kgo.LogLevelWarn:
 		l.delegate.Warn(msg, keyvals...)
-	default:
-		// do nothing
+	default: // do nothing
 	}
 }

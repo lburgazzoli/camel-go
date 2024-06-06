@@ -1,4 +1,4 @@
-////go:build components_mqtt_v5 || components_all
+// //go:build components_mqtt_v5 || components_all
 
 package v5
 
@@ -51,7 +51,6 @@ func (e *Endpoint) Producer() (api.Producer, error) {
 }
 
 func (e *Endpoint) newClient(opts ...OptionFn) (*Client, error) {
-
 	cc := paho.ClientConfig{}
 
 	for _, fn := range opts {

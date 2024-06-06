@@ -100,13 +100,14 @@ func (c *Choice) onStarted(ctx context.Context, ac actor.Context, _ *actor.Start
 
 func (c *Choice) onMessage(ctx context.Context, ac actor.Context, msg camel.Message) {
 	var matches bool
-	var err error
 
 	for i := range c.When {
-		matches, err = c.When[i].Matches(ctx, msg)
+		m, err := c.When[i].Matches(ctx, msg)
 		if err != nil {
 			panic(err)
 		}
+
+		matches = m
 
 		if matches {
 			ac.Request(c.When[i].PID, msg)

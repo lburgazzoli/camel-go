@@ -15,9 +15,13 @@ import (
 	"github.com/lburgazzoli/camel-go/pkg/wasm"
 )
 
+const (
+	DefaultFunctionName = "process"
+)
+
 func New(opts ...OptionFn) *Wasm {
 	answer := &Wasm{}
-	answer.Name = "process"
+	answer.Name = DefaultFunctionName
 
 	for _, o := range opts {
 		o(answer)
@@ -46,7 +50,7 @@ func (l *Wasm) UnmarshalYAML(value *yaml.Node) error {
 		}
 
 		if l.Name == "" {
-			l.Name = "process"
+			l.Name = DefaultFunctionName
 		}
 
 		return nil
@@ -55,6 +59,7 @@ func (l *Wasm) UnmarshalYAML(value *yaml.Node) error {
 	}
 }
 
+//nolint:mnd
 func (l *Wasm) UnmarshalText(text []byte) error {
 	in := string(text)
 	parts := strings.Split(in, "?")
@@ -89,7 +94,7 @@ func (l *Wasm) UnmarshalText(text []byte) error {
 	}
 
 	if l.Name == "" {
-		l.Name = "process"
+		l.Name = DefaultFunctionName
 	}
 
 	return nil

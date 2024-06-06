@@ -79,7 +79,6 @@ func TestChoiceWhen(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "branch: baz", res.Content())
 	}
-
 }
 
 func TestChoiceOtherWise(t *testing.T) {

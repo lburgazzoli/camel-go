@@ -79,22 +79,27 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 		msg.SetError(err)
 		return
 	}
+
 	if err := p.setHeader(record, "id", msg.ID()); err != nil {
 		msg.SetError(err)
 		return
 	}
+
 	if err := p.setHeader(record, "time", msg.Time()); err != nil {
 		msg.SetError(err)
 		return
 	}
+
 	if err := p.setHeader(record, "source", msg.Source()); err != nil {
 		msg.SetError(err)
 		return
 	}
+
 	if err := p.setHeader(record, "content-type", msg.ContentType()); err != nil {
 		msg.SetError(err)
 		return
 	}
+
 	if err := p.setHeader(record, "datacontentschema", msg.ContentSchema()); err != nil {
 		msg.SetError(err)
 		return
@@ -124,6 +129,7 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 	if err != nil {
 		msg.SetError(errors.Wrap(err, "record had a produce error while synchronously producing"))
 	}
+
 	if r != nil {
 		msg.SetAttribute(AttributeOffset, strconv.FormatInt(r.Offset, 10))
 		msg.SetAttribute(AttributePartition, strconv.FormatInt(int64(r.Partition), 10))
@@ -131,7 +137,6 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 }
 
 func (p *Producer) setHeader(r *kgo.Record, k string, v any) error {
-
 	h, err := p.header(k, v)
 	if err != nil {
 		return err
@@ -154,6 +159,7 @@ func (p *Producer) header(k string, v any) (kgo.RecordHeader, error) {
 	if err != nil {
 		return h, err
 	}
+
 	if !ok {
 		return h, fmt.Errorf("unable to convert value for header %s", k)
 	}

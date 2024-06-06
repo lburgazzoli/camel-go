@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -55,7 +54,7 @@ func (e *Endpoint) newClient(additionalOpts ...kgo.Opt) (*kgo.Client, error) {
 	opts = append(opts, kgo.SeedBrokers(strings.Split(e.config.Brokers, ",")...))
 	opts = append(opts, kgo.WithLogger(&klog{delegate: e.Logger().With(slog.String("subsystem", "kafka"))}))
 
-	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	dialer := &net.Dialer{Timeout: DefaultDialerTimeout}
 
 	if e.config.Username != "" && e.config.Password != "" {
 		tlsDialer := &tls.Dialer{NetDialer: dialer}

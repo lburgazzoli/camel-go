@@ -3,6 +3,8 @@
 package v3
 
 import (
+	"time"
+
 	"github.com/lburgazzoli/camel-go/pkg/api"
 	"github.com/lburgazzoli/camel-go/pkg/components"
 )
@@ -15,6 +17,10 @@ const (
 	AttributeMqttMessageRetained  = "camel.apache.org/mqtt.message.retained"
 	AttributeMqttMessageDuplicate = "camel.apache.org/mqtt.message.duplicate"
 	AttributeMqttMessageQUOS      = "camel.apache.org/mqtt.message.qus"
+
+	DefaultDisconnectTimeout = 250
+	DefaultKeepAlive         = 2 * time.Second
+	DefaultPingTimeout       = 1 * time.Second
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

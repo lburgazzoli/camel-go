@@ -47,13 +47,13 @@ func (l *Jq) run(
 	query *gojq.Query,
 	m camel.Message,
 ) (gojq.Iter, error) {
-
 	var input camel.RawJSON
 
 	ok, err := camelContext.TypeConverter().Convert(m.Content(), &input)
 	if err != nil {
 		return nil, err
 	}
+
 	if !ok {
 		return nil, fmt.Errorf("unable to convert %+v to camel.RawJSON", m.Content())
 	}

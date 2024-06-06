@@ -24,6 +24,7 @@ func Load(in io.Reader) ([]route.Route, error) {
 	}
 
 	routes := make([]route.Route, 0, len(holder))
+
 	for i := range holder {
 		r := holder[i].R
 

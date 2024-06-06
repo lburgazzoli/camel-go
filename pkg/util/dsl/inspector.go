@@ -36,6 +36,7 @@ func (i *Inspector) Extract(flows []camelApi.Flow) (*Metadata, error) {
 	return meta, nil
 }
 
+//nolint:nestif,gocyclo
 func (i *Inspector) parseStep(key string, content interface{}, meta *Metadata) error {
 	var maybeURI string
 
@@ -58,14 +59,17 @@ func (i *Inspector) parseStep(key string, content interface{}, meta *Metadata) e
 					if params, pok := t["parameters"]; pok {
 						if paramMap, pmok := params.(map[interface{}]interface{}); pmok {
 							params := make(map[string]string, len(paramMap))
+
 							for k, v := range paramMap {
 								ks := fmt.Sprintf("%v", k)
 								vs := fmt.Sprintf("%v", v)
 								params[ks] = vs
 							}
+
 							builtURI = i.appendParameters(builtURI, params)
 						}
 					}
+
 					maybeURI = builtURI
 				}
 			default:
@@ -102,14 +106,17 @@ func (i *Inspector) parseStep(key string, content interface{}, meta *Metadata) e
 					if params, pok := t["parameters"]; pok {
 						if paramMap, pmok := params.(map[interface{}]interface{}); pmok {
 							params := make(map[string]string, len(paramMap))
+
 							for k, v := range paramMap {
 								ks := fmt.Sprintf("%v", k)
 								vs := fmt.Sprintf("%v", v)
 								params[ks] = vs
 							}
+
 							builtURI = i.appendParameters(builtURI, params)
 						}
 					}
+
 					maybeURI = builtURI
 				}
 			default:
@@ -147,11 +154,9 @@ func (i *Inspector) parseStep(key string, content interface{}, meta *Metadata) e
 	return nil
 }
 
-// TODO nolint: gocyclo.
 func (i *Inspector) parseStepsParam(steps []interface{}, meta *Metadata) error {
 	for _, raw := range steps {
 		if step, stepFormatOk := raw.(map[interface{}]interface{}); stepFormatOk {
-
 			if len(step) != 1 {
 				return fmt.Errorf("unable to parse step: %v", step)
 			}
@@ -172,22 +177,28 @@ func (i *Inspector) parseStepsParam(steps []interface{}, meta *Metadata) error {
 			}
 		}
 	}
+
 	return nil
 }
 
 func (i *Inspector) appendParameters(uri string, params map[string]string) string {
 	prefix := "&"
+
 	if !strings.Contains(uri, "?") {
 		prefix = "?"
 	}
+
 	keys := make([]string, 0, len(params))
 	for k := range params {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
+
 	for _, k := range keys {
 		uri += fmt.Sprintf("%s%s=%s", prefix, url.QueryEscape(k), url.QueryEscape(params[k]))
 		prefix = "&"
 	}
+
 	return uri
 }

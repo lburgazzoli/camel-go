@@ -18,6 +18,7 @@ func (p *Processor) Test(ctx context.Context, message camel.Message) (bool, erro
 		if errors.Is(err, ErrPredicateDoesNotMatch) {
 			return false, nil
 		}
+
 		if errors.Is(err, ErrPredicateMatches) {
 			return true, nil
 		}

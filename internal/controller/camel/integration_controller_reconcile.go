@@ -22,18 +22,17 @@ import (
 	"encoding/base64"
 	"sort"
 
+	"github.com/lburgazzoli/camel-go/pkg/controller/reconciler"
+
 	camelApi "github.com/lburgazzoli/camel-go/api/camel/v2alpha1"
-	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	ctrl "sigs.k8s.io/controller-runtime"
-	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -41,7 +40,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	l.Info("Reconciling", "resource", req.NamespacedName.String())
 
 	rr := ReconciliationRequest{
-		Client: r.Client,
+		Client: r.Client(),
 		NamespacedName: types.NamespacedName{
 			Name:      req.Name,
 			Namespace: req.Namespace,
@@ -51,7 +50,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		Resource:    &camelApi.Integration{},
 	}
 
-	err := r.Get(ctx, req.NamespacedName, rr.Resource)
+	err := r.Client().Get(ctx, req.NamespacedName, rr.Resource)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			// no CR found anymore, maybe deleted
@@ -67,44 +66,20 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	rr.Checksum = base64.RawURLEncoding.EncodeToString(sum.Sum(nil))
 
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
-
-		//
-		// Add finalizer
-		//
-
-		if ctrlutil.AddFinalizer(rr.Resource, FinalizerName) {
-			if err := r.Update(ctx, rr.Resource); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
-				}
-
-				return ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", req.NamespacedName)
-			}
+		err := reconciler.AddFinalizer(ctx, r.Client(), rr.Resource, FinalizerName)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
 	} else {
-
-		//
-		// Cleanup leftovers if needed
-		//
-
 		for i := len(r.actions) - 1; i >= 0; i-- {
 			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
 
-		//
-		// Handle finalizer
-		//
-
-		if ctrlutil.RemoveFinalizer(rr.Resource, FinalizerName) {
-			if err := r.Update(ctx, rr.Resource); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
-				}
-
-				return ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from %s", req.NamespacedName)
-			}
+		err := reconciler.RemoveFinalizer(ctx, r.Client(), rr.Resource, FinalizerName)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
 
 		return ctrl.Result{}, nil
@@ -132,8 +107,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	if allErrors != nil {
 		reconcileCondition.Status = metav1.ConditionFalse
-		reconcileCondition.Reason = "Failure"
-		reconcileCondition.Message = "Failure"
+		reconcileCondition.Reason = FailureReason
+		reconcileCondition.Message = FailureReason
 
 		rr.Resource.Status.Phase = PhaseError
 	} else {
@@ -151,7 +126,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	// Update status
 	//
 
-	err = r.Status().Update(ctx, rr.Resource)
+	err = r.Client().Status().Update(ctx, rr.Resource)
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil

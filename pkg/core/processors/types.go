@@ -47,6 +47,7 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return fmt.Errorf("unsupported type (line: %d, column: %d) ", node.Line, node.Column)
 	}
+
 	if len(node.Content) != 2 {
 		return fmt.Errorf("unsupported content (size: %d)", len(node.Content))
 	}

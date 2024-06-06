@@ -1,5 +1,6 @@
 // //go:build components_all || components_timer || steps_all || steps_process
 
+//nolint:dupl
 package engine
 
 import (
