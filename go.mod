@@ -5,6 +5,7 @@ go 1.22.0
 toolchain go1.22.3
 
 require (
+	github.com/alron/ginlogr v0.0.4
 	github.com/asynkron/protoactor-go v0.0.0-20231121193249-050314e02dd8
 	github.com/cbroglie/mustache v1.4.0
 	github.com/cucumber/godog v0.14.1
@@ -12,6 +13,7 @@ require (
 	github.com/docker/go-connections v0.5.0
 	github.com/eclipse/paho.golang v0.21.0
 	github.com/eclipse/paho.mqtt.golang v1.4.3
+	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-logr/logr v1.4.2
 	github.com/go-viper/mapstructure/v2 v2.0.0
@@ -47,7 +49,7 @@ require (
 	k8s.io/apimachinery v0.30.1
 	k8s.io/client-go v0.30.1
 	k8s.io/klog/v2 v2.120.1
-	sigs.k8s.io/controller-runtime v0.18.3
+	sigs.k8s.io/controller-runtime v0.18.4
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -57,7 +59,6 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/Workiva/go-datastructures v1.1.1 // indirect
-	github.com/alron/ginlogr v0.0.4 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -85,7 +86,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/gin-contrib/pprof v1.5.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.12 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
