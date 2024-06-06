@@ -11,20 +11,18 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/lburgazzoli/camel-go/pkg/util/httpsrv"
+
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	DefaultPrefix            = ""
-	DefaultAddress           = ":8081"
-	DefaultPort              = 8081
-	DefaultPortName          = "health"
-	DefaultReadTimeout       = 1 * time.Second
-	DefaultWriteTimeout      = 1 * time.Second
-	DefaultIdleTimeout       = 30 * time.Second
-	DefaultReadHeaderTimeout = 2 * time.Second
+	DefaultPrefix   = ""
+	DefaultAddress  = ":8081"
+	DefaultPort     = 8081
+	DefaultPortName = "health"
 )
 
 func init() {
@@ -41,15 +39,7 @@ func New(address string, prefix string, logger *slog.Logger) *Service {
 	s.router.Use(s.log)
 	s.router.GET(path.Join(prefix, "/health", "/ready"), s.ready)
 	s.router.GET(path.Join(prefix, "/health", "/live"), s.live)
-
-	s.srv = &http.Server{
-		ReadTimeout:       DefaultReadTimeout,
-		WriteTimeout:      DefaultWriteTimeout,
-		IdleTimeout:       DefaultIdleTimeout,
-		ReadHeaderTimeout: DefaultReadHeaderTimeout,
-		Addr:              address,
-		Handler:           s.router,
-	}
+	s.srv = httpsrv.New(address, s.router)
 
 	return &s
 }

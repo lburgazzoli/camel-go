@@ -1,13 +1,16 @@
 package controller
 
 import (
-	"net/http"
-	"net/http/pprof"
+	"fmt"
 	"time"
+
+	"github.com/alron/ginlogr"
+	"github.com/gin-contrib/pprof"
+	"github.com/lburgazzoli/camel-go/pkg/util/httpsrv"
 
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 
-	"github.com/pkg/errors"
+	"github.com/gin-gonic/gin"
 
 	"github.com/lburgazzoli/camel-go/pkg/controller/logger"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -23,11 +26,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-)
-
-const (
-	DefaultPprofReadTimeout  = 10 * time.Second
-	DefaultPprofWriteTimeout = 10 * time.Second
 )
 
 var (
@@ -61,35 +59,28 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	})
 
 	if err != nil {
-		return errors.Wrap(err, "unable to create manager")
+		return fmt.Errorf("unable to create manager: %w", err)
 	}
 
 	if err := setup(mgr, options); err != nil {
-		return errors.Wrap(err, "unable to set up controllers")
+		return fmt.Errorf("unable to set up controllers: %w", err)
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		return errors.Wrap(err, "unable to set up health check")
+		return fmt.Errorf("unable to set up health check: %w", err)
 	}
 
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		return errors.Wrap(err, "unable to set up readiness check")
+		return fmt.Errorf("unable to set up readiness check: %w", err)
 	}
 
 	if options.PprofAddr != "" {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/debug/pprof/", pprof.Index)
-		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+		router := gin.New()
+		router.Use(ginlogr.Ginlogr(Log, time.RFC3339, true))
 
-		server := &http.Server{
-			Addr:         options.PprofAddr,
-			ReadTimeout:  DefaultPprofReadTimeout,
-			WriteTimeout: DefaultPprofWriteTimeout,
-			Handler:      mux,
-		}
+		pprof.Register(router, "debug/pprof")
+
+		server := httpsrv.New(options.PprofAddr, router)
 
 		Log.Info("starting pprof")
 
@@ -102,7 +93,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	Log.Info("starting manager")
 
 	if err := mgr.Start(ctx); err != nil {
-		return errors.Wrap(err, "problem running manager")
+		return fmt.Errorf("problem running manager: %w", err)
 	}
 
 	return nil
