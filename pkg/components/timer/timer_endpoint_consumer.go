@@ -50,6 +50,7 @@ func (c *Consumer) Stop(context.Context) error {
 		c.task.Cancel()
 		c.task = nil
 	}
+
 	if c.scheduler != nil {
 		c.scheduler.Shutdown()
 		c.scheduler = nil

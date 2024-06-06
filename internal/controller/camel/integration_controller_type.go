@@ -30,6 +30,7 @@ const (
 	ConditionReady      = "Ready"
 	PhaseError          = "Error"
 	PhaseReady          = "Ready"
+	FailureReason       = "Failure"
 
 	HTTPPort     int32  = 8080
 	HTTPPortName string = "http"

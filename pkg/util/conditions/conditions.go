@@ -36,6 +36,7 @@ func Get(from Getter, t ConditionType) *metav1.Condition {
 			return &condition
 		}
 	}
+
 	return nil
 }
 

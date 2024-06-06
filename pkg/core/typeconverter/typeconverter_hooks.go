@@ -12,14 +12,11 @@ import (
 )
 
 func StringToRawJSON() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 		if f.Kind() != reflect.String {
 			return data, nil
 		}
+
 		if t != reflect.TypeOf(camel.RawJSON{}) {
 			return data, nil
 		}
@@ -40,14 +37,11 @@ func StringToRawJSON() mapstructure.DecodeHookFunc {
 }
 
 func BytesToRawJSON() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 		if f != reflect.TypeOf([]byte{}) {
 			return data, nil
 		}
+
 		if t != reflect.TypeOf(camel.RawJSON{}) {
 			return data, nil
 		}
@@ -68,14 +62,11 @@ func BytesToRawJSON() mapstructure.DecodeHookFunc {
 }
 
 func TimeToBytes() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 		if f != reflect.TypeOf(time.Time{}) {
 			return data, nil
 		}
+
 		if t != reflect.TypeOf([]byte{}) {
 			return data, nil
 		}
@@ -92,14 +83,11 @@ func TimeToBytes() mapstructure.DecodeHookFunc {
 }
 
 func TimeToString() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-
+	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 		if f != reflect.TypeOf(time.Time{}) {
 			return data, nil
 		}
+
 		if t.Kind() != reflect.String {
 			return data, nil
 		}

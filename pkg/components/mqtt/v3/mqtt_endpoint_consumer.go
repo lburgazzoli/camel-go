@@ -54,7 +54,7 @@ func (c *Consumer) Stop(context.Context) error {
 	}
 
 	if c.client != nil {
-		c.client.Disconnect(250)
+		c.client.Disconnect(DefaultDisconnectTimeout)
 		c.client = nil
 	}
 

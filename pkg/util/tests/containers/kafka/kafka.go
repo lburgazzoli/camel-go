@@ -17,12 +17,12 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/twmb/franz-go/pkg/kadm"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
 	"github.com/pkg/errors"
-	"github.com/testcontainers/testcontainers-go"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -34,6 +34,8 @@ const (
 	RedPandaDir                 = "/etc/redpanda"
 	RedPandaBootstrapConfigFile = ".bootstrap.yaml"
 	RedPandaBConfigFile         = "redpanda.yaml"
+	DefaultLogPollInterval      = 100 * time.Millisecond
+	DefaultDialerTimeout        = 10 * time.Second
 )
 
 const contentEntrypoint = `#!/usr/bin/env bash
@@ -92,6 +94,7 @@ func (c *Container) Stop(ctx context.Context) error {
 	if err := c.StopLogProducer(); err != nil {
 		return errors.Wrap(err, "failed to  stop log producers")
 	}
+
 	if err := c.Terminate(ctx); err != nil {
 		return errors.Wrap(err, "failed to terminate container")
 	}
@@ -100,7 +103,6 @@ func (c *Container) Stop(ctx context.Context) error {
 }
 
 func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, error) {
-
 	id := uuid.New()
 
 	host, err := c.Host(ctx)
@@ -118,7 +120,7 @@ func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, e
 	kopts = append(kopts, kgo.SeedBrokers(host+":"+port.Port()))
 	kopts = append(kopts, kgo.WithLogger(kgo.BasicLogger(os.Stdout, kgo.LogLevelInfo, func() string { return id })))
 	kopts = append(kopts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
-		dialer := &net.Dialer{Timeout: 10 * time.Second}
+		dialer := &net.Dialer{Timeout: DefaultDialerTimeout}
 		return dialer.DialContext(ctx, "tcp4", host)
 	}))
 
@@ -126,7 +128,6 @@ func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, e
 }
 
 func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
-
 	client, err := c.Client(ctx)
 	if err != nil {
 		return nil, err
@@ -162,13 +163,14 @@ func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
 	}
 
 	return props, nil
-
 }
+
 func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	tmpDir, err := os.MkdirTemp("", "redpanda")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create directory: %w", err)
 	}
+
 	defer func() {
 		_ = os.RemoveAll(tmpDir)
 	}()
@@ -176,10 +178,11 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	pathEntrypoint := path.Join(tmpDir, ContainerEntrypointFile)
 	pathBootstrap := path.Join(tmpDir, RedPandaBootstrapConfigFile)
 
-	if err := os.WriteFile(pathEntrypoint, []byte(contentEntrypoint), 0o600); err != nil {
+	if err := os.WriteFile(pathEntrypoint, []byte(contentEntrypoint), containers.FileModeShared); err != nil {
 		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
 	}
-	if err := os.WriteFile(pathBootstrap, []byte(contentBootstrap), 0o600); err != nil {
+
+	if err := os.WriteFile(pathBootstrap, []byte(contentBootstrap), containers.FileModeShared); err != nil {
 		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
 	}
 
@@ -205,11 +208,11 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 			Files: []testcontainers.ContainerFile{{
 				HostFilePath:      pathEntrypoint,
 				ContainerFilePath: ContainerEntrypointFile,
-				FileMode:          700,
+				FileMode:          int64(containers.FileModeExec),
 			}, {
 				HostFilePath:      pathBootstrap,
 				ContainerFilePath: filepath.Join(RedPandaDir, RedPandaBootstrapConfigFile),
-				FileMode:          600,
+				FileMode:          int64(containers.FileModeRead),
 			}},
 		},
 	}
@@ -237,7 +240,13 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 		return nil, err
 	}
 
-	err = container.CopyToContainer(ctx, contentConfig, filepath.Join(RedPandaDir, RedPandaBConfigFile), 600)
+	err = container.CopyToContainer(
+		ctx,
+		contentConfig,
+		filepath.Join(RedPandaDir, RedPandaBConfigFile),
+		int64(containers.FileModeRead),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to copy redpanda.yaml into container: %w", err)
 	}
@@ -247,7 +256,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	}
 
 	err = wait.ForLog("Successfully started Redpanda!").
-		WithPollInterval(100*time.Millisecond).
+		WithPollInterval(DefaultLogPollInterval).
 		WaitUntilReady(ctx, c.Container)
 
 	if err != nil {

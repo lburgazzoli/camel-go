@@ -59,7 +59,6 @@ func (p *Producer) Receive(ac actor.Context) {
 }
 
 func (p *Producer) publish(ctx context.Context, msg api.Message) {
-
 	var body []byte
 
 	if msg.Content() != nil {
@@ -135,7 +134,6 @@ func (p *Producer) publish(ctx context.Context, msg api.Message) {
 			msg.SetContentType(val)
 		}
 	}
-
 }
 
 func (p *Producer) client() *http.Client {

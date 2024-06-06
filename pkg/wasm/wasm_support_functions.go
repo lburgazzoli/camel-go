@@ -41,7 +41,7 @@ func getMessageID(ctx context.Context, mod *Module, msg camel.Message, stack []u
 		return err
 	}
 
-	stack[0] = ptr<<uint64(32) | size
+	stack[0] = toPtrSize(ptr, size)
 
 	return nil
 }
@@ -65,7 +65,7 @@ func getMessageContent(ctx context.Context, mod *Module, msg camel.Message, stac
 		return err
 	}
 
-	stack[0] = ptr<<uint64(32) | size
+	stack[0] = toPtrSize(ptr, size)
 
 	return nil
 }

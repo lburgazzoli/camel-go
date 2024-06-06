@@ -18,7 +18,6 @@ import (
 )
 
 func TestTransformWASMLocal(t *testing.T) {
-
 	g := support.With(t)
 	c := camel.ExtractContext(g.Ctx())
 

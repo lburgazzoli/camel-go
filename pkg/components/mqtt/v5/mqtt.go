@@ -15,6 +15,8 @@ const (
 	AttributeMqttMessageRetained  = "camel.apache.org/mqtt.message.retained"
 	AttributeMqttMessageDuplicate = "camel.apache.org/mqtt.message.duplicate"
 	AttributeMqttMessageQUOS      = "camel.apache.org/mqtt.message.qus"
+
+	DefaultClientKeepAlive = 30
 )
 
 func NewComponent(ctx api.Context, _ map[string]interface{}) (api.Component, error) {

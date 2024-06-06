@@ -12,3 +12,7 @@ const (
 	allocFunctionNAme   = "alloc"
 	deallocFunctionNAme = "dealloc"
 )
+
+func toPtrSize(ptr uint64, size uint64) uint64 {
+	return ptr<<32 | size
+}

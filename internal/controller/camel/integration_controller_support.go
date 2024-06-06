@@ -20,7 +20,6 @@ import (
 
 //nolint:unused
 func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
-
 	namespace, err := labels.NewRequirement(
 		IntegrationNamespace,
 		selection.Equals,
@@ -67,6 +66,7 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 	if namespace == "" {
 		return nil
 	}
+
 	name := allLabels[IntegrationName]
 	if name == "" {
 		return nil
@@ -98,11 +98,11 @@ func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) p
 }
 
 func WithIntegrationLabelsSelector() (labels.Selector, error) {
-
 	hasReleaseNamespaceLabel, err := labels.NewRequirement(IntegrationNamespace, selection.Exists, []string{})
 	if err != nil {
 		return nil, err
 	}
+
 	hasReleaseNameLabel, err := labels.NewRequirement(IntegrationName, selection.Exists, []string{})
 	if err != nil {
 		return nil, err

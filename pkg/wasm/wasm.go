@@ -30,7 +30,6 @@ func NewRuntime(ctx context.Context) (*Runtime, error) {
 	builder := r.wz.NewHostModuleBuilder("env")
 
 	for _, fn := range BuiltInFunctions() {
-
 		_ = builder.NewFunctionBuilder().
 			WithGoModuleFunction(
 				wzapi.GoModuleFunc(func(ctx context.Context, m wzapi.Module, stack []uint64) {
@@ -78,6 +77,7 @@ func (r *Runtime) Close(ctx context.Context) error {
 			err = multierr.Append(err, e)
 		}
 	}
+
 	if r.cache != nil {
 		if e := r.cache.Close(ctx); e != nil {
 			err = multierr.Append(err, e)

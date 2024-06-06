@@ -9,6 +9,7 @@ const (
 	ExtensionSequence     = "sequence"
 )
 
+//nolint:tagliatelle
 type CloudEventJSON struct {
 	SpecVersion       string `json:"specversion"`
 	ID                string `json:"id"`

@@ -117,7 +117,6 @@ func (c *defaultContext) Stop(_ context.Context) error {
 }
 
 func (c *defaultContext) Close(ctx context.Context) error {
-
 	var allErrors error
 
 	if err := c.Stop(ctx); err != nil {

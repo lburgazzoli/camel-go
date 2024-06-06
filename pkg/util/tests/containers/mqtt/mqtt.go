@@ -2,7 +2,7 @@ package mqtt
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 	"net"
 	"strconv"
 	"time"
@@ -24,6 +24,8 @@ const (
 	DefaultPort          = 1883
 	DefaultWebsocketPort = 9001
 	DefaultVersion       = "2.0.15"
+	DefaultKeepAlive     = 2 * time.Second
+	DefaultPingTimeout   = 1 * time.Second
 )
 
 type RequestFn func(*Request) *Request
@@ -48,6 +50,7 @@ func (c *Container) Stop(ctx context.Context) error {
 	if err := c.StopLogProducer(); err != nil {
 		return errors.Wrap(err, "failed to  stop log producers")
 	}
+
 	if err := c.Terminate(ctx); err != nil {
 		return errors.Wrap(err, "failed to terminate container")
 	}
@@ -84,24 +87,29 @@ func (c *Container) Client(ctx context.Context) (paho.Client, error) {
 		return nil, err
 	}
 
+	name, err := c.Name(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	opts := paho.NewClientOptions()
 	opts = opts.AddBroker(broker)
 	opts = opts.SetClientID(uuid.New())
-	opts = opts.SetKeepAlive(2 * time.Second)
-	opts = opts.SetPingTimeout(1 * time.Second)
+	opts = opts.SetKeepAlive(DefaultKeepAlive)
+	opts = opts.SetPingTimeout(DefaultPingTimeout)
 
 	// opts.ConnectRetry = true
 	// opts.AutoReconnect = true
 
 	// Log events
 	opts.OnConnectionLost = func(cl paho.Client, err error) {
-		fmt.Println("connection lost")
+		containers.Log.Info("connection lost", slog.String("container", name), slog.String("error", err.Error()))
 	}
 	opts.OnConnect = func(paho.Client) {
-		fmt.Println("connection established")
+		containers.Log.Info("connection established", slog.String("container", name))
 	}
 	opts.OnReconnecting = func(paho.Client, *paho.ClientOptions) {
-		fmt.Println("attempting to reconnect")
+		containers.Log.Info("attempting to reconnect", slog.String("container", name))
 	}
 
 	client := paho.NewClient(opts)
@@ -138,7 +146,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 		req.ContainerRequest.Files = append(req.ContainerRequest.Files, testcontainers.ContainerFile{
 			HostFilePath:      req.Config,
 			ContainerFilePath: "/mosquitto/config/mosquitto.conf",
-			FileMode:          664,
+			FileMode:          int64(containers.FileModeShared),
 		})
 	}
 

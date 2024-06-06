@@ -1,4 +1,4 @@
-////go:build components_mqtt_v3 || components_all
+// //go:build components_mqtt_v3 || components_all
 
 package v3
 
@@ -6,7 +6,6 @@ import (
 	"context"
 	"log/slog"
 	"strings"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -58,8 +57,8 @@ func (e *Endpoint) newClient(optFns ...OptionFn) mqtt.Client {
 
 	opts := mqtt.NewClientOptions()
 	opts = opts.SetClientID(cid)
-	opts = opts.SetKeepAlive(2 * time.Second)
-	opts = opts.SetPingTimeout(1 * time.Second)
+	opts = opts.SetKeepAlive(DefaultKeepAlive)
+	opts = opts.SetPingTimeout(DefaultPingTimeout)
 
 	for _, fn := range optFns {
 		fn(opts)

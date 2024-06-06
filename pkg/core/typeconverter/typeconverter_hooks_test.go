@@ -10,16 +10,13 @@ import (
 )
 
 func TestRawJsonConversion(t *testing.T) {
-
 	t.Run("string_to_rawjson", func(t *testing.T) {
-
-		var in string
-		var out api.RawJSON
-
-		in = `{ "foo": "bar" }`
+		in := `{ "foo": "bar" }`
 
 		tc, err := NewDefaultTypeConverter()
 		require.NoError(t, err)
+
+		var out api.RawJSON
 
 		ok, err := tc.Convert(in, &out)
 		require.NoError(t, err)
@@ -29,14 +26,12 @@ func TestRawJsonConversion(t *testing.T) {
 	})
 
 	t.Run("bytes_to_rawjson", func(t *testing.T) {
-
-		var in []byte
-		var out api.RawJSON
-
-		in = []byte(`{ "foo": "bar" }`)
+		in := []byte(`{ "foo": "bar" }`)
 
 		tc, err := NewDefaultTypeConverter()
 		require.NoError(t, err)
+
+		var out api.RawJSON
 
 		ok, err := tc.Convert(in, &out)
 		require.NoError(t, err)

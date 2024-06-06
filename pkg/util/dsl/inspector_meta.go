@@ -32,7 +32,6 @@ func (m *Metadata) Capabilities() []Capability {
 	capabilities := make([]Capability, 0)
 
 	for i := range m.FromURIs {
-
 		if strings.HasPrefix(m.FromURIs[i], daprPubSub.Scheme+":") {
 			if !slices.Contains(capabilities, CapabilityDAPR) {
 				capabilities = append(capabilities, CapabilityDAPR)

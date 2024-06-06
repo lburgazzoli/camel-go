@@ -81,6 +81,7 @@ func (c *Consumer) poll(ctx context.Context) {
 		if closed {
 			return
 		}
+
 		if err != nil {
 			panic(err)
 		}
@@ -90,7 +91,7 @@ func (c *Consumer) poll(ctx context.Context) {
 func (c *Consumer) pollRecords(ctx context.Context) (bool, error) {
 	defer c.client.AllowRebalance()
 
-	fetches := c.client.PollRecords(ctx, 100)
+	fetches := c.client.PollRecords(ctx, DefaultPollSize)
 	if fetches.IsClientClosed() {
 		return false, nil
 	}

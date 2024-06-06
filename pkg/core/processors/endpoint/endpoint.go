@@ -36,7 +36,6 @@ func (e *Endpoint) ID() string {
 }
 
 func (e *Endpoint) Consumer(ctx api.Context, pid *actor.PID) (api.Consumer, error) {
-
 	ep, err := e.create(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failure creating endpoint")
@@ -56,7 +55,6 @@ func (e *Endpoint) Consumer(ctx api.Context, pid *actor.PID) (api.Consumer, erro
 }
 
 func (e *Endpoint) Producer(ctx api.Context) (api.Producer, error) {
-
 	ep, err := e.create(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failure creating endpoint")

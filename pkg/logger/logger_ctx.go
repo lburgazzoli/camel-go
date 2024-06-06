@@ -44,11 +44,12 @@ func (h ContextHandler) attrs(ctx context.Context) []slog.Attr {
 		return nil
 	}
 
-	attrs := make([]slog.Attr, 0, 2)
+	attrs := make([]slog.Attr, 0)
 
 	if span.SpanContext().HasTraceID() {
 		attrs = append(attrs, slog.String(TraceIDAttr, span.SpanContext().TraceID().String()))
 	}
+
 	if span.SpanContext().HasSpanID() {
 		attrs = append(attrs, slog.String(SpanIDAttr, span.SpanContext().SpanID().String()))
 	}

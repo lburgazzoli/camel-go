@@ -17,10 +17,14 @@ import (
 )
 
 const (
-	DefaultPrefix   = ""
-	DefaultAddress  = ":8081"
-	DefaultPort     = 8081
-	DefaultPortName = "health"
+	DefaultPrefix            = ""
+	DefaultAddress           = ":8081"
+	DefaultPort              = 8081
+	DefaultPortName          = "health"
+	DefaultReadTimeout       = 1 * time.Second
+	DefaultWriteTimeout      = 1 * time.Second
+	DefaultIdleTimeout       = 30 * time.Second
+	DefaultReadHeaderTimeout = 2 * time.Second
 )
 
 func init() {
@@ -39,10 +43,10 @@ func New(address string, prefix string, logger *slog.Logger) *Service {
 	s.router.GET(path.Join(prefix, "/health", "/live"), s.live)
 
 	s.srv = &http.Server{
-		ReadTimeout:       1 * time.Second,
-		WriteTimeout:      1 * time.Second,
-		IdleTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
+		ReadTimeout:       DefaultReadTimeout,
+		WriteTimeout:      DefaultWriteTimeout,
+		IdleTimeout:       DefaultIdleTimeout,
+		ReadHeaderTimeout: DefaultReadHeaderTimeout,
 		Addr:              address,
 		Handler:           s.router,
 	}

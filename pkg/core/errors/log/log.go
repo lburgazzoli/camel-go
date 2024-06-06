@@ -24,8 +24,8 @@ func (a *Log) HandleFailure(
 	_ *actor.PID,
 	_ *actor.RestartStatistics,
 	reason interface{},
-	message interface{}) {
-
+	message interface{},
+) {
 	a.context.Logger().Info(
 		"failure",
 		slog.Any("reason", reason),

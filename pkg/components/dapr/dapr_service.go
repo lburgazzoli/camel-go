@@ -45,12 +45,12 @@ func (s *daprdSvc) Start() error {
 	// TODO: better ref counter
 	if s.cnt == 0 {
 		s.log.Info("staring")
+
 		if err := s.svc.Start(); err != nil {
 			return err
 		}
 
 		s.cnt++
-
 	}
 
 	return nil
@@ -67,6 +67,7 @@ func (s *daprdSvc) Stop() error {
 	// TODO: better ref counter
 	if s.cnt == 1 {
 		s.log.Info("stopping")
+
 		if err := s.svc.Stop(); err != nil {
 			return err
 		}

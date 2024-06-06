@@ -56,7 +56,7 @@ func (a *DeployAction) Run(ctx context.Context, rc *ReconciliationRequest) error
 	err := a.deploy(ctx, rc)
 	if err != nil {
 		deploymentCondition.Status = metav1.ConditionFalse
-		deploymentCondition.Reason = "Failure"
+		deploymentCondition.Reason = FailureReason
 		deploymentCondition.Message = err.Error()
 	}
 
@@ -70,11 +70,6 @@ func (a *DeployAction) Cleanup(_ context.Context, _ *ReconciliationRequest) erro
 }
 
 func (a *DeployAction) deploy(ctx context.Context, rc *ReconciliationRequest) error {
-
-	//
-	// ConfigMap
-	//
-
 	cm, err := a.configmap(ctx, rc)
 	if err != nil {
 		return err
@@ -92,10 +87,6 @@ func (a *DeployAction) deploy(ctx context.Context, rc *ReconciliationRequest) er
 	if err != nil {
 		return err
 	}
-
-	//
-	// Deployment
-	//
 
 	d, err := a.deployment(ctx, rc)
 	if err != nil {

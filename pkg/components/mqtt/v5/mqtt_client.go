@@ -21,15 +21,17 @@ func (c *Client) Start(ctx context.Context) error {
 		CleanStart: true,
 		Username:   c.cfg.Username,
 		Password:   []byte(c.cfg.Password),
-		KeepAlive:  30,
+		KeepAlive:  DefaultClientKeepAlive,
 	}
 
 	if c.cfg.Keepalive != nil {
 		cp.KeepAlive = *c.cfg.Keepalive
 	}
+
 	if c.cfg.Username != "" {
 		cp.UsernameFlag = true
 	}
+
 	if c.cfg.Password != "" {
 		cp.PasswordFlag = true
 	}
@@ -38,6 +40,7 @@ func (c *Client) Start(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to connect to %s", c.cfg.Broker)
 	}
+
 	if ca.ReasonCode != 0 {
 		return fmt.Errorf("failed to connect to %s : %d - %s", c.cfg.Broker, ca.ReasonCode, ca.Properties.ReasonString)
 	}

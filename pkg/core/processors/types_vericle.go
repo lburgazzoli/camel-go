@@ -36,7 +36,6 @@ func (v *DefaultVerticle) ID() string {
 
 // Dispatch send messages to the child steps, returns true if the dispatch is completed.
 func (v *DefaultVerticle) Dispatch(ac actor.Context, msg camel.Message) bool {
-
 	pids := ac.Children()
 
 	// no children

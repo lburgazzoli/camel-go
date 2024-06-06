@@ -8,7 +8,6 @@ import (
 )
 
 func Spawn(ac actor.Context, verticle camel.Verticle) (*actor.PID, error) {
-
 	f := func() actor.Actor { return verticle }
 	p := actor.PropsFromProducer(f)
 
