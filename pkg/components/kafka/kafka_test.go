@@ -52,9 +52,7 @@ func TestSimpleKafka(t *testing.T) {
 	content := uuid.New()
 
 	container, err := kafka.NewContainer(g.Ctx())
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	defer func() {
 		if err := container.Stop(g.Ctx()); err != nil {
@@ -129,9 +127,7 @@ func TestSimpleKafkaWASM(t *testing.T) {
 	g := support.With(t)
 
 	container, err := kafka.NewContainer(g.Ctx())
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	defer func() {
 		if err := container.Stop(g.Ctx()); err != nil {
