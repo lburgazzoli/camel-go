@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/imdario/mergo"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -19,32 +18,7 @@ var (
 	Log = slog.Default().WithGroup("container")
 )
 
-type OverrideContainerRequestOption func(req testcontainers.ContainerRequest) testcontainers.ContainerRequest
-
-var NoopOverrideContainerRequest = func(req testcontainers.ContainerRequest) testcontainers.ContainerRequest {
-	return req
-}
-
-func OverrideContainerRequest(r testcontainers.ContainerRequest) func(req testcontainers.ContainerRequest) testcontainers.ContainerRequest {
-	return func(req testcontainers.ContainerRequest) testcontainers.ContainerRequest {
-		if err := mergo.Merge(&req, r, mergo.WithOverride); err != nil {
-			slog.Default().WithGroup("container").Info(
-				fmt.Sprintf("error merging container request %v. Keeping the default one: %v", err, req),
-			)
-
-			return req
-		}
-
-		return req
-	}
-}
-
-func NewSlogLogConsumer(r *testcontainers.ContainerRequest) testcontainers.LogConsumer {
-	name := r.Name
-	if name == "" {
-		name = r.Image
-	}
-
+func NewSlogLogConsumer(name string) testcontainers.LogConsumer {
 	return &SlogLogConsumer{
 		Name: name,
 		l:    Log.WithGroup(name),
@@ -60,5 +34,23 @@ func (g *SlogLogConsumer) Accept(l testcontainers.Log) {
 	g.l.Info(
 		string(l.Content),
 		slog.String("stream", l.LogType),
+	)
+}
+
+func NewSlogLogger(name string) testcontainers.Logging {
+	return &SlogLogger{
+		Name: name,
+		l:    Log.WithGroup(name),
+	}
+}
+
+type SlogLogger struct {
+	Name string
+	l    *slog.Logger
+}
+
+func (g *SlogLogger) Printf(format string, v ...interface{}) {
+	g.l.Info(
+		fmt.Sprintf(format, v...),
 	)
 }

@@ -47,6 +47,10 @@ type Container struct {
 }
 
 func (c *Container) Stop(ctx context.Context) error {
+	if c == nil {
+		return nil
+	}
+
 	if err := c.StopLogProducer(); err != nil {
 		return errors.Wrap(err, "failed to  stop log producers")
 	}
@@ -162,7 +166,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 		Container: container,
 	}
 
-	c.FollowOutput(containers.NewSlogLogConsumer(&req.ContainerRequest))
+	c.FollowOutput(containers.NewSlogLogConsumer(req.ContainerRequest.Name))
 
 	if err := container.StartLogProducer(ctx); err != nil {
 		return nil, err

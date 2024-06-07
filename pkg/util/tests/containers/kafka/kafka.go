@@ -1,24 +1,17 @@
 package kafka
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"log/slog"
 	"net"
 	"os"
-	"path"
-	"path/filepath"
-	"strconv"
-	"text/template"
 	"time"
 
-	"github.com/lburgazzoli/camel-go/pkg/logger"
+	"github.com/testcontainers/testcontainers-go/modules/redpanda"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
 	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/twmb/franz-go/pkg/kadm"
 
 	"github.com/lburgazzoli/camel-go/pkg/util/uuid"
@@ -27,70 +20,29 @@ import (
 )
 
 const (
-	DefaultPort                 = 9092
-	DefaultAdminPort            = 9644
-	DefaultVersion              = "v23.2.12"
+	DefaultImageName            = "docker.io/redpandadata/redpanda"
+	DefaultImageVersion         = "v24.1.7"
+	ContainerType               = "redpanda"
 	ContainerEntrypointFile     = "/entrypoint-tc.sh"
 	RedPandaDir                 = "/etc/redpanda"
 	RedPandaBootstrapConfigFile = ".bootstrap.yaml"
 	RedPandaBConfigFile         = "redpanda.yaml"
-	DefaultLogPollInterval      = 100 * time.Millisecond
-	DefaultDialerTimeout        = 10 * time.Second
+
+	DefaultPort            = 9092
+	DefaultAdminPort       = 9644
+	DefaultLogPollInterval = 100 * time.Millisecond
+	DefaultDialerTimeout   = 10 * time.Second
 )
 
-const contentEntrypoint = `#!/usr/bin/env bash
-
-# Wait for testcontainer's injected redpanda config with the port only known after docker start
-until grep -q "# Injected by testcontainers" "/etc/redpanda/redpanda.yaml"
-do
-  sleep 0.1
-done
-exec /entrypoint.sh $@
-`
-
-const contentBootstrap = `
-auto_create_topics_enabled: true
-`
-const contentRedpanda = `
-# Injected by testcontainers
-redpanda:
-  admin:
-    address: 0.0.0.0
-    port: 9644
-
-  kafka_api:
-    - address: 0.0.0.0
-      name: external
-      port: 9092
-      authentication_method: none
-
-    - address: 0.0.0.0
-      name: internal
-      port: 9093
-      authentication_method: none
-
-  advertised_kafka_api:
-    - address: {{ .KafkaAPI.AdvertisedHost }}
-      name: external
-      port: {{ .KafkaAPI.AdvertisedPort }}
-    - address: 127.0.0.1
-      name: internal
-      port: 9093
-
-auto_create_topics_enabled: true
-`
-
-type RequestFn func(*Request) *Request
-
-type Request struct {
-	testcontainers.ContainerRequest
-}
-
 type Container struct {
-	testcontainers.Container
+	*redpanda.Container
 }
 
 func (c *Container) Stop(ctx context.Context) error {
+	if c == nil {
+		return nil
+	}
+
 	if err := c.StopLogProducer(); err != nil {
 		return errors.Wrap(err, "failed to  stop log producers")
 	}
@@ -137,7 +89,7 @@ func (c *Container) Admin(ctx context.Context) (*kadm.Client, error) {
 }
 
 func (c *Container) Broker(ctx context.Context) (string, error) {
-	return c.PortEndpoint(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)), "")
+	return c.Container.KafkaSeedBroker(ctx)
 }
 
 func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
@@ -165,136 +117,23 @@ func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
 	return props, nil
 }
 
-func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
-	tmpDir, err := os.MkdirTemp("", "redpanda")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create directory: %w", err)
-	}
-
-	defer func() {
-		_ = os.RemoveAll(tmpDir)
-	}()
-
-	pathEntrypoint := path.Join(tmpDir, ContainerEntrypointFile)
-	pathBootstrap := path.Join(tmpDir, RedPandaBootstrapConfigFile)
-
-	if err := os.WriteFile(pathEntrypoint, []byte(contentEntrypoint), containers.FileModeShared); err != nil {
-		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
-	}
-
-	if err := os.WriteFile(pathBootstrap, []byte(contentBootstrap), containers.FileModeShared); err != nil {
-		return nil, fmt.Errorf("failed to create entrypoint file: %w", err)
-	}
-
-	req := &Request{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Name:  "redpandadata-" + uuid.New(),
-			Image: "docker.io/redpandadata/redpanda:" + DefaultVersion,
-			User:  "root:root",
-			Env:   map[string]string{},
-			Entrypoint: []string{
-				ContainerEntrypointFile,
-			},
-			Cmd: []string{
-				"redpanda",
-				"start",
-				"--mode=dev-container",
-				"--smp=1",
-				"--memory=1G"},
-			ExposedPorts: []string{
-				strconv.Itoa(DefaultPort),
-				strconv.Itoa(DefaultAdminPort),
-			},
-			Files: []testcontainers.ContainerFile{{
-				HostFilePath:      pathEntrypoint,
-				ContainerFilePath: ContainerEntrypointFile,
-				FileMode:          int64(containers.FileModeExec),
-			}, {
-				HostFilePath:      pathBootstrap,
-				ContainerFilePath: filepath.Join(RedPandaDir, RedPandaBootstrapConfigFile),
-				FileMode:          int64(containers.FileModeRead),
-			}},
-		},
-	}
-
-	for i := range opts {
-		req = opts[i](req)
-	}
-
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req.ContainerRequest,
-		Started:          true,
-	})
+func NewContainer(ctx context.Context) (*Container, error) {
+	container, err := redpanda.RunContainer(
+		ctx,
+		testcontainers.WithLogger(containers.NewSlogLogger(ContainerType)),
+		redpanda.WithAutoCreateTopics(),
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	container.FollowOutput(containers.NewSlogLogConsumer(&req.ContainerRequest))
 
 	if err := container.StartLogProducer(ctx); err != nil {
 		return nil, err
-	}
-
-	contentConfig, err := generateRedPandaConfiguration(ctx, container)
-	if err != nil {
-		return nil, err
-	}
-
-	err = container.CopyToContainer(
-		ctx,
-		contentConfig,
-		filepath.Join(RedPandaDir, RedPandaBConfigFile),
-		int64(containers.FileModeRead),
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to copy redpanda.yaml into container: %w", err)
 	}
 
 	c := Container{
 		Container: container,
 	}
 
-	err = wait.ForLog("Successfully started Redpanda!").
-		WithPollInterval(DefaultLogPollInterval).
-		WaitUntilReady(ctx, c.Container)
-
-	if err != nil {
-		return nil, err
-	}
-
 	return &c, nil
-}
-
-func generateRedPandaConfiguration(ctx context.Context, container testcontainers.Container) ([]byte, error) {
-	host, err := container.Host(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get container host: %w", err)
-	}
-
-	port, err := container.MappedPort(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get mapped Kafka port: %w", err)
-	}
-
-	params := map[string]any{
-		"KafkaAPI": map[string]any{
-			"AdvertisedHost": host,
-			"AdvertisedPort": port.Int(),
-		},
-	}
-
-	tpl, err := template.New(RedPandaBConfigFile).Parse(contentRedpanda)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse redpanda config file template: %w", err)
-	}
-
-	var buffer bytes.Buffer
-	if err := tpl.Execute(&buffer, params); err != nil {
-		return nil, fmt.Errorf("failed to render redpanda node config template: %w", err)
-	}
-
-	logger.L.Info("redpanda", slog.String("redpanda.yaml", buffer.String()))
-
-	return buffer.Bytes(), nil
 }
