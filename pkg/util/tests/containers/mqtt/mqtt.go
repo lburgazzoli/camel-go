@@ -21,11 +21,10 @@ import (
 )
 
 const (
-	DefaultPort          = 1883
-	DefaultWebsocketPort = 9001
-	DefaultVersion       = "2.0.15"
-	DefaultKeepAlive     = 2 * time.Second
-	DefaultPingTimeout   = 1 * time.Second
+	DefaultPort        = 1883
+	DefaultVersion     = "2.0.15"
+	DefaultKeepAlive   = 2 * time.Second
+	DefaultPingTimeout = 1 * time.Second
 )
 
 type RequestFn func(*Request) *Request
@@ -49,10 +48,6 @@ type Container struct {
 func (c *Container) Stop(ctx context.Context) error {
 	if c == nil {
 		return nil
-	}
-
-	if err := c.StopLogProducer(); err != nil {
-		return errors.Wrap(err, "failed to  stop log producers")
 	}
 
 	if err := c.Terminate(ctx); err != nil {
@@ -157,6 +152,7 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req.ContainerRequest,
 		Started:          true,
+		Logger:           containers.NewSlogLogger("eclipse-mosquitto"),
 	})
 	if err != nil {
 		return nil, err
@@ -164,12 +160,6 @@ func NewContainer(ctx context.Context, opts ...RequestFn) (*Container, error) {
 
 	c := Container{
 		Container: container,
-	}
-
-	c.FollowOutput(containers.NewSlogLogConsumer(req.ContainerRequest.Name))
-
-	if err := container.StartLogProducer(ctx); err != nil {
-		return nil, err
 	}
 
 	return &c, nil
