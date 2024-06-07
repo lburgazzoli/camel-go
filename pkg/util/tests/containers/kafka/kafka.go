@@ -2,14 +2,12 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"time"
 
 	"github.com/testcontainers/testcontainers-go/modules/redpanda"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/lburgazzoli/camel-go/pkg/util/tests/containers"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/twmb/franz-go/pkg/kadm"
@@ -20,18 +18,8 @@ import (
 )
 
 const (
-	DefaultImageName            = "docker.io/redpandadata/redpanda"
-	DefaultImageVersion         = "v24.1.7"
-	ContainerType               = "redpanda"
-	ContainerEntrypointFile     = "/entrypoint-tc.sh"
-	RedPandaDir                 = "/etc/redpanda"
-	RedPandaBootstrapConfigFile = ".bootstrap.yaml"
-	RedPandaBConfigFile         = "redpanda.yaml"
-
-	DefaultPort            = 9092
-	DefaultAdminPort       = 9644
-	DefaultLogPollInterval = 100 * time.Millisecond
-	DefaultDialerTimeout   = 10 * time.Second
+	ContainerType        = "redpanda"
+	DefaultDialerTimeout = 10 * time.Second
 )
 
 type Container struct {
@@ -41,10 +29,6 @@ type Container struct {
 func (c *Container) Stop(ctx context.Context) error {
 	if c == nil {
 		return nil
-	}
-
-	if err := c.StopLogProducer(); err != nil {
-		return errors.Wrap(err, "failed to  stop log producers")
 	}
 
 	if err := c.Terminate(ctx); err != nil {
@@ -57,19 +41,14 @@ func (c *Container) Stop(ctx context.Context) error {
 func (c *Container) Client(ctx context.Context, opts ...kgo.Opt) (*kgo.Client, error) {
 	id := uuid.New()
 
-	host, err := c.Host(ctx)
+	broker, err := c.Broker(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get container host: %w", err)
-	}
-
-	port, err := c.MappedPort(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get mapped Kafka port: %w", err)
+		return nil, err
 	}
 
 	kopts := make([]kgo.Opt, 0, len(opts)+1)
 	kopts = append(kopts, opts...)
-	kopts = append(kopts, kgo.SeedBrokers(host+":"+port.Port()))
+	kopts = append(kopts, kgo.SeedBrokers(broker))
 	kopts = append(kopts, kgo.WithLogger(kgo.BasicLogger(os.Stdout, kgo.LogLevelInfo, func() string { return id })))
 	kopts = append(kopts, kgo.Dialer(func(ctx context.Context, network string, host string) (net.Conn, error) {
 		dialer := &net.Dialer{Timeout: DefaultDialerTimeout}
@@ -93,16 +72,6 @@ func (c *Container) Broker(ctx context.Context) (string, error) {
 }
 
 func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
-	host, err := c.Host(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get container host: %w", err)
-	}
-
-	port, err := c.MappedPort(ctx, nat.Port(fmt.Sprintf("%d/tcp", DefaultPort)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get mapped Kafka port: %w", err)
-	}
-
 	broker, err := c.Broker(ctx)
 	if err != nil {
 		return nil, err
@@ -110,8 +79,6 @@ func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
 
 	props := map[string]any{
 		"kafka.broker": broker,
-		"kafka.host":   host,
-		"kafka.port":   port.Int(),
 	}
 
 	return props, nil
@@ -124,10 +91,6 @@ func NewContainer(ctx context.Context) (*Container, error) {
 		redpanda.WithAutoCreateTopics(),
 	)
 	if err != nil {
-		return nil, err
-	}
-
-	if err := container.StartLogProducer(ctx); err != nil {
 		return nil, err
 	}
 
