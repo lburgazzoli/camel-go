@@ -17,7 +17,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-logr/logr v1.4.2
 	github.com/go-viper/mapstructure/v2 v2.0.0
-	github.com/google/go-containerregistry v0.19.1
+	github.com/google/go-containerregistry v0.19.2
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/itchyny/gojq v0.12.16
 	github.com/knadh/koanf/parsers/json v0.1.0
