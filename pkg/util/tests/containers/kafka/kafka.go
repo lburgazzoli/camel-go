@@ -19,6 +19,7 @@ import (
 
 const (
 	ContainerType        = "redpanda"
+	DefaultVersion       = "v23.3.3"
 	DefaultDialerTimeout = 10 * time.Second
 )
 
@@ -85,8 +86,9 @@ func (c *Container) Properties(ctx context.Context) (map[string]any, error) {
 }
 
 func NewContainer(ctx context.Context) (*Container, error) {
-	container, err := redpanda.RunContainer(
+	container, err := redpanda.Run(
 		ctx,
+		"docker.redpanda.com/redpandadata/redpanda:"+DefaultVersion,
 		testcontainers.WithLogger(containers.NewSlogLogger(ContainerType)),
 		redpanda.WithAutoCreateTopics(),
 	)
