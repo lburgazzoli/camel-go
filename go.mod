@@ -39,7 +39,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/redpanda v0.32.0
 	github.com/tetratelabs/wazero v1.7.3
 	github.com/twmb/franz-go v1.17.0
-	github.com/twmb/franz-go/pkg/kadm v1.12.0
+	github.com/twmb/franz-go/pkg/kadm v1.13.0
 	github.com/wI2L/jsondiff v0.6.0
 	go.opentelemetry.io/otel/trace v1.26.0
 	go.uber.org/multierr v1.11.0
