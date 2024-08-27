@@ -27,7 +27,7 @@ require (
 	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v1.0.0
 	github.com/knadh/koanf/v2 v2.1.1
-	github.com/ldez/mimetype v0.2.0
+	github.com/ldez/mimetype v0.3.0
 	github.com/onsi/gomega v1.34.1
 	github.com/pkg/errors v0.9.1
 	github.com/procyon-projects/chrono v1.1.2
