@@ -2,15 +2,8 @@ package controller
 
 import (
 	"fmt"
-	"time"
-
-	"github.com/alron/ginlogr"
-	"github.com/gin-contrib/pprof"
-	"github.com/lburgazzoli/camel-go/pkg/util/httpsrv"
 
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/lburgazzoli/camel-go/pkg/controller/logger"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -56,6 +49,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 		Cache: cache.Options{
 			ByObject: options.WatchSelectors,
 		},
+		PprofBindAddress: options.PprofAddr,
 	})
 
 	if err != nil {
@@ -72,22 +66,6 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up readiness check: %w", err)
-	}
-
-	if options.PprofAddr != "" {
-		router := gin.New()
-		router.Use(ginlogr.Ginlogr(Log, time.RFC3339, true))
-
-		pprof.Register(router, "debug/pprof")
-
-		server := httpsrv.New(options.PprofAddr, router)
-
-		Log.Info("starting pprof")
-
-		go func() {
-			err := server.ListenAndServe()
-			Log.Error(err, "pprof")
-		}()
 	}
 
 	Log.Info("starting manager")
