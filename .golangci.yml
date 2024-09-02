@@ -58,3 +58,4 @@ linters:
     - wrapcheck
     - err113
     - nilnil
+    - gomoddirectives
