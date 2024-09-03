@@ -2,7 +2,7 @@ module github.com/lburgazzoli/camel-go
 
 go 1.22.0
 
-toolchain go1.22.4
+toolchain go1.22.6
 
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20240413045429-76c172a71a16
