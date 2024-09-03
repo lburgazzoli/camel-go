@@ -8,29 +8,9 @@ rules:
   - ""
   resources:
   - configmaps
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - events
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - secrets
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - serviceaccounts
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - services
   verbs:
   - '*'

@@ -14,7 +14,7 @@ type Function struct {
 	fn     wzapi.Function
 }
 
-//nolint:mnd
+//nolint:mnd,gosec
 func (p *Function) invoke(ctx context.Context, msg camel.Message) error {
 	ctx = context.WithValue(ctx, contextKeyModule, p.module)
 	ctx = context.WithValue(ctx, contextKeyMessage, msg)
