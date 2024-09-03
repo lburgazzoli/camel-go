@@ -82,6 +82,7 @@ func (m *Module) write(ctx context.Context, data []byte) (uint64, uint64, error)
 		return noPointer, noSize, err
 	}
 
+	//nolint:gosec
 	if !m.module.Memory().Write(uint32(ptr), data) {
 		err := fmt.Errorf(
 			"memory.Write(%d, %d) out of range of memory size %d",

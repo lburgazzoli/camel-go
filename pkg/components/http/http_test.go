@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,7 +49,7 @@ func TestSimpleHTTPGet(t *testing.T) {
 		assert.NoError(t, err)
 
 		w.Header().Set("Content-Type", "application/json")
-		_, err = io.WriteString(w, string(data))
+		_, err = w.Write(data)
 		assert.NoError(t, err)
 	}))
 
