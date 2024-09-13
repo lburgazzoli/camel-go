@@ -15,7 +15,7 @@ pub extern fn process() -> u64 {
     let val = msg.content();
     let res = String::from_utf8(val).unwrap();
 
-    format!("Processing message: {}", res);
+    println!("Processing message: {}", res);
 
     return 0
 }
