@@ -5,7 +5,7 @@ go 1.22.6
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20240413045429-76c172a71a16
 	github.com/cbroglie/mustache v1.4.0
-	github.com/cucumber/godog v0.14.1
+	github.com/cucumber/godog v0.15.0
 	github.com/dapr/go-sdk v1.11.0
 	github.com/docker/go-connections v0.5.0
 	github.com/eclipse/paho.golang v0.21.0
