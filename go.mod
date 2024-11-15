@@ -39,7 +39,7 @@ require (
 	github.com/wI2L/jsondiff v0.6.0
 	go.opentelemetry.io/otel/trace v1.31.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/time v0.7.0
+	golang.org/x/time v0.8.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.31.2
 	k8s.io/apimachinery v0.31.2
