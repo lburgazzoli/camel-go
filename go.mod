@@ -8,7 +8,7 @@ require (
 	github.com/cucumber/godog v0.15.0
 	github.com/dapr/go-sdk v1.11.0
 	github.com/docker/go-connections v0.5.0
-	github.com/eclipse/paho.golang v0.21.0
+	github.com/eclipse/paho.golang v0.22.0
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-logr/logr v1.4.2
