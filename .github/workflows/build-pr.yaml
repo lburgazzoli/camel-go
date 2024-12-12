@@ -17,18 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check-out
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: setup-oras
+        uses: oras-project/setup-oras@v1
+        run: |
+          oras version
       - name: setup-go
         uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
           check-latest: true
           cache: true
           cache-dependency-path: go.sum
       - name: "Set Up Rust"
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          target: 'wasm32-unknown-unknown'
+          target: "wasm32-unknown-unknown"
       - name: wasm
         run: |
           export UUID=$(uuidgen | tr "[:upper:]" "[:lower:]")
