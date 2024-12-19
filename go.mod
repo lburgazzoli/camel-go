@@ -15,7 +15,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/go-containerregistry v0.20.2
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/itchyny/gojq v0.12.16
+	github.com/itchyny/gojq v0.12.17
 	github.com/knadh/koanf/parsers/json v0.1.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
 	github.com/knadh/koanf/parsers/yaml v0.1.0
